@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐂</text></svg>">
+<title>Get started — no~bull books</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f172a;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.card {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.4);
+}
+.card-header {
+  background: #0f172a;
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-mark { font-size: 32px; }
+.logo-text {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  color: #fff;
+  letter-spacing: .3px;
+}
+.logo-text span { color: #93c5fd; }
+.card-body { padding: 36px 40px; }
+h1 { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 10px; }
+.subtitle { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 28px; }
+
+/* Steps */
+.steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 28px; }
+.step {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: flex-start;
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.step-num.done { background: #dcfce7; color: #16a34a; }
+.step-num.active { background: #2563eb; color: #fff; }
+.step-label { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 3px; }
+.step-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+input[type="text"], input[type="email"] {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+}
+input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+
+.btn-create {
+  width: 100%;
+  padding: 14px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-create:hover:not(:disabled) { background: #1d4ed8; }
+.btn-create:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Trust bar */
+.trust {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 18px 40px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+.trust-item svg { flex-shrink: 0; }
+
+/* Status overlays */
+#status-creating, #status-done, #status-error { display: none; }
+
+#status-creating {
+  text-align: center;
+  padding: 20px 0 8px;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.creating-text { font-size: 15px; color: #0f172a; font-weight: 600; margin-bottom: 6px; }
+.creating-sub  { font-size: 13px; color: #64748b; }
+
+#status-done { text-align: center; padding: 8px 0 8px; }
+.done-icon { font-size: 48px; margin-bottom: 12px; }
+.done-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+.done-sub { font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+.url-box {
+  background: #0f172a;
+  color: #93c5fd;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  word-break: break-all;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.btn-open {
+  display: inline-block;
+  background: #16a34a;
+  color: #fff;
+  text-decoration: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  width: 100%;
+  text-align: center;
+}
+.redirect-note {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 12px;
+}
+
+#status-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #991b1b;
+  margin-top: 12px;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div class="logo-mark">🐂</div>
+    <div class="logo-text">no~bull <span>books</span></div>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+
+    <!-- Step indicator -->
+    <div class="steps" id="step-list">
+      <div class="step">
+        <div class="step-num active" id="sn-1">1</div>
+        <div>
+          <div class="step-label">Your details</div>
+          <div class="step-desc">Just your business name — you can change everything later.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" id="sn-2">2</div>
+        <div>
+          <div class="step-label">Create your workspace</div>
+          <div class="step-desc">We create a Google Sheet in <em>your</em> Drive. Your data stays yours.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num" id="sn-3">3</div>
+        <div>
+          <div class="step-label">Open no~bull books</div>
+          <div class="step-desc">You land straight in the setup wizard.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div id="form-area">
+      <div class="form-group">
+        <label for="company-name">Business / company name</label>
+        <input type="text" id="company-name"
+          placeholder="e.g. Acme Consulting Ltd"
+          autocomplete="organization" autofocus>
+      </div>
+      <div id="status-error"></div>
+      <button class="btn-create" id="btn-create" onclick="startSetup()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Create my workspace
+      </button>
+    </div>
+
+    <!-- Creating state -->
+    <div id="status-creating">
+      <div class="spinner"></div>
+      <div class="creating-text">Creating your workspace…</div>
+      <div class="creating-sub" id="creating-sub">Setting up your Google Sheet</div>
+    </div>
+
+    <!-- Done state -->
+    <div id="status-done">
+      <div class="done-icon">🎉</div>
+      <div class="done-title">Your workspace is ready!</div>
+      <div class="done-sub">
+        Your no~bull books account has been created in your Google Drive.
+        Bookmark the link below — it's your unique app URL.
+      </div>
+      <div class="url-box" id="app-url-display"></div>
+      <a href="#" id="open-app-btn" class="btn-open">Open no~bull books →</a>
+      <div class="redirect-note" id="redirect-note">Redirecting in <span id="countdown">5</span>s…</div>
+    </div>
+
+  </div><!-- /card-body -->
+
+  <!-- Trust bar -->
+  <div class="trust">
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      14-day free trial
+    </div>
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Your data, your Drive
+    </div>
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      No credit card needed
+    </div>
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Cancel any time
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+var _appUrl = '';
+
+function startSetup() {
+  var name = document.getElementById('company-name').value.trim();
+  if (!name) {
+    document.getElementById('company-name').focus();
+    showError('Please enter your business name to continue.');
+    return;
+  }
+
+  // Mark step 1 done, step 2 active
+  setStep(1, 'done');
+  setStep(2, 'active');
+
+  // Show creating state
+  document.getElementById('form-area').style.display = 'none';
+  document.getElementById('status-creating').style.display = 'block';
+  document.getElementById('status-error').style.display    = 'none';
+
+  // Animate the sub-text
+  var subs = [
+    'Creating your Google Sheet…',
+    'Setting up your account…',
+    'Almost ready…'
+  ];
+  var si = 0;
+  var subEl = document.getElementById('creating-sub');
+  var subTimer = setInterval(function() {
+    si++;
+    if (si < subs.length) subEl.textContent = subs[si];
+  }, 1800);
+
+  // Call the GAS function — runs as USER_ACCESSING in client's Drive
+  google.script.run
+    .withSuccessHandler(function(result) {
+      clearInterval(subTimer);
+      if (result && result.success) {
+        _appUrl = result.appUrl;
+        onSuccess(result);
+      } else {
+        onError(result ? result.message : 'Something went wrong. Please try again.');
+      }
+    })
+    .withFailureHandler(function(err) {
+      clearInterval(subTimer);
+      onError(err ? err.message || err.toString() : 'Could not create workspace. Please try again.');
+    })
+    .createClientWorkspace(name);
+}
+
+function onSuccess(result) {
+  // Mark steps done
+  setStep(2, 'done');
+  setStep(3, 'active');
+
+  document.getElementById('status-creating').style.display = 'none';
+  document.getElementById('status-done').style.display     = 'block';
+  document.getElementById('app-url-display').textContent   = result.appUrl;
+
+  var btn = document.getElementById('open-app-btn');
+  btn.href = result.appUrl;
+
+  // Auto-redirect countdown
+  var count = 5;
+  var countEl = document.getElementById('countdown');
+  var timer = setInterval(function() {
+    count--;
+    if (countEl) countEl.textContent = count;
+    if (count <= 0) {
+      clearInterval(timer);
+      window.top.location.href = result.appUrl;
+    }
+  }, 1000);
+
+  // Mark step 3 done on open
+  btn.addEventListener('click', function() {
+    clearInterval(timer);
+    setStep(3, 'done');
+  });
+}
+
+function onError(msg) {
+  // Restore form so user can retry
+  document.getElementById('status-creating').style.display = 'none';
+  document.getElementById('form-area').style.display       = 'block';
+  setStep(1, 'active');
+  setStep(2, '');
+  showError(msg || 'Something went wrong. Please try again.');
+}
+
+function showError(msg) {
+  var el = document.getElementById('status-error');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function setStep(num, state) {
+  var el = document.getElementById('sn-' + num);
+  if (!el) return;
+  el.className = 'step-num' + (state === 'done' ? ' done' : state === 'active' ? ' active' : '');
+  el.textContent = state === 'done' ? '✓' : String(num);
+}
+
+// Allow Enter key on the input
+document.getElementById('company-name').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') startSetup();
+});
+</script>
+</body>
+</html>

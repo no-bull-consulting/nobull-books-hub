@@ -1,0 +1,2077 @@
+<script>
+
+function _renderReconPage() {
+  var id    = _reconState.accountId;
+  var acct  = (App.data.bankAccounts||[]).find(function(a){ return a.accountId === id; }) || {};
+  var unr   = _reconState.unreconciled;
+  var book  = _reconState.bookEntries;
+  var all   = _reconState.transactions;
+  // Count reconciled BOOK entries only — statement lines are also marked Reconciled
+  // when matched, which would double the count. One book entry = one reconciled transaction.
+  var reconciledCount = all.filter(function(t) {
+    return t.status === 'Reconciled' &&
+           t.type !== 'Statement' &&
+           t.category !== 'Statement';
+  }).length;
+  var totalUnrec       = unr.reduce(function(s,t){ return s + (parseFloat(t.amount)||0); }, 0);
+  // Account selector
+  var baSelector = App.data.bankAccounts.length > 1
+    ? '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">' +
+        '<label class="form-label" style="margin:0;white-space:nowrap">Account</label>' +
+        '<select class="form-select" style="max-width:320px" onchange="_switchReconAccount(this.value)">' +
+        App.data.bankAccounts.map(function(a) {
+          return '<option value="'+a.accountId+'"'+(a.accountId===id?' selected':'')+'>'+
+            a.accountName+' ('+a.bankName+') — '+fmt(a.currentBalance)+'</option>';
+        }).join('') +
+        '</select></div>'
+    : '';
+  var html =
+    '<div class="page-hdr">' +
+      '<div><div class="page-title">Reconciliation</div>' +
+        '<div class="page-sub">'+(acct.accountName||'')+' · '+(acct.bankName||'')+'</div></div>' +
+      '<div class="page-actions">' +
+        '<button class="btn btn-secondary btn-sm" onclick="showBanking()">← Banking</button>' +
+        '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">📤 Import Statement</button>' +
+      '</div>' +
+    '</div>' +
+    baSelector +
+    // Summary bar
+    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">' +
+      '<div class="stat-card"><div class="stat-label">Book Balance</div>' +
+        '<div class="stat-value">'+fmt(acct.currentBalance)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Unmatched Statement Lines</div>' +
+        '<div class="stat-value" style="color:var(--amber-500)">'+unr.length+'</div>' +
+        '<div class="stat-meta">'+fmt(totalUnrec)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Unmatched Book Entries</div>' +
+        '<div class="stat-value" style="color:var(--blue-600)">'+book.length+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Reconciled</div>' +
+        '<div class="stat-value amt-pos">'+reconciledCount+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Last Reconciled</div>' +
+        '<div style="font-size:14px;font-weight:600;color:var(--g800);margin-top:4px">' +
+          (acct.lastReconciled ? fmtDate(acct.lastReconciled) : '<span style="color:var(--g400)">Never</span>') +
+        '</div></div>' +
+    '</div>' +
+    // Two-panel layout
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">' +
+      // LEFT — Statement lines
+      '<div class="tbl-wrap">' +
+        '<div class="tbl-bar">' +
+          '<span class="tbl-title" style="color:var(--amber-500)">📄 Statement Lines</span>' +
+          '<span style="font-size:12px;color:var(--g500)">Imported from bank</span>' +
+        '</div>' +
+        (unr.length === 0
+          ? '<div class="tbl-empty"><p>No unmatched statement lines</p>' +
+            '<span>Import a bank statement to start reconciling</span></div>'
+          : '<table class="dt"><thead><tr>' +
+              '<th>Date</th><th>Description</th><th style="text-align:right">Amount</th><th></th>' +
+            '</tr></thead><tbody id="recon-stmt-body">' +
+            unr.map(function(t) {
+              var a = parseFloat(t.amount)||0;
+              return '<tr id="stl-'+t.transactionId+'" data-txid="'+t.transactionId+'" class="recon-stmt-row" onclick="selectStatementLine(this.dataset.txid)" ' +
+                'style="cursor:pointer">' +
+                '<td>'+fmtDate(t.date)+'</td>' +
+                '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
+                  (t.description||'')+'</td>' +
+                '<td style="text-align:right"><span class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</span>' +
+                  '<span style="font-size:10px;color:var(--g400);margin-left:4px">'+(a>=0?'CR':'DR')+'</span></td>' +
+                '<td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_qmr(this)">✓</button></td>' +
+              '</tr>';
+            }).join('')+
+            '</tbody></table>'
+        ) +
+      '</div>' +
+      // RIGHT — Book entries
+      '<div class="tbl-wrap">' +
+        '<div class="tbl-bar">' +
+          '<span class="tbl-title" style="color:var(--blue-600)">📚 Book Entries</span>' +
+          '<span style="font-size:12px;color:var(--g500)">Recorded in system</span>' +
+        '</div>' +
+        (book.length === 0
+          ? '<div class="tbl-empty"><p>No unreconciled book entries</p>' +
+            '<span>All entries have been reconciled</span></div>'
+          : '<table class="dt"><thead><tr>' +
+              '<th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th>' +
+            '</tr></thead><tbody id="recon-book-body">' +
+            book.map(function(t) {
+              var a = parseFloat(t.amount)||0;
+              return '<tr id="bke-'+t.transactionId+'" data-txid="'+t.transactionId+'" class="recon-book-row" onclick="selectBookEntry(this.dataset.txid)" ' +
+                'style="cursor:pointer">' +
+                '<td>'+fmtDate(t.date)+'</td>' +
+                '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
+                  (t.description||'')+'</td>' +
+                '<td><span class="badge badge-grey" style="font-size:10px">'+(t.type||'')+'</span></td>' +
+                '<td style="text-align:right"><span class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</span></td>' +
+                '<td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_qmr(this)">✓</button></td>' +
+              '</tr>';
+            }).join('')+
+            '</tbody></table>'
+        ) +
+      '</div>' +
+    '</div>' +
+    // Match action bar — shown when items selected
+    '<div id="recon-match-bar" style="display:none;position:sticky;bottom:0;background:var(--g0);' +
+      'border-top:1px solid var(--g200);padding:12px 0;margin-top:16px">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+        '<div id="recon-sel-info" style="font-size:13px;color:var(--g700);flex:1"></div>' +
+        '<button class="btn btn-secondary btn-sm" onclick="clearReconSelection()">Clear</button>' +
+        '<button class="btn btn-warning btn-sm" id="recon-adj-btn" onclick="openReconAdjModal()" style="display:none">+ Adjustment</button>' +
+        '<button class="btn btn-primary btn-sm" id="recon-match-btn" onclick="matchSelected()">Match Selected</button>' +
+      '</div>' +
+      '<div id="recon-adj-hint" style="display:none;font-size:11px;color:var(--amber-600);margin-top:6px;padding-top:6px;border-top:1px solid var(--g100)">' +
+        '⚠ A difference exists — click <strong>+ Adjustment</strong> to post a bank charge, interest, or rounding entry and reconcile the remaining amount.' +
+      '</div>' +
+    '</div>';
+  showContent(html);
+}
+function _switchReconAccount(id) {
+  App.data.selectedAccount = id;
+  _reconState.accountId = id;
+  showReconciliation();
+}
+// Select a statement line — highlight it and look for auto-match
+function selectStatementLine(txId) {
+  _reconState.selectedTx = txId;
+  document.querySelectorAll('[id^="stl-"]').forEach(function(el) {
+    el.style.background = el.id === 'stl-'+txId ? 'var(--blue-50)' : '';
+  });
+  // Auto-suggest matching book entry by amount
+  var stmtTx = _reconState.unreconciled.find(function(t){ return t.transactionId === txId; });
+  if (stmtTx) {
+    var stmtAmt = Math.abs(parseFloat(stmtTx.amount)||0);
+    var match = _reconState.bookEntries.find(function(t){
+      return Math.abs(Math.abs(parseFloat(t.amount)||0) - stmtAmt) < 0.01;
+    });
+    if (match) {
+      selectBookEntry(match.transactionId);
+      toast('Auto-matched by amount: '+fmt(stmtAmt), 'info', 2000);
+    }
+  }
+  _updateMatchBar();
+}
+function selectBookEntry(txId) {
+  _reconState.selectedBook = txId;
+  document.querySelectorAll('[id^="bke-"]').forEach(function(el) {
+    el.style.background = el.id === 'bke-'+txId ? 'var(--blue-50)' : '';
+  });
+  _updateMatchBar();
+}
+function clearReconSelection() {
+  _reconState.selectedTx   = null;
+  _reconState.selectedBook = null;
+  document.querySelectorAll('[id^="stl-"],[id^="bke-"]').forEach(function(el){
+    el.style.background = '';
+  });
+  _updateMatchBar();
+}
+function _updateMatchBar() {
+  var bar  = document.getElementById('recon-match-bar');
+  var info = document.getElementById('recon-sel-info');
+  var btn  = document.getElementById('recon-match-btn');
+  if (!bar) return;
+  var hasTx   = !!_reconState.selectedTx;
+  var hasBook = !!_reconState.selectedBook;
+  if (!hasTx && !hasBook) { bar.style.display='none'; return; }
+  bar.style.display = 'block';
+  if (hasTx && hasBook) {
+    var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
+    var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
+    var diff = Math.abs((parseFloat((stmt||{}).amount)||0)) - Math.abs((parseFloat((book||{}).amount)||0));
+    var absDiff = Math.abs(diff);
+    var diffStr = absDiff < 0.01
+      ? '<span style="color:var(--green-600)">✓ Amounts match</span>'
+      : '<span style="color:var(--amber-500)">⚠ Difference: '+fmt(absDiff)+'</span>';
+    info.innerHTML = 'Statement: <strong>'+fmtDate((stmt||{}).date)+'</strong> '+fmt(Math.abs(parseFloat((stmt||{}).amount)||0))+
+      ' ↔ Book: <strong>'+fmtDate((book||{}).date)+'</strong> '+fmt(Math.abs(parseFloat((book||{}).amount)||0))+
+      ' &nbsp;'+diffStr;
+    // Show Adjust button when there is a difference
+    var adjBtn  = document.getElementById('recon-adj-btn');
+    var adjHint = document.getElementById('recon-adj-hint');
+    if (adjBtn)  adjBtn.style.display  = absDiff >= 0.01 ? 'inline-flex' : 'none';
+    if (adjHint) adjHint.style.display = absDiff >= 0.01 ? 'block' : 'none';
+    if (btn) btn.disabled = false;
+  } else if (hasTx) {
+    var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
+    info.innerHTML = 'Statement line selected: <strong>'+fmtDate((stmt||{}).date)+'</strong> '+
+      fmt(Math.abs(parseFloat((stmt||{}).amount)||0))+' — select a book entry to match, or click ✓ to mark as reconciled';
+    if (btn) btn.disabled = true;
+  } else {
+    var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
+    info.innerHTML = 'Book entry selected: <strong>'+fmtDate((book||{}).date)+'</strong> '+
+      fmt(Math.abs(parseFloat((book||{}).amount)||0))+' — select a statement line to match';
+    if (btn) btn.disabled = true;
+  }
+}
+// ── Reconciliation Adjustments ────────────────────────────────────────────────
+var _adjTypes = [
+  { label:'Bank Charge',       code:'7500', type:'debit'  },
+  { label:'Interest Received', code:'7900', type:'credit' },
+  { label:'Interest Paid',     code:'7600', type:'debit'  },
+  { label:'Rounding (debit)',  code:'8100', type:'debit'  },
+  { label:'Rounding (credit)', code:'8100', type:'credit' },
+  { label:'Other Debit',       code:'7999', type:'debit'  },
+  { label:'Other Credit',      code:'7999', type:'credit' }
+];
+
+function openReconAdjModal() {
+  var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
+  var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
+  if (!stmt || !book) { toast('Select both a statement line and book entry first','warning'); return; }
+  var stmtAmt = Math.abs(parseFloat(stmt.amount)||0);
+  var bookAmt = Math.abs(parseFloat(book.amount)||0);
+  var diff    = Math.round((stmtAmt - bookAmt) * 100) / 100;
+  var absDiff = Math.abs(diff);
+  var suggestType = diff > 0 ? 'debit' : 'credit'; // stmt > book = extra outgoing = debit adj
+  var today   = new Date().toISOString().split('T')[0];
+  var typeOpts = _adjTypes.map(function(t,i){
+    var sel = t.type === suggestType ? ' selected' : '';
+    return '<option value="'+i+'"'+sel+'>'+t.label+' ('+t.code+')</option>';
+  }).join('');
+
+  openModal('recon-adj','Create Reconciliation Adjustment',
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Statement</div><div style="font-weight:700">'+fmt(stmtAmt)+'</div></div>'+
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Book Entry</div><div style="font-weight:700">'+fmt(bookAmt)+'</div></div>'+
+      '<div class="stat-card" style="padding:10px;border-left:3px solid var(--amber-400)"><div class="stat-label">Difference</div><div style="font-weight:700;color:var(--amber-500)">'+fmt(absDiff)+'</div></div>'+
+    '</div>'+
+    '<div class="alert alert-info" style="margin-bottom:12px"><p>An adjustment of <strong>'+fmt(absDiff)+'</strong> will be created and both entries will be marked as reconciled.</p></div>'+
+    '<div class="form-grid-2">'+
+      '<div class="form-group"><label class="form-label">Adjustment Type</label>'+
+        '<select class="form-select" id="radj-type" onchange="_adjTypeChanged()">'+typeOpts+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Amount</label>'+
+        '<input type="number" class="form-input" id="radj-amount" value="'+absDiff.toFixed(2)+'" step="0.01" min="0.01"></div>'+
+      '<div class="form-group"><label class="form-label">Date</label>'+
+        '<input type="date" class="form-input" id="radj-date" value="'+today+'"></div>'+
+      '<div class="form-group"><label class="form-label">COA Account Code</label>'+
+        '<input type="text" class="form-input" id="radj-code" value="'+(_adjTypes[0]||{}).code+'"></div>'+
+    '</div>'+
+    '<div class="form-group"><label class="form-label">Description</label>'+
+      '<input type="text" class="form-input" id="radj-desc" value="'+(_adjTypes[0]||{}).label+'"></div>'+
+    '<div class="form-group"><label class="form-label">Notes</label>'+
+      '<input type="text" class="form-input" id="radj-notes" placeholder="Internal reference (optional)"></div>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'recon-adj\')">Cancel</button>'+
+    '<button class="btn btn-primary" id="radj-save" onclick="saveReconAdj()">Create Adjustment & Reconcile</button>',
+    'modal-md'
+  );
+}
+
+function _adjTypeChanged() {
+  var idx = parseInt((document.getElementById('radj-type')||{}).value)||0;
+  var t   = _adjTypes[idx]||{};
+  var de  = document.getElementById('radj-desc');
+  var co  = document.getElementById('radj-code');
+  if (de) de.value = t.label||'';
+  if (co) co.value = t.code||'';
+}
+
+async function saveReconAdj() {
+  var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
+  var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
+  if (!stmt || !book) { toast('Selection lost — please re-select','error'); return; }
+
+  var idx    = parseInt((document.getElementById('radj-type')||{}).value)||0;
+  var adjT   = _adjTypes[idx]||{ type:'debit', code:'7999' };
+  var amount = parseFloat((document.getElementById('radj-amount')||{}).value)||0;
+  var date   = (document.getElementById('radj-date')||{}).value||'';
+  var desc   = (document.getElementById('radj-desc')||{}).value||'Adjustment';
+  var code   = (document.getElementById('radj-code')||{}).value||adjT.code;
+  var notes  = (document.getElementById('radj-notes')||{}).value||'';
+
+  if (!amount) { toast('Enter an amount','warning'); return; }
+  var btn = document.getElementById('radj-save');
+  if (btn) { btn.disabled=true; btn.textContent='Creating...'; }
+
+  var r = await api('createReconAdjustment', {
+    bankAccountId:  _reconState.accountId,
+    amount:         amount,
+    type:           adjT.type,
+    description:    desc,
+    accountCode:    code,
+    date:           date,
+    statementTxId:  stmt.transactionId,
+    notes:          notes
+  });
+
+  if (r && r.success) {
+    closeModal('recon-adj');
+    toast('Adjustment created and reconciled','success');
+    // Also reconcile the book entry against statement
+    var r2 = await api('reconcileTransaction', {
+      transactionId: book.transactionId,
+      allocations:   [{ documentType:'booked', documentId:stmt.transactionId, amount:amount, notes:'Adj match' }]
+    });
+    // Remove from local lists
+    _reconState.unreconciled = _reconState.unreconciled.filter(function(t){return t.transactionId!==stmt.transactionId;});
+    _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){return t.transactionId!==book.transactionId;});
+    _reconState.selectedTx   = null;
+    _reconState.selectedBook = null;
+    _renderReconPage();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Create Adjustment & Reconcile'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+
+// Match statement line ↔ book entry
+async function matchSelected() {
+  var stmtId = _reconState.selectedTx;
+  var bookId = _reconState.selectedBook;
+  if (!stmtId || !bookId) return;
+  var btn = document.getElementById('recon-match-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Matching...'; }
+  // Reconcile the statement line against the book entry
+  var r = await api('reconcileTransaction', {
+    transactionId: stmtId,
+    allocations: [{ documentType:'booked', documentId:bookId }]
+  });
+  if (r && r.success) {
+    toast('Matched successfully', 'success');
+    // Remove both from unreconciled lists
+    _reconState.unreconciled = _reconState.unreconciled.filter(function(t){ return t.transactionId!==stmtId; });
+    _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){ return t.transactionId!==bookId; });
+    _reconState.selectedTx   = null;
+    _reconState.selectedBook = null;
+    _renderReconPage();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Match Selected'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+  }
+}
+// Quick mark as reconciled (no matching)
+function _qmr(btn) {
+  var tr = btn;
+  while (tr && tr.tagName !== 'TR') tr = tr.parentElement;
+  if (tr && tr.dataset && tr.dataset.txid) quickMarkReconciled(tr.dataset.txid);
+}
+async function quickMarkReconciled(txId) {
+  var r = await api('reconcileTransaction', {
+    transactionId: txId,
+    allocations: []
+  });
+  if (r && r.success) {
+    toast('Marked as reconciled', 'success');
+    _reconState.unreconciled = _reconState.unreconciled.filter(function(t){ return t.transactionId!==txId; });
+    _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){ return t.transactionId!==txId; });
+    if (_reconState.selectedTx === txId)   _reconState.selectedTx   = null;
+    if (_reconState.selectedBook === txId) _reconState.selectedBook = null;
+    _renderReconPage();
+  } else {
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+  }
+}
+// Quick reconcile from transaction list (on Banking page)
+async function openQuickReconcileModal(transactionId) {
+  _currentReconTxId = transactionId;
+  var tx = (_reconState.transactions||[]).find(function(t){ return t.transactionId===transactionId; });
+  var txAmt = tx ? Math.abs(parseFloat(tx.amount)||0) : 0;
+  // Use cached invoices and bills — no extra api call
+  var invs  = (App.data.invoices||[]).filter(function(i){ return i.status!=='Paid'&&i.status!=='Void'&&(parseFloat(i.amountDue)||0)>0; });
+  var bills = (App.data.bills||[]).filter(function(b){ return b.status!=='Paid'&&b.status!=='Void'&&(parseFloat(b.amountDue)||0)>0; });
+  var invOpts  = invs.map(function(i){ return '<option value="inv:'+i.invoiceId+'">INV '+i.invoiceNumber+' — '+i.clientName+' ('+fmt(i.amountDue)+')</option>'; }).join('');
+  var billOpts = bills.map(function(b){ return '<option value="bil:'+b.billId+'">BILL '+b.billNumber+' — '+b.supplierName+' ('+fmt(b.amountDue)+')</option>'; }).join('');
+  openModal('bk-reconcile', 'Reconcile Transaction',
+    (tx ? '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Date</div><div style="font-weight:600">'+fmtDate(tx.date)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Description</div><div style="font-weight:600;font-size:12px">'+(tx.description||'—')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount</div><div style="font-weight:700">'+fmt(txAmt)+'</div></div>' +
+    '</div>' : '') +
+    '<div class="form-group"><label class="form-label">Match to</label>' +
+      '<select class="form-select" id="rc-match">' +
+        '<option value="">— Mark reconciled (no match) —</option>' +
+        (invOpts  ? '<optgroup label="Outstanding Invoices">' + invOpts  + '</optgroup>' : '') +
+        (billOpts ? '<optgroup label="Outstanding Bills">'    + billOpts + '</optgroup>' : '') +
+      '</select>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Notes</label>' +
+      '<input type="text" class="form-input" id="rc-notes" placeholder="Optional notes"></div>',
+    '<button class="btn btn-secondary" onclick="closeBkRecon()">Cancel</button>' +
+    '<button class="btn btn-primary" id="rc-save" onclick="saveCurrentRecon()">Reconcile</button>',
+    'modal-md'
+  );
+}
+async function saveReconcile(transactionId) {
+  var match = (document.getElementById('rc-match')||{}).value || '';
+  var notes = (document.getElementById('rc-notes')||{}).value || '';
+  var allocations = [];
+  if (match) {
+    var parts = match.split(':');
+    var docType = parts[0] === 'inv' ? 'Invoice' : 'Bill';
+    allocations.push({ documentType:docType, documentId:parts[1], notes:notes });
+  }
+  var btn = document.getElementById('rc-save');
+  if (btn) { btn.disabled=true; btn.textContent='Reconciling...'; }
+  var r = await api('reconcileTransaction', { transactionId:transactionId, allocations:allocations });
+  if (r && r.success) {
+    closeModal('bk-reconcile');
+    toast('Transaction reconciled', 'success');
+    loadTx();
+    loadRecInfo();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Reconcile'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+  }
+}
+// INVOICE DETAIL VIEW — with Void and Write Off as Bad Debt
+// INVOICE DETAIL — Workflow + Attachments
+var _pdfInvoiceId = null;
+function closeViInv()     { closeModal('vi-inv'); }
+function whatsAppCurrentInv() { openWhatsAppModal(_pdfInvoiceId); }
+function pdfCurrentInv()  { downloadPDF(_pdfInvoiceId); }
+function emailCurrentInv(){ sendEmail(_pdfInvoiceId); }
+// Status workflow: Draft → Approved → Sent → Paid (+ Void, Bad Debt)
+var _WORKFLOW = { 'Draft':'Approved', 'Approved':'Sent', 'Sent':'Paid' };
+var _STATUS_LABELS = {
+  'Draft':    { label:'Draft (Pro-Forma)', color:'var(--g500)',    desc:'Not a VAT document' },
+  'Approved': { label:'Approved (Tax Invoice)', color:'var(--purple-600)', desc:'Included in VAT returns' },
+  'Sent':     { label:'Sent', color:'var(--blue-600)',  desc:'Sent to client' },
+  'Paid':     { label:'Paid', color:'var(--green-600)', desc:'Fully paid' },
+  'Partial':  { label:'Partially Paid', color:'var(--amber-500)', desc:'' },
+  'Void':     { label:'Void', color:'var(--g400)',     desc:'Reversed' },
+  'Bad Debt': { label:'Bad Debt', color:'var(--red-500)', desc:'Written off' }
+};
+async function viewInvoice(invoiceId) {
+  _pdfInvoiceId = invoiceId;
+  var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId === invoiceId; });
+  if (!inv) { toast('Invoice not found', 'error'); return; }
+  _renderInvoiceModal(inv);
+  // Load attachments in background after modal opens
+  setTimeout(function(){ loadInvoiceAttachments(invoiceId); }, 100);
+}
+function _renderInvoiceModal(inv) {
+  var invoiceId = inv.invoiceId;
+  var cw        = canWrite();
+  var status    = inv.status || 'Draft';
+  var isVoid    = status === 'Void' || status === 'Voided';
+  var isBadDebt = status === 'Bad Debt';
+  var isDraft   = status === 'Draft';
+  var isActive  = !isVoid && !isBadDebt;
+  var amtPaid   = (parseFloat(inv.total)||0) - (parseFloat(inv.amountDue)||0);
+  var statusInfo= _STATUS_LABELS[status] || { label:status, color:'var(--g500)', desc:'' };
+  // Workflow bar
+  var workflowHtml = _invoiceWorkflowBar(status);
+  // Action buttons based on current status
+  var actions = '';
+  if (cw && isActive) {
+    if (isDraft) {
+      actions += '<button class="btn btn-primary btn-sm" onclick="approveInvoice(\''+invoiceId+'\')">✓ Approve</button> ';
+      actions += '<button class="btn btn-ghost btn-sm" onclick="closeViInv();openEditInvoiceModal(\''+invoiceId+'\')">✏️ Edit</button> ';
+      actions += '<button class="btn btn-danger btn-sm" onclick="confirmDeleteInvoice(\''+invoiceId+'\')">🗑 Delete</button> ';
+    }
+    if (status === 'Approved') {
+      actions += '<button class="btn btn-primary btn-sm" onclick="doMarkSent(\''+invoiceId+'\')">📤 Mark Sent</button> ';
+    }
+    if (status === 'Approved' || status === 'Sent' || status === 'Partial') {
+      actions += '<button class="btn btn-success btn-sm" onclick="closeViInv();openRecordPaymentModal(\''+invoiceId+'\')">💳 Record Payment</button> ';
+    }
+    if (status === 'Approved' || status === 'Sent' || status === 'Partial') {
+      actions += '<button class="btn btn-secondary btn-sm" onclick="closeViInv();openCreateCreditNoteModal(\''+invoiceId+'\')">Credit Note</button> ';
+    }
+    if (!isDraft) {
+      actions += '<button class="btn btn-secondary btn-sm" onclick="openVoidInvoiceModal(\''+invoiceId+'\')">Void</button> ';
+    }
+    if (status === 'Sent' || status === 'Partial' || status === 'Overdue') {
+      actions += '<button class="btn btn-danger btn-sm" onclick="openWriteOffModal(\''+invoiceId+'\')">Bad Debt</button>';
+    }
+  }
+  openModal('vi-inv', 'Invoice ' + (inv.invoiceNumber||''),
+    // Status + workflow
+    workflowHtml +
+    // Stats
+    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Client</div><div style="font-weight:600;font-size:13px">'+(inv.clientName||'—')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Issue Date</div><div style="font-weight:600">'+fmtDate(inv.issueDate)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Due Date</div><div style="font-weight:600;color:var(--red-500)">'+fmtDate(inv.dueDate)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Status</div><div style="font-weight:700;color:'+statusInfo.color+';margin-top:2px;font-size:12px">'+statusInfo.label+'</div>'+(statusInfo.desc?'<div style="font-size:10px;color:var(--g400)">'+statusInfo.desc+'</div>':'')+'</div>' +
+    '</div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Total' +
+        (inv.currency&&inv.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')
+          ? '<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:8px;margin-left:4px">'+inv.currency+'</span>' : '') +
+        '</div><div class="stat-value" style="font-size:18px">'+fmt(inv.total)+'</div>' +
+        (inv.currency&&inv.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')
+          ? '<div style="font-size:10px;color:var(--g400)">Rate: '+parseFloat(inv.exchangeRate||1).toFixed(5)+' · Base: '+fmt(inv.baseTotal||inv.total)+'</div>' : '') +
+        '</div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+fmt(inv.amountDue)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+fmt(amtPaid)+'</div></div>' +
+    '</div>' +
+    // PDF / Email
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--g100);border-bottom:1px solid var(--g100);margin-bottom:12px">' +
+      '<button class="btn btn-secondary btn-sm" id="pdf-btn" onclick="pdfCurrentInv()">📄 Download PDF</button>' +
+      '<button class="btn btn-secondary btn-sm" id="email-btn" onclick="emailCurrentInv()">✉️ Send by Email</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="openClientStatementModal(\''+inv.clientId+'\',\''+inv.clientName+'\')">Statement</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="openWhatsAppModal(\''+inv.invoiceId+'\')">WhatsApp</button>' +
+      '<span style="flex:1"></span>' +
+      '<span style="font-size:11px;color:var(--g400);align-self:center">'+(isDraft?'Pro-Forma — not a VAT document':'Tax Invoice — included in VAT')+'</span>' +
+    '</div>' +
+    // Workflow actions
+    (actions ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' + actions + '</div>' : '') +
+    // Attachments section
+    '<div><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">📎 Internal Attachments</div>' +
+    '<div id="inv-attachments"><div class="loader" style="height:60px"><div class="spin"></div></div></div>' +
+    (cw && isActive ?
+      '<div style="margin-top:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">+ Attach File' +
+        '<input type="file" style="display:none" onchange="attachToInvoice(this,\''+invoiceId+'\')" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></label>' +
+      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PDF, Office, Images · up to 5MB</span></div>' : '') +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeViInv()">Close</button>',
+    'modal-xl'
+  );
+}
+function _invoiceWorkflowBar(status) {
+  var steps = ['Draft','Approved','Sent','Paid'];
+  var current = steps.indexOf(status);
+  if (status === 'Void' || status === 'Bad Debt' || status === 'Partial') current = -1;
+  var html = '<div style="display:flex;align-items:center;gap:0;margin-bottom:16px;background:var(--g50);border-radius:var(--r8);padding:10px 14px;overflow:hidden">';
+  steps.forEach(function(s, i) {
+    var isActive  = i === current;
+    var isDone    = i < current;
+    var isVoidSt  = status==='Void'||status==='Bad Debt';
+    var col = isDone ? 'var(--green-600)' : (isActive ? 'var(--blue-600)' : 'var(--g300)');
+    html += '<div style="display:flex;align-items:center;flex:1;min-width:0">' +
+      '<div style="display:flex;flex-direction:column;align-items:center;flex:1">' +
+        '<div style="width:24px;height:24px;border-radius:50%;background:'+(isDone?'var(--green-600)':(isActive?'var(--blue-600)':'var(--g200)'))+ ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:'+(isDone||isActive?'#fff':'var(--g400)')+'">'+
+          (isDone ? '✓' : (i+1)) +
+        '</div>' +
+        '<div style="font-size:10px;font-weight:'+(isActive?'700':'500')+';color:'+col+';margin-top:4px;white-space:nowrap">' +
+          (s==='Draft'?'Draft (Pro-Forma)':s==='Approved'?'Approved (Tax Invoice)':s) +
+        '</div>' +
+      '</div>' +
+      (i < steps.length-1 ? '<div style="flex:1;height:2px;background:'+(i<current?'var(--green-600)':'var(--g200)')+';margin:0 4px;min-width:20px"></div>' : '') +
+    '</div>';
+  });
+  if (status==='Void')     html += '<div style="margin-left:8px;color:var(--g400);font-size:12px;font-weight:600">⊘ VOID</div>';
+  if (status==='Bad Debt') html += '<div style="margin-left:8px;color:var(--red-500);font-size:12px;font-weight:600">⊘ BAD DEBT</div>';
+  return html + '</div>';
+}
+// Workflow actions
+async function approveInvoice(invoiceId) {
+  var btn = document.querySelector('#vi-inv .btn-primary');
+  if (btn) { btn.disabled=true; btn.textContent='Approving...'; }
+  var r = await api('approveInvoice', { invoiceId:invoiceId });
+  if (r && r.success) {
+    toast('Invoice approved — now a Tax Invoice', 'success');
+    App.data.invoices = App.data.invoices.map(function(i) {
+      return i.invoiceId===invoiceId ? Object.assign({},i,{status:'Approved'}) : i;
+    });
+    showInvoices();
+    var inv = App.data.invoices.find(function(i){ return i.invoiceId===invoiceId; });
+    if (inv) _renderInvoiceModal(inv);
+    else closeViInv();
+  } else {
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+    if (btn) { btn.disabled=false; btn.textContent='✓ Approve'; }
+  }
+}
+async function doMarkSent(invoiceId) {
+  var r = await api('markInvoiceSent', { invoiceId:invoiceId });
+  if (r && r.success) {
+    toast('Invoice marked as sent', 'success');
+    App.data.invoices = App.data.invoices.map(function(i) {
+      return i.invoiceId===invoiceId ? Object.assign({},i,{status:'Sent'}) : i;
+    });
+    showInvoices();
+    var inv = App.data.invoices.find(function(i){ return i.invoiceId===invoiceId; });
+    if (inv) _renderInvoiceModal(inv);
+  } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+}
+// Attachments
+async function loadInvoiceAttachments(invoiceId) {
+  var el = document.getElementById('inv-attachments'); if (!el) return;
+  var r = await api('getInvoiceFiles', { invoiceId:invoiceId });
+  if (!r || !r.success) {
+    el.innerHTML = '<div style="color:var(--g400);font-size:12px">Could not load attachments</div>';
+    return;
+  }
+  var files = r.files || [];
+  if (!files.length) {
+    el.innerHTML = '<div style="color:var(--g400);font-size:12px;padding:6px 0">No attachments</div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:6px">' +
+    files.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--g50);border-radius:var(--r8);border:1px solid var(--g200)">' +
+        '<span style="font-size:16px">'+_fileIcon(f.fileType)+'</span>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.fileName+'</div>' +
+          '<div style="font-size:10px;color:var(--g400)">'+f.fileSize+' · '+f.uploadedBy+' · '+fmtDate(f.uploadDate)+(f.description?' · '+f.description:'')+'</div>' +
+        '</div>' +
+        '<a href="'+f.dataUri+'" download="'+f.fileName+'" class="btn btn-ghost btn-xs">⬇</a>' +
+        '<button class="btn btn-ghost btn-xs" onclick="deleteAttachment(\''+f.fileId+'\',\''+invoiceId+'\')" style="color:var(--red-400)">✕</button>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+function _fileIcon(type) {
+  if (!type) return '📎';
+  if (type.indexOf('pdf') >= 0)   return '📄';
+  if (type.indexOf('image') >= 0) return '🖼';
+  if (type.indexOf('word') >= 0 || type.indexOf('document') >= 0) return '📝';
+  if (type.indexOf('sheet') >= 0 || type.indexOf('excel') >= 0)   return '📊';
+  return '📎';
+}
+async function attachToInvoice(input, invoiceId) {
+  var file = input.files[0]; if (!file) return;
+  if (file.size > 5242880) { toast('File too large — max 5MB', 'warning'); return; }
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    var dataUrl  = e.target.result;
+    var base64   = dataUrl.split(',')[1];
+    var desc     = file.name;
+    toast('Uploading '+file.name+'...', 'info', 2000);
+    var r = await api('uploadInvoiceFile', {
+      invoiceId:   invoiceId,
+      base64Data:  base64,
+      fileName:    file.name,
+      fileType:    file.type,
+      description: desc
+    });
+    if (r && r.success) {
+      toast(file.name + ' attached', 'success');
+      loadInvoiceAttachments(invoiceId);
+    } else {
+      toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+async function deleteAttachment(fileId, invoiceId) {
+  var r = await api('deleteInvoiceFile', { fileId:fileId });
+  if (r && r.success) {
+    toast('Attachment removed', 'success');
+    loadInvoiceAttachments(invoiceId);
+  } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+}
+async function downloadPDF(invoiceId) {
+  var btn = document.getElementById('pdf-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Generating...'; }
+  var r = await api('generateInvoicePDF', { invoiceId:invoiceId });
+  if (r && r.success) {
+    window.open(r.pdfUrl, '_blank');
+    toast('PDF opened in new tab', 'success', 3500);
+  } else {
+    toast('PDF error: '+(r?r.message||r.error:'unknown'), 'error');
+  }
+  if (btn) { btn.disabled=false; btn.textContent='📄 Download PDF'; }
+}
+function closeInvEmail() { closeModal('inv-email'); }
+var _sendEmailInvId = null;
+
+async function sendEmail(invoiceId) {
+  var inv    = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  var s      = App.settings||{};
+  var client = inv ? (App.data.clients||[]).find(function(c){ return c.clientId===inv.clientId; }) : null;
+  var toEmail = (inv&&inv.clientEmail) || (client&&client.email) || '';
+  var userEmail = (App.user&&App.user.email) || '';
+  _sendEmailInvId = invoiceId;
+
+  // Build template variables for preview
+  var paymentDetails = '';
+  if (s.bankName) {
+    paymentDetails = 'Bank: '+(s.bankName||'')+'\nAccount Name: '+(s.accountName||'')+'\nSort Code: '+(s.sortCode||'')+'\nAccount Number: '+(s.accountNumber||'');
+  }
+  function renderTpl(tpl) {
+    return (tpl||'')
+      .replace(/\{\{invoiceNumber\}\}/g, (inv&&inv.invoiceNumber)||'')
+      .replace(/\{\{clientName\}\}/g,    (inv&&inv.clientName)||(client&&client.clientName)||'')
+      .replace(/\{\{total\}\}/g,         inv?'£'+(parseFloat(inv.total)||0).toFixed(2):'')
+      .replace(/\{\{dueDate\}\}/g,       inv?fmtDate(inv.dueDate):'')
+      .replace(/\{\{amountDue\}\}/g,     inv?'£'+(parseFloat(inv.amountDue)||0).toFixed(2):'')
+      .replace(/\{\{companyName\}\}/g,   s.companyName||'')
+      .replace(/\{\{paymentDetails\}\}/g,paymentDetails);
+  }
+
+  var defaultSubject = 'Invoice {{invoiceNumber}} from {{companyName}}';
+  var defaultBody    = 'Dear {{clientName}},\n\nPlease find attached invoice {{invoiceNumber}} for {{total}}, due on {{dueDate}}.\n\n'+(paymentDetails?'Payment Details\n'+paymentDetails+'\n\n':'')+'If you have any questions, please do not hesitate to get in touch.\n\nKind regards,\n{{companyName}}';
+  var subject = renderTpl(s.emailSubject||defaultSubject);
+  var body    = renderTpl(s.emailBody||defaultBody);
+
+  openModal('inv-email','Send Invoice by Email',
+    '<div class="form-grid-2" style="margin-bottom:12px">' +
+      '<div class="form-group"><label class="form-label">To *</label>' +
+        '<input type="email" class="form-input" id="email-to" value="'+toEmail+'" placeholder="client@example.com"></div>' +
+      '<div class="form-group"><label class="form-label">CC (optional)</label>' +
+        '<input type="email" class="form-input" id="email-cc" value="'+userEmail+'" placeholder="yourname@gmail.com"></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Subject</label>' +
+      '<input type="text" class="form-input" id="email-subj" value="'+subject.replace(/"/g,'&quot;')+'"></div>' +
+    '<div class="form-group"><label class="form-label">Message</label>' +
+      '<textarea class="form-textarea" id="email-body" rows="9" style="font-size:12px;font-family:var(--mono)">'+body+'</textarea></div>' +
+    '<div style="font-size:11px;color:var(--g400);margin-top:4px">📎 Invoice PDF will be attached automatically · Sent from your Google account</div>',
+    '<button class="btn btn-secondary" onclick="closeInvEmail()">Cancel</button>' +
+    '<button class="btn btn-primary" id="send-btn" onclick="_doSendEmailCurrent()">📤 Send Invoice</button>',
+    'modal-lg'
+  );
+}
+
+async function _doSendEmailCurrent() {
+  var invoiceId = _sendEmailInvId;
+  var to      = (document.getElementById('email-to')||{}).value||'';
+  var cc      = (document.getElementById('email-cc')||{}).value||'';
+  var subject = (document.getElementById('email-subj')||{}).value||'';
+  var body    = (document.getElementById('email-body')||{}).value||'';
+  if (!to.trim()) { toast('Enter recipient email address','warning'); return; }
+  var btn = document.getElementById('send-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Sending...'; }
+  var r = await api('sendInvoiceEmail', {
+    invoiceId: invoiceId,
+    overrides: { to:to, cc:cc||'', subject:subject, body:body }
+  });
+  if (r&&r.success) {
+    closeModal('inv-email');
+    toast('Invoice sent to '+to,'success');
+    App.data.invoices = App.data.invoices.map(function(i){
+      return (i.invoiceId===invoiceId&&(i.status==='Draft'||i.status==='Approved'))
+        ? Object.assign({},i,{status:'Sent'}) : i;
+    });
+    showInvoices();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='📤 Send Invoice'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+
+
+
+function _vatBox(n, desc, amount, refund, integer) {
+  var val = integer ? Math.round(amount) : parseFloat(amount)||0;
+  return '<tr><td style="font-weight:700;color:var(--blue-600);font-size:13px">'+n+'</td>' +
+    '<td>'+desc+'</td>' +
+    '<td style="text-align:right"><span class="mono '+(refund?'amt-pos':'')+'">'+
+    (integer ? '£'+Math.round(val).toLocaleString('en-GB') : fmt(val))+'</span></td></tr>';
+}
+async function saveVATDraft() {
+  var d = _vatState.calculated;
+  if (!d) { toast('Calculate first', 'warning'); return; }
+  var r = await api('saveVATReturn', {
+    period:     d.periodStart + ' to ' + d.periodEnd,
+    startDate:  d.periodStart, endDate: d.periodEnd,
+    outputVAT:  d.box1||d.outputVAT||0, inputVAT: d.box4||d.inputVAT||0,
+    netVAT:     d.box5||d.netVAT||0, notes: 'Saved from calculator'
+  });
+  if (r && r.success) {
+    _vatState.returnId = r.returnId;
+    toast('Draft saved — ID: ' + r.returnId, 'success');
+    var retsR = await api('getVATReturns');
+    if (retsR && retsR.success) _vatState.savedReturns = retsR.returns || [];
+  } else {
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+}
+}
+function _renderObligationsTab() {
+  if (!_vatState.obligations.length) {
+    return '<div class="empty" style="margin-top:20px">' +
+      '<h3>No obligations loaded</h3><p>Click "Load Obligations" to fetch from HMRC</p>' +
+      '<button class="btn btn-primary" onclick="loadObligations()">Load Obligations</button></div>';
+}
+  return _buildObligationsTable(_vatState.obligations);
+}
+function _buildObligationsTable(obs) {
+  return '<div class="tbl-wrap" style="margin-top:4px"><table class="dt"><thead><tr>' +
+    '<th>Period</th><th>Start</th><th>End</th><th>Due</th><th>Period Key</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    obs.map(function(ob) {
+      var isOpen = ob.status === 'O' || ob.status === 'Open';
+      return '<tr>' +
+      '<td class="mono">'+(ob.periodKey||'—')+'</td>' +
+      '<td>'+fmtDate(ob.start||ob.periodFrom)+'</td>' +
+      '<td>'+fmtDate(ob.end||ob.periodTo)+'</td>' +
+      '<td>'+fmtDate(ob.due||ob.dueDate)+'</td>' +
+      '<td class="mono" style="font-weight:700">'+ob.periodKey+'</td>' +
+      '<td>'+badge(isOpen?'Open':'Fulfilled')+'</td>' +
+      '<td>' + (isOpen
+      ? '<button class="btn btn-primary btn-xs" ' +
+      'data-key="'+ob.periodKey+'" ' +
+      'data-start="'+(ob.start||ob.periodFrom||'')+'" ' +
+      'data-end="'+(ob.end||ob.periodTo||'')+'" ' +
+      'onclick="usePeriodKeyFromBtn(this)">Use this period</button>'
+      : '') +
+      '</td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+async function loadObligations() {
+  var oblEl = document.getElementById('vat-obl-tab');
+  if (oblEl) oblEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
+  var now    = new Date();
+  var from   = (now.getFullYear()-1) + '-01-01';
+  var to     = (now.getFullYear()+1) + '-12-31';
+  var r = await api('getVATObligations', { fromDate:from, toDate:to });
+  if (!r || !r.success) {
+    if (oblEl) oblEl.innerHTML = '<div class="alert alert-error" style="margin:16px">'+
+      'Could not load obligations: '+(r?r.message||r.error:'unknown')+'</div>';
+    return;
+}
+  _vatState.obligations = r.obligations || [];
+  if (oblEl) oblEl.innerHTML = _buildObligationsTable(_vatState.obligations);
+}
+function usePeriodKeyFromBtn(btn) { usePeriodKey(btn.dataset.key, btn.dataset.start, btn.dataset.end); }
+function usePeriodKey(key, start, end) {
+  _vatState.periodKey = key;
+  var vsEl = document.getElementById('vs'), veEl = document.getElementById('ve');
+  if (vsEl && start) vsEl.value = start.substring(0,10);
+  if (veEl && end)   veEl.value = end.substring(0,10);
+  var calcTab = document.getElementById('vt-calc');
+  if (calcTab) switchVATTab(calcTab, 'calc');
+  toast('Period key '+key+' selected — calculate and then submit', 'info', 3000);
+}
+function openSubmitModal() {
+  var d = _vatState.calculated;
+  if (!d) { toast('Calculate the return first', 'warning'); return; }
+  openModal('vat-submit', 'Submit VAT Return to HMRC',
+    '<div class="alert alert-warning" style="margin-bottom:14px">' +
+      '<p>You are about to submit the VAT return for <strong>'+(d.periodStart)+' to '+(d.periodEnd)+'</strong> to HMRC.</p>' +
+      '<p style="margin-top:6px">Period key: <strong class="mono">'+(_vatState.periodKey||'—')+'</strong></p>' +
+    '</div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Output VAT (Box 1)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box1||d.outputVAT||0)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Input VAT (Box 4)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box4||d.inputVAT||0)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Net VAT Due</div><div style="font-weight:700;font-size:16px;color:var(--red-500)">'+fmt(Math.abs(d.box5||d.netVAT||0))+'</div></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Final check: type CONFIRM to proceed</label>' +
+      '<input type="text" class="form-input" id="submit-confirm" placeholder="Type CONFIRM"></div>',
+    '<button class="btn btn-secondary" onclick="closeVatSubmit()">Cancel</button>' +
+    '<button class="btn btn-danger" id="vat-sub-btn" onclick="doSubmitVAT()">Submit to HMRC</button>',
+    'modal-md'
+  );
+}
+function closeVatSubmit() { closeModal('vat-submit'); }
+function closeHMRCConnect() { closeModal('hmrc-connect'); }
+async function doSubmitVAT() {
+  var conf = (document.getElementById('submit-confirm')||{}).value||'';
+  if (conf.toUpperCase() !== 'CONFIRM') { toast('Type CONFIRM to proceed', 'warning'); return; }
+  var btn = document.getElementById('vat-sub-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Submitting...'; }
+  var d = _vatState.calculated;
+  var r = await api('submitVATReturn', {
+    periodKey: _vatState.periodKey,
+    returnId:  _vatState.returnId,
+    box1: d.box1||d.outputVAT||0, box2: d.box2||0,
+    box3: d.box3||(d.outputVAT||0)+(d.box2||0),
+    box4: d.box4||d.inputVAT||0,
+    box5: Math.abs(d.box5||d.netVAT||0),
+    box6: d.box6||d.totalSales||0, box7: d.box7||d.totalPurchases||0,
+    box8: d.box8||0, box9: d.box9||0
+  });
+  if (r && r.success) {
+    closeModal('vat-submit');
+    toast('VAT return submitted! Form bundle: ' + (r.formBundleNumber||''), 'success', 6000);
+    var retsR = await api('getVATReturns');
+    if (retsR && retsR.success) _vatState.savedReturns = retsR.returns || [];
+    _vatState.calculated = null;
+    _vatState.returnId   = null;
+    _vatState.periodKey  = null;
+    showVAT();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Submit to HMRC'; }
+    toast('Submission error: '+(r?r.message||r.error:'unknown'), 'error', 8000);
+}
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SA103 / SELF ASSESSMENT
+// ═══════════════════════════════════════════════════════════════════════════
+var _sa103State = { taxYear:null, data:null, assets:[] };
+function showSA103() {
+  var now = new Date();
+  var tyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear()-1;
+  var tyEnd   = (tyStart+1).toString().slice(2);
+  var def     = tyStart+'-'+tyEnd;
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">SA103 — Self Assessment</div>' +
+    '<div class="page-sub">Self-employment income, expenses & tax estimate</div></div>' +
+    '<div class="page-actions">' +
+      '<select class="form-select" id="sa-year" style="width:140px">' +
+        ['2024-25','2025-26','2026-27'].map(function(y){ return '<option value="'+y+'"'+(y===def?' selected':'')+'>'+y+'</option>'; }).join('') +
+      '</select>' +
+      '<button class="btn btn-primary" onclick="loadSA103()">Calculate</button>' +
+    '</div></div>' +
+    '<div id="sa-content"><div class="empty" style="padding-top:40px">' +
+      '<h3>Select a tax year and click Calculate</h3>' +
+      '<p>Pulls income and expenses directly from your books</p>' +
+    '</div></div>'
+  );
+}
+async function loadSA103() {
+  var yr = (document.getElementById('sa-year')||{}).value||'';
+  if (!yr) { toast('Select a tax year','warning'); return; }
+  _sa103State.taxYear = yr;
+  var el = document.getElementById('sa-content');
+  if (el) el.innerHTML = '<div class="loader"><div class="spin"></div><span>Calculating...</span></div>';
+  var r = await api('getSA103Data', { taxYear:yr });
+  if (!r||!r.success) {
+    if (el) el.innerHTML = '<div class="alert alert-error">Could not calculate: '+(r?r.message||r.error:'unknown')+'</div>';
+    return;
+  }
+  _sa103State.data   = r;
+  _sa103State.assets = r.assets||[];
+  renderSA103(r);
+}
+function _saCard(label, value, color) {
+  return '<div class="stat-card"><div class="stat-label">'+label+'</div><div class="stat-value" style="font-size:20px;color:'+color+'">'+value+'</div></div>';
+}
+async function getHMRCAuthURL() {
+  var r = await api('getHMRCAuthUrl');
+  if (r&&r.success&&r.authUrl) {
+    window.open(r.authUrl,'_blank','width=600,height=700');
+    toast('HMRC auth page opened — sign in and copy the code from the redirect URL','info',6000);
+  } else toast('Error: '+(r?r.message:'Could not get auth URL')+' — check HMRC credentials in Settings','error');
+}
+async function exchangeCode() {
+  var code = (document.getElementById('hmrc-code')||{}).value||'';
+  if (!code.trim()) { toast('Paste the authorisation code first','warning'); return; }
+  var btn = document.getElementById('hmrc-exchange-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Connecting...'; }
+  var r = await api('exchangeHMRCCode', { code:code.trim() });
+  if (r&&r.success) {
+    closeModal('hmrc-connect');
+    toast('Connected to HMRC MTD! '+r.message,'success',5000);
+    showVAT();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Exchange Code'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+
+
+// ── Invoice Edit / Delete / Revert (added this session) ──────────────────────
+var _editInvId = null, _editInvLines = [];
+function closeInvEdit()   { closeModal('inv-edit'); }
+function closeInvRevert() { closeModal('inv-revert'); }
+function closeInvDel()    { closeModal('inv-del'); }
+
+async function openEditInvoiceModal(invoiceId) {
+  _editInvId = invoiceId;
+  var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  if (!inv) { toast('Invoice not found','error'); return; }
+  var status   = inv.status||'Draft';
+  var isDraft  = status==='Draft';
+  var canDates = status==='Draft'||status==='Approved'||status==='Sent';
+  var canRef   = status==='Draft'||status==='Approved';
+  var clients  = App.data.clients||[];
+  var cOpts    = clients.map(function(c){ return '<option value="'+c.clientId+'"'+(c.clientId===inv.clientId?' selected':'')+'>'+c.clientName+'</option>'; }).join('');
+  var issVal   = inv.issueDate ? String(inv.issueDate).substring(0,10) : '';
+  var dueVal   = inv.dueDate   ? String(inv.dueDate).substring(0,10)   : '';
+  var noteStr  = {Draft:'Draft — all fields editable',Approved:'Approved — due date, reference and notes only',Sent:'Sent — due date and notes only'}[status]||status;
+  if (isDraft) {
+    var lr = await api('getInvoiceLines', { invoiceId:invoiceId });
+    _editInvLines = Array.isArray(lr) ? lr.map(function(l){ return { description:l.description, qty:l.quantity, unitPrice:l.unitPrice, vatRate:l.vatRate }; }) : [];
+    if (!_editInvLines.length) _editInvLines = [{ description:'', qty:1, unitPrice:0, vatRate:20 }];
+  }
+  var lineSection = isDraft ?
+    '<div style="margin:12px 0 6px;font-size:12px;font-weight:600;color:var(--g700)">Line Items</div>'+
+    '<table style="width:100%;border-collapse:collapse"><thead><tr>'+
+      '<th style="text-align:left;padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200)">Description</th>'+
+      '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:55px;text-align:right">Qty</th>'+
+      '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:100px;text-align:right">Price</th>'+
+      '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:110px;text-align:center">VAT</th>'+
+      '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:80px;text-align:right">Total</th>'+
+      '<th style="width:24px;border-bottom:1px solid var(--g200)"></th>'+
+    '</tr></thead><tbody id="ei-lines"></tbody></table>'+
+    '<button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditInvLine()">+ Add Line</button>'+
+    '<div style="text-align:right;margin-top:8px;padding-top:8px;border-top:1px solid var(--g200)">'+
+      'Subtotal: <strong class="mono" id="ei-sub">£0.00</strong>&emsp;VAT: <strong class="mono" id="ei-vat">£0.00</strong>&emsp;'+
+      'Total: <strong class="mono" id="ei-total" style="font-size:15px">£0.00</strong></div>' : '';
+  openModal('inv-edit','Edit Invoice — '+(inv.invoiceNumber||''),
+    '<div class="alert alert-info" style="margin-bottom:12px"><p>'+noteStr+'</p></div>'+
+    '<div class="form-grid-2">'+
+      '<div class="form-group"><label class="form-label">Client</label><select class="form-select" id="ei-client"'+(isDraft?'':' disabled style="background:var(--g50)"')+'>'+cOpts+'</select></div>'+
+      '<div class="form-group"><label class="form-label">Reference</label><input type="text" class="form-input" id="ei-ref" value="'+(inv.reference||'')+'"'+(canRef?'':' readonly style="background:var(--g50)"')+'></div>'+
+      '<div class="form-group"><label class="form-label">Issue Date</label><input type="date" class="form-input" id="ei-issue" value="'+issVal+'"'+(isDraft?'':' readonly style="background:var(--g50)"')+'></div>'+
+      '<div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-input" id="ei-due" value="'+dueVal+'"'+(canDates?'':' readonly style="background:var(--g50)"')+'></div>'+
+    '</div>'+
+    lineSection+
+    '<div class="form-group" style="margin-top:12px"><label class="form-label">Internal Notes</label><textarea class="form-textarea" id="ei-notes" rows="2">'+(inv.notes||'')+'</textarea></div>',
+    '<button class="btn btn-secondary" onclick="closeInvEdit()">Cancel</button>'+
+    '<button class="btn btn-primary" id="ei-save" onclick="saveEditInvoice(null)">Save Changes</button>',
+    isDraft ? 'modal-lg' : 'modal-md'
+  );
+  if (isDraft) renderEditInvLines();
+}
+
+function _editInvVatSel(i, val) {
+  var opts=[['20','20% Std'],['5','5% Red'],['0','0% Zero'],['exempt','Exempt']];
+  var v = val!==undefined?String(val):'20';
+  return '<select class="form-select" style="padding:4px 6px;font-size:12px" onchange="_editInvLines['+i+'].vatRate=parseFloat(this.value)||0;renderEditInvLines()">'+
+    opts.map(function(o){ return '<option value="'+o[0]+'"'+(v===o[0]||v===String(parseFloat(o[0]))?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>';
+}
+function renderEditInvLines() {
+  var tb = document.getElementById('ei-lines'); if (!tb) return;
+  tb.innerHTML = _editInvLines.map(function(l,i){
+    var tot=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0)*(1+(parseFloat(l.vatRate)||0)/100);
+    return '<tr>'+
+      '<td style="padding:3px"><input class="form-input" style="padding:5px 7px;font-size:12px" value="'+(l.description||'')+'" placeholder="Description" oninput="_editInvLines['+i+'].description=this.value"></td>'+
+      '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0.01" step="0.01" value="'+(l.qty||1)+'" onchange="_editInvLines['+i+'].qty=parseFloat(this.value)||1;_updateEditLineTot('+i+')" oninput="if(this.value.length>0&&!isNaN(this.value))_editInvLines['+i+'].qty=parseFloat(this.value)||1"></td>'+
+      '<td style="padding:3px"><input class="form-input" id="ei-price-'+i+'" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" onchange="_editInvLines['+i+'].unitPrice=parseFloat(this.value)||0;_updateEditLineTot('+i+')" oninput="if(this.value.length>0&&!isNaN(this.value))_editInvLines['+i+'].unitPrice=parseFloat(this.value)||0"></td>'+
+      '<td style="padding:3px">'+_editInvVatSel(i,l.vatRate)+'</td>'+
+      '<td style="padding:3px;text-align:right"><span class="mono" id="ei-linetot-'+i+'" style="font-size:12px">'+fmt(tot)+'</span></td>'+
+      '<td style="padding:3px;text-align:center"><button onclick="removeEditInvLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:1px 4px">×</button></td>'+
+    '</tr>';
+  }).join('');
+  _recalcEditTotals();
+}
+function _updateEditLineTot(i) {
+  var l = _editInvLines[i];
+  var tot = (parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0)*(1+(parseFloat(l.vatRate)||0)/100);
+  var el = document.getElementById('ei-linetot-'+i);
+  if (el) el.textContent = fmt(tot);
+  _recalcEditTotals();
+}
+function _recalcEditTotals() {
+  var sub=0,vat=0;
+  _editInvLines.forEach(function(l){ var n=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
+  var s=document.getElementById('ei-sub'),v=document.getElementById('ei-vat'),t=document.getElementById('ei-total');
+  if(s) s.textContent=fmt(sub); if(v) v.textContent=fmt(vat); if(t) t.textContent=fmt(sub+vat);
+}
+function addEditInvLine()     { _editInvLines.push({description:'',qty:1,unitPrice:0,vatRate:20}); renderEditInvLines(); }
+function removeEditInvLine(i) { _editInvLines.splice(i,1); if(!_editInvLines.length) _editInvLines.push({description:'',qty:1,unitPrice:0,vatRate:20}); renderEditInvLines(); }
+
+async function saveEditInvoice(invoiceId) {
+  if (invoiceId) _editInvId = invoiceId;
+  invoiceId = _editInvId;
+  var inv    = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  var status = inv ? (inv.status||'Draft') : 'Draft';
+  var isDraft= status==='Draft';
+  var updates = {
+    invoiceId: invoiceId,
+    clientId:  isDraft ? (document.getElementById('ei-client')||{}).value : undefined,
+    issueDate: isDraft ? (document.getElementById('ei-issue') ||{}).value : undefined,
+    dueDate:   (document.getElementById('ei-due')   ||{}).value||undefined,
+    reference: (document.getElementById('ei-ref')   ||{}).value,
+    notes:     (document.getElementById('ei-notes') ||{}).value,
+    lines:     isDraft ? _editInvLines.filter(function(l){ return l.description; }) : undefined
+  };
+  var btn = document.getElementById('ei-save');
+  if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
+  var r = await api('editInvoice', updates);
+  if (r&&r.success) {
+    closeModal('inv-edit');
+    toast('Invoice updated','success');
+    var fresh = await api('getAllInvoices');
+    if (fresh&&fresh.success) App.data.invoices = fresh.invoices||[];
+    closeModal('vi-inv'); viewInvoice(invoiceId);
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Save Changes'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+var _revertInvId = null, _revertTarget = null;
+function revertInvoice(invoiceId, currentStatus) {
+  _revertInvId = invoiceId;
+  _revertTarget = currentStatus==='Sent'?'Approved':'Draft';
+  var warn = _revertTarget==='Draft'?' It will become a Pro-Forma and be excluded from VAT.':'';
+  openModal('inv-revert','Revert Invoice',
+    '<div class="alert alert-warning"><p>Revert from <strong>'+currentStatus+'</strong> to <strong>'+_revertTarget+'</strong>?'+warn+'</p></div>',
+    '<button class="btn btn-secondary" onclick="closeInvRevert()">Cancel</button>'+
+    '<button class="btn btn-warning" onclick="doRevertInvoice()">Revert to '+_revertTarget+'</button>',
+    'modal-sm'
+  );
+}
+async function doRevertInvoice() {
+  var invoiceId=_revertInvId, targetStatus=_revertTarget;
+  closeModal('inv-revert');
+  var r = await api('editInvoice', { invoiceId:invoiceId, forceStatus:targetStatus });
+  if (r&&r.success) {
+    toast('Reverted to '+targetStatus,'success');
+    App.data.invoices = App.data.invoices.map(function(i){ return i.invoiceId===invoiceId?Object.assign({},i,{status:targetStatus}):i; });
+    closeModal('vi-inv'); viewInvoice(invoiceId);
+  } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+}
+
+var _deleteInvId = null;
+function confirmDeleteInvoice(invoiceId) {
+  _deleteInvId = invoiceId;
+  var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  openModal('inv-del','Delete Invoice',
+    '<div class="alert alert-error"><p>Permanently delete <strong>'+(inv?inv.invoiceNumber:invoiceId)+'</strong>?</p>'+
+    '<p style="margin-top:6px;font-size:11px">This cannot be undone. Only Draft invoices can be deleted.</p></div>',
+    '<button class="btn btn-secondary" onclick="closeInvDel()">Cancel</button>'+
+    '<button class="btn btn-danger" onclick="doDeleteInvoice()">Delete</button>',
+    'modal-sm'
+  );
+}
+async function doDeleteInvoice() {
+  var invoiceId=_deleteInvId;
+  closeModal('inv-del');
+  var r = await api('deleteInvoice', { invoiceId:invoiceId });
+  if (r&&r.success) {
+    closeModal('vi-inv');
+    toast('Invoice deleted','success');
+    App.data.invoices = App.data.invoices.filter(function(i){ return i.invoiceId!==invoiceId; });
+    showInvoices();
+  } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+}
+
+// ── Void Invoice Modal ─────────────────────────────────────────────────────
+var _voidInvoiceId = null;
+function openVoidInvoiceModal(invoiceId) {
+  _voidInvoiceId = invoiceId;
+  var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  openModal('inv-void', 'Void Invoice',
+    '<div class="alert alert-warning" style="margin-bottom:12px">' +
+      '<p><strong>Voiding cannot be undone.</strong> The invoice will be removed from all reports and any associated accounting entries reversed.</p>' +
+    '</div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Invoice</div><div style="font-weight:700;font-size:13px;font-family:monospace">'+(inv?inv.invoiceNumber:invoiceId)+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Total</div><div style="font-weight:700;font-size:16px;color:var(--g600)">'+(inv?fmt(inv.total):'—')+'</div></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Reason for Voiding *</label>' +
+      '<input type="text" class="form-input" id="inv-void-reason" placeholder="e.g. Duplicate invoice, issued in error…">' +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'inv-void\')">Cancel</button>' +
+    '<button class="btn btn-danger" id="inv-void-btn" onclick="doVoidInvoice()">⊘ Void Invoice</button>',
+    'modal-sm'
+  );
+}
+async function doVoidInvoice() {
+  var reason = (document.getElementById('inv-void-reason')||{}).value||'';
+  if (!reason.trim()) { toast('Please enter a reason for voiding','warning'); return; }
+  var btn = document.getElementById('inv-void-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Voiding…'; }
+  var r = await api('voidInvoice', { invoiceId:_voidInvoiceId, reason:reason });
+  if (r && r.success) {
+    closeModal('inv-void');
+    closeModal('vi-inv');
+    toast('Invoice voided','success');
+    App.data.invoices = App.data.invoices.map(function(i){
+      return i.invoiceId===_voidInvoiceId ? Object.assign({},i,{status:'Void'}) : i;
+    });
+    if (App.data.voidLog && r.voidEntry) App.data.voidLog.voidedInvoices = (App.data.voidLog.voidedInvoices||[]).concat(r.voidEntry);
+    showInvoices();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='⊘ Void Invoice'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+// ── Write Off as Bad Debt Modal ────────────────────────────────────────────
+var _writeOffInvoiceId = null;
+function openWriteOffModal(invoiceId) {
+  _writeOffInvoiceId = invoiceId;
+  var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
+  var today = new Date().toISOString().split('T')[0];
+  var amtDue = inv ? parseFloat(inv.amountDue)||0 : 0;
+  var vatEl  = inv ? parseFloat(inv.vatTotal||inv.vatAmount||0) : 0;
+  openModal('inv-writeoff', 'Write Off as Bad Debt',
+    '<div class="alert alert-warning" style="margin-bottom:12px">' +
+      '<p>This invoice will be written off as uncollectable. It cannot be reversed. ' +
+      'If VAT-registered and the debt is over 6 months old, you may be eligible for <strong>VAT Bad Debt Relief</strong>.</p>' +
+    '</div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Invoice</div><div style="font-weight:700;font-size:13px;font-family:monospace">'+(inv?inv.invoiceNumber:invoiceId)+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Amount Due</div><div style="font-weight:700;font-size:16px;color:var(--red-500)">'+fmt(amtDue)+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">VAT Element</div><div style="font-weight:700;font-size:16px">'+(vatEl>0?fmt(vatEl):'—')+'</div></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Write-Off Date *</label>' +
+        '<input type="date" class="form-input" id="wo-date" value="'+today+'"></div>' +
+      '<div class="form-group"><label class="form-label">Reason *</label>' +
+        '<input type="text" class="form-input" id="wo-reason" placeholder="e.g. Client insolvent, debt unrecoverable…"></div>' +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'inv-writeoff\')">Cancel</button>' +
+    '<button class="btn btn-danger" id="wo-btn" onclick="doWriteOff()">Write Off as Bad Debt</button>',
+    'modal-md'
+  );
+}
+async function doWriteOff() {
+  var date   = (document.getElementById('wo-date')||{}).value||'';
+  var reason = (document.getElementById('wo-reason')||{}).value||'';
+  if (!date)         { toast('Select a write-off date','warning'); return; }
+  if (!reason.trim()){ toast('Enter a reason','warning'); return; }
+  var btn = document.getElementById('wo-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Writing off…'; }
+  var r = await api('writeOffInvoice', { invoiceId:_writeOffInvoiceId, writeOffDate:date, reason:reason });
+  if (r && r.success) {
+    closeModal('inv-writeoff');
+    closeModal('vi-inv');
+    toast('Invoice written off as bad debt','success');
+    App.data.invoices = App.data.invoices.map(function(i){
+      return i.invoiceId===_writeOffInvoiceId ? Object.assign({},i,{status:'Bad Debt',amountDue:0}) : i;
+    });
+    if (r.badDebt) App.data.badDebts = (App.data.badDebts||[]).concat(r.badDebt);
+    showInvoices();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Write Off as Bad Debt'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. VAT SETTINGS — dynamic show/hide
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Called from showSettings() after render to wire up VAT toggle
+function initVATToggle() {
+  var cb = document.getElementById('s_vatRegistered');
+  if (!cb) return;
+  function toggle() {
+    var show = cb.checked;
+    ['vat-fields-section'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = show ? '' : 'none';
+    });
+  }
+  cb.addEventListener('change', toggle);
+  toggle(); // run on init
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. RESOURCES PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RESOURCES PAGE — User Manual, FAQ, Reference
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIXED ASSETS PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// YEAR END CLOSE PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+var _yeState = { summary:null, checks:null, years:[] };
+
+function closeYEClose()   { closeModal('ye-close'); }
+function closeYEReopen()  { closeModal('ye-reopen'); }
+
+async function showYearEnd() {
+  showLoader();
+  var s = App.settings||{};
+  var lockedBefore = s.lockedBefore||'';
+  var fyStart      = s.financialYearStart||'';
+  var fyEnd        = s.financialYearEnd||'';
+  var fyLabel      = s.currentFinancialYear||'';
+
+  var r = await api('getFinancialYears');
+  _yeState.years = (r&&r.success) ? r.years||[] : [];
+
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">Year End Close</div>' +
+      '<div class="page-sub">Close the financial year, lock the period and post closing journals to retained earnings</div></div></div>' +
+
+    // Current year status
+    '<div class="card" style="margin-bottom:16px"><div class="card-hdr"><span class="card-ttl">📅 Current Financial Year</span></div>' +
+      '<div class="card-body">' +
+        '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">' +
+          '<div class="stat-card" style="padding:12px"><div class="stat-label">Label</div><div style="font-weight:700;font-size:18px">'+(fyLabel||'—')+'</div></div>' +
+          '<div class="stat-card" style="padding:12px"><div class="stat-label">Start</div><div style="font-weight:600">'+fmtDate(fyStart)+'</div></div>' +
+          '<div class="stat-card" style="padding:12px"><div class="stat-label">End</div><div style="font-weight:600">'+fmtDate(fyEnd)+'</div></div>' +
+          '<div class="stat-card" style="padding:12px'+(lockedBefore?';border-left:3px solid var(--amber-400)':'')+'"><div class="stat-label">Period Lock</div>' +
+            '<div style="font-weight:600;color:'+(lockedBefore?'var(--amber-500)':'var(--green-600)')+'">'+
+              (lockedBefore ? '🔒 Locked to '+fmtDate(lockedBefore) : '🔓 Open') +
+            '</div></div>' +
+        '</div>' +
+        (canWrite() ?
+          '<div style="margin-top:14px">' +
+            '<button class="btn btn-primary" onclick="openYECloseModal()">🏁 Close Financial Year</button>' +
+          '</div>' : '') +
+      '</div></div>' +
+
+    // How it works
+    '<div class="card" style="margin-bottom:16px"><div class="card-hdr"><span class="card-ttl">ℹ️ How Year End Close Works</span></div>' +
+      '<div class="card-body">' +
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">' +
+          _yeStep('1','Pre-close checks','Verifies reconciliation, VAT, POs and previous closes') +
+          _yeStep('2','P&L Summary','Calculates revenue and expenses for the year') +
+          _yeStep('3','Closing Journals','Clears income/expense accounts to Retained Earnings (3000)') +
+          _yeStep('4','Lock & Archive','Locks the period so prior entries cannot be modified') +
+        '</div>' +
+      '</div></div>' +
+
+    // Archive history
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">📚 Closed Years Archive</span></div>' +
+      (!_yeState.years.length
+        ? '<div class="empty" style="padding:24px"><h3>No closed years yet</h3><p>Use the Close Financial Year button above when your year ends.</p></div>'
+        : '<table class="dt"><thead><tr>' +
+            '<th>Year</th><th>Period</th><th>Revenue</th><th>Expenses</th><th>Net Profit</th><th>Closed On</th><th>By</th><th>Status</th><th></th>' +
+          '</tr></thead><tbody>' +
+          _yeState.years.map(function(y){
+            var profitCol = y.netProfit >= 0
+              ? '<span style="color:var(--green-600);font-weight:700">'+fmt(y.netProfit)+'</span>'
+              : '<span style="color:var(--red-500);font-weight:700">'+fmt(y.netProfit)+'</span>';
+            return '<tr>' +
+              '<td><strong>'+y.label+'</strong></td>' +
+              '<td style="font-size:11px;color:var(--g500)">'+fmtDate(y.yearStart)+' – '+fmtDate(y.yearEnd)+'</td>' +
+              '<td>'+fmt(y.totalRevenue)+'</td>' +
+              '<td>'+fmt(y.totalExpenses)+'</td>' +
+              '<td>'+profitCol+'</td>' +
+              '<td>'+fmtDate(y.closedDate)+'</td>' +
+              '<td style="font-size:11px;color:var(--g500)">'+y.closedBy+'</td>' +
+              '<td>'+badge(y.status)+'</td>' +
+              '<td>'+(App.user&&App.user.role==='Superuser'&&y.status==='Closed'?
+                '<button class="btn btn-ghost btn-xs" onclick="openYEReopenModal(\''+y.yearId+'\')">Reopen</button>':'')+
+              '</td>' +
+            '</tr>';
+          }).join('')+
+          '</tbody></table>'
+      )+'</div>'
+  );
+}
+
+function _yeStep(num, title, desc) {
+  return '<div style="text-align:center;padding:12px">' +
+    '<div style="width:32px;height:32px;border-radius:50%;background:var(--blue-600);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">'+num+'</div>' +
+    '<div style="font-size:12px;font-weight:700;color:var(--g800);margin-bottom:4px">'+title+'</div>' +
+    '<div style="font-size:11px;color:var(--g500);line-height:1.5">'+desc+'</div>' +
+  '</div>';
+}
+
+// ── Open close modal ──────────────────────────────────────────────────────────
+function openYECloseModal() {
+  var s     = App.settings||{};
+  var fyEnd = s.financialYearEnd||'';
+  var fyStart = s.financialYearStart||'';
+  openModal('ye-close','Close Financial Year',
+    '<div id="ye-step1">' +
+      '<div class="alert alert-warning" style="margin-bottom:14px">' +
+        '<p><strong>This action cannot be easily undone.</strong> Closing the year will:</p>' +
+        '<ul style="margin:8px 0 0 16px;font-size:12px"><li>Post closing journals to zero all revenue and expense accounts</li><li>Transfer net profit/loss to Retained Earnings</li><li>Lock all transactions on or before the year-end date</li><li>Advance the financial year in Settings</li></ul>' +
+      '</div>' +
+      '<div class="form-grid-2">' +
+        '<div class="form-group"><label class="form-label">Year Start</label><input type="date" class="form-input" id="ye-start" value="'+fyStart+'"></div>' +
+        '<div class="form-group"><label class="form-label">Year End Date</label><input type="date" class="form-input" id="ye-end" value="'+fyEnd+'"></div>' +
+        '<div class="form-group"><label class="form-label">Year Label (e.g. 2025/26)</label><input type="text" class="form-input" id="ye-label" placeholder="e.g. 2025/26"></div>' +
+        '<div class="form-group"><label class="form-label">Retained Earnings COA Code</label><input type="text" class="form-input" id="ye-re-code" value="3000" placeholder="3000"></div>' +
+      '</div>' +
+      '<div class="form-group"><label class="form-label">Notes (optional)</label><input type="text" class="form-input" id="ye-notes" placeholder="e.g. Audited year-end"></div>' +
+      '<div id="ye-checks-area" style="margin-top:14px"></div>',
+    '<button class="btn btn-secondary" onclick="closeYEClose()">Cancel</button>' +
+    '<button class="btn btn-secondary" id="ye-check-btn" onclick="runYEChecks()">▶ Run Pre-Close Checks</button>' +
+    '<button class="btn btn-primary" id="ye-confirm-btn" onclick="confirmYEClose()" style="display:none">🏁 Confirm Close</button>',
+    'modal-lg'
+  );
+}
+
+async function runYEChecks() {
+  var end   = (document.getElementById('ye-end')||{}).value||'';
+  var start = (document.getElementById('ye-start')||{}).value||'';
+  if (!end||!start) { toast('Enter start and end dates','warning'); return; }
+  var btn = document.getElementById('ye-check-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Checking...'; }
+  var el = document.getElementById('ye-checks-area');
+  if (el) el.innerHTML='<div class="loader" style="height:48px"><div class="spin"></div><span>Running checks...</span></div>';
+
+  var checks = await api('runPreCloseChecks',{yearEndDate:end});
+  var summary = await api('getYearEndSummary',{yearStart:start,yearEnd:end});
+  _yeState.checks  = checks;
+  _yeState.summary = summary;
+
+  if (btn) { btn.disabled=false; btn.textContent='▶ Re-run Checks'; }
+
+  var html = '';
+  if (checks&&checks.success) {
+    html += '<div style="margin-bottom:12px"><strong style="font-size:13px">Pre-Close Checklist</strong></div>';
+    html += '<div style="display:flex;flex-direction:column;gap:6px">';
+    (checks.checks||[]).forEach(function(c){
+      var icon = c.status==='pass'?'✅':c.status==='warning'?'⚠️':'❌';
+      var col  = c.status==='pass'?'var(--green-600)':c.status==='warning'?'var(--amber-500)':'var(--red-500)';
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--g50);border-radius:6px">' +
+        '<span style="font-size:16px;flex-shrink:0">'+icon+'</span>' +
+        '<div><div style="font-size:12px;font-weight:600;color:var(--g800)">'+c.label+'</div>' +
+          '<div style="font-size:11px;color:'+col+'">'+c.detail+'</div></div>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    if (summary&&summary.success) {
+      html += '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--g200)">' +
+        '<strong style="font-size:13px">Year-End P&L Summary</strong>' +
+        '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-top:8px">' +
+          '<div class="stat-card" style="padding:10px"><div class="stat-label">Total Revenue</div><div style="font-weight:700;color:var(--green-600)">'+fmt(summary.revenue)+'</div></div>' +
+          '<div class="stat-card" style="padding:10px"><div class="stat-label">Total Expenses</div><div style="font-weight:700;color:var(--red-500)">'+fmt(summary.expenses)+'</div></div>' +
+          '<div class="stat-card" style="padding:10px;border-left:3px solid '+(summary.netProfit>=0?'var(--green-600)':'var(--red-500)')+'"><div class="stat-label">Net Profit</div>' +
+            '<div style="font-weight:700;font-size:18px;color:'+(summary.netProfit>=0?'var(--green-600)':'var(--red-500)')+'">'+fmt(summary.netProfit)+'</div></div>' +
+        '</div>' +
+      '</div>';
+    }
+  } else {
+    html = '<div class="alert alert-error"><p>'+(checks?checks.message:'Error running checks')+'</p></div>';
+  }
+  if (el) el.innerHTML = html;
+
+  var confirmBtn = document.getElementById('ye-confirm-btn');
+  if (confirmBtn) {
+    confirmBtn.style.display = (checks&&checks.canClose) ? 'inline-flex' : 'none';
+  }
+  if (!checks||!checks.canClose) {
+    toast(checks&&checks.errors ? checks.errors+' error(s) must be resolved before closing' : 'Checks failed','error',4000);
+  } else if (checks.warnings>0) {
+    toast(checks.warnings+' warning(s) — review before confirming close','warning',4000);
+  } else {
+    toast('All checks passed — ready to close','success',3000);
+  }
+}
+
+async function confirmYEClose() {
+  var start  = (document.getElementById('ye-start')||{}).value||'';
+  var end    = (document.getElementById('ye-end')||{}).value||'';
+  var label  = (document.getElementById('ye-label')||{}).value||'';
+  var reCode = (document.getElementById('ye-re-code')||{}).value||'3000';
+  var notes  = (document.getElementById('ye-notes')||{}).value||'';
+  if (!start||!end) { toast('Dates are required','warning'); return; }
+  var btn = document.getElementById('ye-confirm-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Closing year...'; }
+  var r = await api('closeFinancialYear',{yearStart:start,yearEnd:end,label:label,retainedEarningsCode:reCode,notes:notes});
+  if (r&&r.success) {
+    closeYEClose();
+    // Update local settings
+    App.settings.lockedBefore    = r.lockedBefore;
+    App.settings.financialYearStart = r.newYearStart||start;
+    toast('Financial year '+r.label+' closed · Net profit: '+fmt(r.netProfit),'success',6000);
+    showYearEnd();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='🏁 Confirm Close'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+// ── Reopen modal (Superuser only) ─────────────────────────────────────────────
+function openYEReopenModal(yearId) {
+  openModal('ye-reopen','Reopen Financial Year',
+    '<div class="alert alert-warning" style="margin-bottom:12px">' +
+      '<p><strong>Emergency use only.</strong> Reopening removes the period lock and marks the year as Reopened. You will need to re-run closing journals manually.</p></div>' +
+    '<div class="form-group"><label class="form-label">Reason *</label><input type="text" class="form-input" id="ye-reopen-reason" placeholder="Reason for reopening"></div>',
+    '<button class="btn btn-secondary" onclick="closeYEReopen()">Cancel</button>' +
+    '<button class="btn btn-danger" id="ye-reopen-btn" data-yid="'+yearId+'" onclick="doYEReopen(this)">Reopen Year</button>',
+    'modal-sm'
+  );
+}
+async function doYEReopen(btn) {
+  var yearId = btn.getAttribute('data-yid');
+  var reason = (document.getElementById('ye-reopen-reason')||{}).value||'';
+  if (!reason.trim()) { toast('Enter a reason','warning'); return; }
+  btn.disabled=true; btn.textContent='Reopening...';
+  var r = await api('reopenFinancialYear',{yearId:yearId,reason:reason});
+  if (r&&r.success) {
+    closeYEReopen();
+    toast('Year reopened — period lock removed','success');
+    App.settings.lockedBefore = '';
+    showYearEnd();
+  } else {
+    btn.disabled=false; btn.textContent='Reopen Year';
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+
+var _faState = { assets:[], filter:'all', selectedId:null };
+var _faCategories = [
+  'Computer Equipment','Office Equipment','Furniture & Fittings',
+  'Motor Vehicles','Plant & Machinery','Buildings',
+  'Leasehold Improvements','Other'
+];
+var _faDefaultRates = {
+  'Computer Equipment':25,'Office Equipment':20,'Furniture & Fittings':15,
+  'Motor Vehicles':25,'Plant & Machinery':18,'Buildings':2,
+  'Leasehold Improvements':10,'Other':20
+};
+var _faDefaultMethods = {
+  'Computer Equipment':'reducing','Office Equipment':'reducing',
+  'Furniture & Fittings':'straight','Motor Vehicles':'reducing',
+  'Plant & Machinery':'reducing','Buildings':'straight',
+  'Leasehold Improvements':'straight','Other':'reducing'
+};
+
+function closeFACreate()    { closeModal('fa-create'); }
+function closeFAEdit()      { closeModal('fa-edit');   }
+function closeFADispose()   { closeModal('fa-dispose');}
+function closeFADepRun()    { closeModal('fa-deprun'); }
+function closeFASchedule()  { closeModal('fa-sched');  }
+
+async function showFixedAssets(params) {
+  if (params && params.filter) _faState.filter = params.filter;
+  showLoader();
+  var r = await api('getAllFixedAssets');
+  if (!r||!r.success) { showContent('<div class="empty"><h3>Could not load assets</h3><button class="btn btn-primary" onclick="showFixedAssets()">Retry</button></div>'); return; }
+  _faState.assets = r.assets||[];
+  _renderFA();
+}
+
+function _renderFA() {
+  var all    = _faState.assets;
+  var filter = _faState.filter||'all';
+  var list   = filter==='all' ? all : all.filter(function(a){ return a.status===filter; });
+  var cw     = canWrite();
+
+  var totalCost  = all.filter(function(a){return a.status==='Active';}).reduce(function(s,a){return s+a.purchaseCost;},0);
+  var totalAccum = all.filter(function(a){return a.status==='Active';}).reduce(function(s,a){return s+a.accumulatedDepreciation;},0);
+  var totalNBV   = all.filter(function(a){return a.status==='Active';}).reduce(function(s,a){return s+a.netBookValue;},0);
+
+  var pills = ['all','Active','Disposed'].map(function(f){
+    var cnt = f==='all' ? all.length : all.filter(function(a){return a.status===f;}).length;
+    return '<button class="pill'+(_faState.filter===f?' active':'')+'" onclick="_faFilter(\''+f+'\')">'+f+' ('+cnt+')</button>';
+  }).join('');
+
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">Fixed Assets</div>' +
+      '<div class="page-sub">'+all.filter(function(a){return a.status==='Active';}).length+' active assets · NBV '+fmt(totalNBV)+'</div></div>' +
+      '<div class="page-actions">' +
+        (cw?'<button class="btn btn-secondary btn-sm" onclick="openFADepRunModal()">📅 Run Depreciation</button> ':'') +
+        (cw?'<button class="btn btn-primary" onclick="openFACreateModal()">+ Add Asset</button>':'') +
+      '</div></div>' +
+
+    // Summary KPIs
+    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">' +
+      '<div class="stat-card"><div class="stat-label">Total Cost</div><div class="stat-value">'+fmt(totalCost)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Accumulated Depreciation</div><div class="stat-value" style="color:var(--red-500)">'+fmt(totalAccum)+'</div></div>' +
+      '<div class="stat-card" style="border-left:3px solid var(--blue-600)"><div class="stat-label">Net Book Value</div><div class="stat-value" style="color:var(--blue-600)">'+fmt(totalNBV)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Active Assets</div><div class="stat-value">'+all.filter(function(a){return a.status==='Active';}).length+'</div></div>' +
+    '</div>' +
+
+    '<div class="filter-bar">'+pills+'</div>' +
+
+    '<div class="tbl-wrap">' +
+    (!list.length ?
+      '<div class="empty"><h3>No '+filter+' assets</h3>' +
+        (cw&&filter==='all'?'<button class="btn btn-primary" onclick="openFACreateModal()">Add First Asset</button>':'')+
+      '</div>' :
+      '<table class="dt"><thead><tr>' +
+        '<th>Asset</th><th>Category</th><th>Purchase Date</th><th>Cost</th>' +
+        '<th>Accum. Depn</th><th>Net Book Value</th><th>Method</th><th>Status</th><th></th>' +
+      '</tr></thead><tbody>' +
+      list.map(function(a){
+        var nbvPct = a.purchaseCost>0 ? Math.round(100*a.netBookValue/a.purchaseCost) : 0;
+        return '<tr onclick="openFAViewModal(\''+a.assetId+'\')" style="cursor:pointer">' +
+          '<td><strong>'+a.assetName+'</strong><div style="font-size:10px;color:var(--g400)">'+a.category+'</div></td>' +
+          '<td style="font-size:12px">'+a.category+'</td>' +
+          '<td>'+fmtDate(a.purchaseDate)+'</td>' +
+          '<td>'+fmt(a.purchaseCost)+'</td>' +
+          '<td style="color:var(--g500)">'+fmt(a.accumulatedDepreciation)+'</td>' +
+          '<td>' +
+            '<div style="font-weight:700">'+fmt(a.netBookValue)+'</div>' +
+            '<div style="height:3px;background:var(--g100);border-radius:2px;margin-top:3px;width:80px">' +
+              '<div style="height:3px;background:var(--blue-500);border-radius:2px;width:'+nbvPct+'%"></div>' +
+            '</div>' +
+          '</td>' +
+          '<td style="font-size:11px;color:var(--g500)">'+a.depreciationRate+'% '+(a.depreciationMethod==='straight'?'SL':'RB')+'</td>' +
+          '<td>'+badge(a.status)+'</td>' +
+          '<td onclick="event.stopPropagation()" style="white-space:nowrap">' +
+            (a.status==='Active'&&cw?'<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openFAScheduleModal(\''+a.assetId+'\')">Schedule</button> ':'') +
+            (a.status==='Active'&&cw?'<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openFADisposeModal(\''+a.assetId+'\')">Dispose</button>':'') +
+          '</td>' +
+        '</tr>';
+      }).join('')+
+      '</tbody></table>' +
+      '<div class="tbl-foot"><span>'+list.length+' assets</span><span>NBV: '+fmt(totalNBV)+'</span></div>'
+    )+'</div>'
+  );
+}
+
+function _faFilter(f) { _faState.filter=f; _renderFA(); }
+
+// ── View / Edit modal ─────────────────────────────────────────────────────────
+function openFAViewModal(assetId) {
+  var a = _faState.assets.find(function(x){return x.assetId===assetId;});
+  if (!a) return;
+  var nbvPct = a.purchaseCost>0?Math.round(100*a.netBookValue/a.purchaseCost):0;
+  openModal('fa-view', a.assetName,
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Purchase Cost</div><div class="stat-value" style="font-size:18px">'+fmt(a.purchaseCost)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Accumulated Depreciation</div><div class="stat-value" style="font-size:18px;color:var(--red-500)">'+fmt(a.accumulatedDepreciation)+'</div></div>' +
+      '<div class="stat-card" style="padding:12px;border-left:3px solid var(--blue-600)"><div class="stat-label">Net Book Value</div><div class="stat-value" style="font-size:18px;color:var(--blue-600)">'+fmt(a.netBookValue)+'</div></div>' +
+    '</div>' +
+    '<div style="height:8px;background:var(--g100);border-radius:4px;margin-bottom:14px">' +
+      '<div style="height:8px;background:var(--blue-500);border-radius:4px;width:'+nbvPct+'%;transition:width 0.5s"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      _faDetail('Category',    a.category) +
+      _faDetail('Purchase Date',fmtDate(a.purchaseDate)) +
+      _faDetail('Residual Value',fmt(a.residualValue)) +
+      _faDetail('Method',      a.depreciationMethod==='straight'?'Straight Line':'Reducing Balance') +
+      _faDetail('Rate',        a.depreciationRate+'% per annum') +
+      _faDetail('Useful Life', a.usefulLifeYears+' years') +
+      _faDetail('COA Code',    a.coaCode) +
+      _faDetail('Status',      a.status) +
+      (a.description?'<div class="form-group" style="grid-column:1/-1"><label class="form-label">Description</label><div style="font-size:13px;color:var(--g600)">'+a.description+'</div></div>':'') +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'fa-view\')">Close</button>' +
+    (a.status==='Active'&&canWrite()?
+      '<button class="btn btn-ghost btn-sm" onclick="closeModal(\'fa-view\');openFAEditModal(\''+assetId+'\')">✏️ Edit</button>' +
+      '<button class="btn btn-primary btn-sm" onclick="closeModal(\'fa-view\');openFAScheduleModal(\''+assetId+'\')">📊 Schedule</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="closeModal(\'fa-view\');openFADisposeModal(\''+assetId+'\')">🔄 Dispose</button>' : ''),
+    'modal-lg'
+  );
+}
+function _faDetail(lbl,val) {
+  return '<div class="form-group"><label class="form-label">'+lbl+'</label><div style="font-size:13px;font-weight:600;color:var(--g800);padding:6px 0">'+val+'</div></div>';
+}
+
+// ── Create modal ──────────────────────────────────────────────────────────────
+function openFACreateModal() {
+  var today = new Date().toISOString().split('T')[0];
+  var catOpts = _faCategories.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
+  openModal('fa-create','Add Fixed Asset',
+    '<div class="form-grid-2">' +
+      '<div class="form-group" style="grid-column:1/-1"><label class="form-label">Asset Name *</label><input type="text" class="form-input" id="fa-name" placeholder="e.g. MacBook Pro 14"></div>' +
+      '<div class="form-group"><label class="form-label">Category *</label><select class="form-select" id="fa-cat" onchange="_faUpdateCatDefaults()">'+catOpts+'</select></div>' +
+      '<div class="form-group"><label class="form-label">Purchase Date *</label><input type="date" class="form-input" id="fa-date" value="'+today+'"></div>' +
+      '<div class="form-group"><label class="form-label">Purchase Cost (£) *</label><input type="number" class="form-input" id="fa-cost" min="0.01" step="0.01" placeholder="0.00"></div>' +
+      '<div class="form-group"><label class="form-label">Residual Value (£)</label><input type="number" class="form-input" id="fa-resid" min="0" step="0.01" value="0"></div>' +
+      '<div class="form-group"><label class="form-label">Depreciation Method</label>' +
+        '<select class="form-select" id="fa-method">' +
+          '<option value="reducing">Reducing Balance</option>' +
+          '<option value="straight">Straight Line</option>' +
+        '</select></div>' +
+      '<div class="form-group"><label class="form-label">Annual Rate (%)</label><input type="number" class="form-input" id="fa-rate" min="0" max="100" step="0.5" value="25"></div>' +
+      '<div class="form-group"><label class="form-label">Useful Life (years)</label><input type="number" class="form-input" id="fa-life" min="1" max="50" value="4"></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" id="fa-desc" placeholder="Optional"></div>' +
+    '<div class="form-group"><label class="form-label">Already owned — prior accumulated depreciation (£)</label><input type="number" class="form-input" id="fa-accum" min="0" step="0.01" value="0" placeholder="0.00 (leave as 0 for new assets)"></div>' +
+    '<div class="alert alert-info" style="margin-top:8px"><p style="font-size:11px">A double-entry journal (Dr Fixed Asset / Cr Creditor) will be posted automatically. For assets already on the books leave "post purchase entry" blank or set accumulated depreciation.</p></div>',
+    '<button class="btn btn-secondary" onclick="closeFACreate()">Cancel</button>' +
+    '<button class="btn btn-primary" id="fa-create-btn" onclick="saveFixedAsset()">Add Asset</button>',
+    'modal-lg'
+  );
+}
+
+function _faUpdateCatDefaults() {
+  var cat = (document.getElementById('fa-cat')||{}).value||'Other';
+  var rate = _faDefaultRates[cat]||20;
+  var method = _faDefaultMethods[cat]||'reducing';
+  var r = document.getElementById('fa-rate');
+  var m = document.getElementById('fa-method');
+  if (r) r.value = rate;
+  if (m) m.value = method;
+}
+
+async function saveFixedAsset() {
+  var data = {
+    assetName:            (document.getElementById('fa-name')||{}).value||'',
+    category:             (document.getElementById('fa-cat')||{}).value||'Other',
+    purchaseDate:         (document.getElementById('fa-date')||{}).value||'',
+    purchaseCost:         parseFloat((document.getElementById('fa-cost')||{}).value)||0,
+    residualValue:        parseFloat((document.getElementById('fa-resid')||{}).value)||0,
+    depreciationMethod:   (document.getElementById('fa-method')||{}).value||'reducing',
+    depreciationRate:     parseFloat((document.getElementById('fa-rate')||{}).value)||20,
+    usefulLifeYears:      parseFloat((document.getElementById('fa-life')||{}).value)||4,
+    description:          (document.getElementById('fa-desc')||{}).value||'',
+    accumulatedDepreciation: parseFloat((document.getElementById('fa-accum')||{}).value)||0
+  };
+  if (!data.assetName) { toast('Enter asset name','warning'); return; }
+  if (!data.purchaseCost) { toast('Enter purchase cost','warning'); return; }
+  var btn = document.getElementById('fa-create-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
+  var r = await api('createFixedAsset', data);
+  if (r&&r.success) {
+    closeFACreate();
+    toast('Asset added','success');
+    showFixedAssets();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Add Asset'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+// ── Edit modal ────────────────────────────────────────────────────────────────
+function openFAEditModal(assetId) {
+  var a = _faState.assets.find(function(x){return x.assetId===assetId;});
+  if (!a) return;
+  openModal('fa-edit','Edit Asset — '+a.assetName,
+    '<div class="form-grid-2">' +
+      '<div class="form-group" style="grid-column:1/-1"><label class="form-label">Asset Name *</label><input type="text" class="form-input" id="fae-name" value="'+a.assetName+'"></div>' +
+      '<div class="form-group"><label class="form-label">Residual Value (£)</label><input type="number" class="form-input" id="fae-resid" value="'+a.residualValue+'" step="0.01"></div>' +
+      '<div class="form-group"><label class="form-label">Depreciation Method</label>' +
+        '<select class="form-select" id="fae-method">' +
+          '<option value="reducing"'+(a.depreciationMethod==='reducing'?' selected':'')+'>Reducing Balance</option>' +
+          '<option value="straight"'+(a.depreciationMethod==='straight'?' selected':'')+'>Straight Line</option>' +
+        '</select></div>' +
+      '<div class="form-group"><label class="form-label">Annual Rate (%)</label><input type="number" class="form-input" id="fae-rate" value="'+a.depreciationRate+'" step="0.5"></div>' +
+      '<div class="form-group"><label class="form-label">Useful Life (years)</label><input type="number" class="form-input" id="fae-life" value="'+a.usefulLifeYears+'"></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" id="fae-desc" value="'+(a.description||'')+'"></div>',
+    '<button class="btn btn-secondary" onclick="closeFAEdit()">Cancel</button>' +
+    '<button class="btn btn-primary" id="fae-save" onclick="saveEditFAAsset(\''+assetId+'\')">Save Changes</button>',
+    'modal-md'
+  );
+}
+
+async function saveEditFAAsset(assetId) {
+  var updates = {
+    assetId:            assetId,
+    assetName:          (document.getElementById('fae-name')||{}).value,
+    residualValue:      parseFloat((document.getElementById('fae-resid')||{}).value)||0,
+    depreciationMethod: (document.getElementById('fae-method')||{}).value,
+    depreciationRate:   parseFloat((document.getElementById('fae-rate')||{}).value)||0,
+    usefulLifeYears:    parseFloat((document.getElementById('fae-life')||{}).value)||0,
+    description:        (document.getElementById('fae-desc')||{}).value||''
+  };
+  var btn = document.getElementById('fae-save');
+  if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
+  var r = await api('updateFixedAsset', updates);
+  if (r&&r.success) { closeFAEdit(); toast('Asset updated','success'); showFixedAssets(); }
+  else { if (btn){btn.disabled=false;btn.textContent='Save Changes';} toast('Error: '+(r?r.message||r.error:'unknown'),'error'); }
+}
+
+// ── Depreciation schedule modal ───────────────────────────────────────────────
+async function openFAScheduleModal(assetId) {
+  var a = _faState.assets.find(function(x){return x.assetId===assetId;});
+  openModal('fa-sched','Depreciation Schedule — '+(a?a.assetName:''),
+    '<div class="loader"><div class="spin"></div><span>Calculating...</span></div>',
+    '<button class="btn btn-secondary" onclick="closeFASchedule()">Close</button>',
+    'modal-lg'
+  );
+  var r = await api('getDepreciationSchedule',{assetId:assetId});
+  var body = document.querySelector('#fa-sched .modal-body');
+  if (!body) return;
+  if (!r||!r.success) { body.innerHTML='<div class="alert alert-error"><p>'+(r?r.message:'Error')+'</p></div>'; return; }
+  var asset=r.asset, sched=r.schedule||[];
+  body.innerHTML =
+    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Current NBV</div><div style="font-weight:700;font-size:16px">'+fmt(asset.netBookValue)+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Method</div><div style="font-weight:700">'+(asset.depreciationMethod==='straight'?'Straight Line':'Reducing Balance')+' '+asset.depreciationRate+'%</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Residual Value</div><div style="font-weight:700">'+fmt(asset.residualValue)+'</div></div>' +
+    '</div>' +
+    '<table class="dt"><thead><tr><th>Year</th><th>Depreciation Charge</th><th>Closing NBV</th></tr></thead><tbody>' +
+    sched.map(function(s){
+      return '<tr><td><strong>'+s.year+'</strong></td><td style="color:var(--red-500)">'+fmt(s.charge)+'</td><td style="font-weight:600">'+fmt(s.closingNBV)+'</td></tr>';
+    }).join('') +
+    (sched.length===0?'<tr><td colspan="3" style="text-align:center;color:var(--g400);padding:16px">Fully depreciated</td></tr>':'')+
+    '</tbody></table>';
+}
+
+// ── Disposal modal ────────────────────────────────────────────────────────────
+var _faDisposeId = null;
+function openFADisposeModal(assetId) {
+  _faDisposeId = assetId;
+  var a = _faState.assets.find(function(x){return x.assetId===assetId;});
+  if (!a) return;
+  var today = new Date().toISOString().split('T')[0];
+  openModal('fa-dispose','Dispose Asset — '+a.assetName,
+    '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Net Book Value</div><div style="font-weight:700;font-size:16px">'+fmt(a.netBookValue)+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Accumulated Depreciation</div><div style="font-weight:700">'+fmt(a.accumulatedDepreciation)+'</div></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Disposal Date *</label><input type="date" class="form-input" id="fad-date" value="'+today+'"></div>' +
+      '<div class="form-group"><label class="form-label">Sale Proceeds (£)</label><input type="number" class="form-input" id="fad-proceeds" min="0" step="0.01" value="0" placeholder="0.00 (0 if scrapped)"></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-input" id="fad-notes" placeholder="Reason for disposal"></div>' +
+    '<div class="alert alert-warning" style="margin-top:8px"><p style="font-size:11px">Disposing will clear the asset from the register and post any gain/loss on disposal to the P&L. This cannot be undone.</p></div>',
+    '<button class="btn btn-secondary" onclick="closeFADispose()">Cancel</button>' +
+    '<button class="btn btn-danger" id="fad-btn" onclick="doDisposeAsset()">Confirm Disposal</button>',
+    'modal-md'
+  );
+}
+
+async function doDisposeAsset() {
+  var assetId  = _faDisposeId;
+  var date     = (document.getElementById('fad-date')||{}).value||'';
+  var proceeds = parseFloat((document.getElementById('fad-proceeds')||{}).value)||0;
+  var notes    = (document.getElementById('fad-notes')||{}).value||'';
+  if (!date) { toast('Select disposal date','warning'); return; }
+  var btn = document.getElementById('fad-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Processing...'; }
+  var r = await api('disposeFixedAsset',{assetId:assetId,disposalDate:date,disposalProceeds:proceeds,notes:notes});
+  if (r&&r.success) {
+    closeFADispose();
+    var gainStr = r.gain>=0 ? 'Gain on disposal: '+fmt(r.gain) : 'Loss on disposal: '+fmt(Math.abs(r.gain));
+    toast('Asset disposed · '+gainStr,'success',5000);
+    showFixedAssets();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Confirm Disposal'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+// ── Depreciation run modal ────────────────────────────────────────────────────
+function openFADepRunModal() {
+  var today = new Date();
+  // Default to last day of current month
+  var lastDay = new Date(today.getFullYear(), today.getMonth()+1, 0);
+  var endStr  = lastDay.toISOString().split('T')[0];
+  openModal('fa-deprun','Run Depreciation',
+    '<div class="alert alert-info" style="margin-bottom:14px">' +
+      '<p>Calculates depreciation for all active assets and optionally posts journal entries to the ledger.</p></div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Period End Date *</label><input type="date" class="form-input" id="fadr-end" value="'+endStr+'"></div>' +
+      '<div class="form-group"><label class="form-label">Period (months)</label>' +
+        '<select class="form-select" id="fadr-months">' +
+          '<option value="1">1 month</option>' +
+          '<option value="3">3 months (quarterly)</option>' +
+          '<option value="6">6 months (half-year)</option>' +
+          '<option value="12">12 months (annual)</option>' +
+        '</select></div>' +
+    '</div>' +
+    '<div class="form-group">' +
+      '<div style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="fadr-post" style="width:16px;height:16px">' +
+        '<label for="fadr-post" style="font-size:13px;cursor:pointer">Post journal entries to ledger</label></div>' +
+      '<div style="font-size:11px;color:var(--g400);margin-top:4px">If unchecked, depreciation is calculated and NBVs are updated but no ledger entries are created (preview mode).</div>' +
+    '</div>' +
+    '<div id="fadr-preview" style="margin-top:12px"></div>',
+    '<button class="btn btn-secondary" onclick="closeFADepRun()">Cancel</button>' +
+    '<button class="btn btn-secondary btn-sm" onclick="previewDepRun()">👁 Preview</button>' +
+    '<button class="btn btn-primary" id="fadr-btn" onclick="runDepRun(false)">Run (No Posting)</button>' +
+    '<button class="btn btn-success" id="fadr-post-btn" onclick="runDepRun(true)">Run & Post</button>',
+    'modal-lg'
+  );
+}
+
+async function previewDepRun() {
+  var end    = (document.getElementById('fadr-end')||{}).value||'';
+  var months = parseInt((document.getElementById('fadr-months')||{}).value)||1;
+  var el     = document.getElementById('fadr-preview');
+  if (el) el.innerHTML='<div class="loader" style="height:40px"><div class="spin"></div></div>';
+  // Calculate locally using _faState.assets
+  var rows = _faState.assets.filter(function(a){return a.status==='Active';}).map(function(a){
+    var depreciableAmt = a.purchaseCost - a.residualValue;
+    var charge=0;
+    if (a.depreciationMethod==='straight') {
+      charge = depreciableAmt/(a.usefulLifeYears||5) * months/12;
+    } else {
+      charge = a.netBookValue * (a.depreciationRate/100) * months/12;
+    }
+    charge = Math.min(charge, Math.max(0, a.netBookValue - a.residualValue));
+    return { name:a.assetName, nbv:a.netBookValue, charge:charge, newNBV:a.netBookValue-charge };
+  });
+  var total = rows.reduce(function(s,r){return s+r.charge;},0);
+  if (el) el.innerHTML = rows.length
+    ? '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:6px">Preview ('+months+' month'+(months>1?'s':'')+')</div>' +
+      '<table class="dt"><thead><tr><th>Asset</th><th>Current NBV</th><th>Charge</th><th>New NBV</th></tr></thead><tbody>' +
+      rows.map(function(r){return '<tr><td>'+r.name+'</td><td>'+fmt(r.nbv)+'</td><td style="color:var(--red-500)">'+fmt(r.charge)+'</td><td style="font-weight:600">'+fmt(r.newNBV)+'</td></tr>';}).join('') +
+      '<tr style="font-weight:700;border-top:2px solid var(--g200)"><td colspan="2">Total</td><td style="color:var(--red-500)">'+fmt(total)+'</td><td></td></tr>' +
+      '</tbody></table>'
+    : '<div style="padding:12px;color:var(--g400);font-size:12px">No active assets to depreciate</div>';
+}
+
+async function runDepRun(postToLedger) {
+  var end    = (document.getElementById('fadr-end')||{}).value||'';
+  var months = parseInt((document.getElementById('fadr-months')||{}).value)||1;
+  if (!end) { toast('Select a period end date','warning'); return; }
+  var btnId = postToLedger?'fadr-post-btn':'fadr-btn';
+  var btn   = document.getElementById(btnId);
+  if (btn) { btn.disabled=true; btn.textContent='Running...'; }
+  var r = await api('runDepreciationRun',{periodEndDate:end,periodMonths:months,postToLedger:postToLedger});
+  if (r&&r.success) {
+    closeFADepRun();
+    toast(r.message+(postToLedger?' (posted to ledger)':''),'success',5000);
+    showFixedAssets();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent=postToLedger?'Run & Post':'Run (No Posting)'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+  }
+}
+
+
+function showMaintenance() {
+  if (!App.user || App.user.role !== 'Superuser') {
+    showContent('<div class="empty"><h3>Access Denied</h3><p>This page is restricted to Superuser accounts.</p></div>');
+    return;
+  }
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">🔧 Maintenance</div>' +
+      '<div class="page-sub">Superuser tools — use with caution</div></div></div>' +
+    '<div class="alert alert-warning" style="margin-bottom:18px">' +
+      '<p><strong>⚠ Superuser area.</strong> These functions modify the underlying spreadsheet data. ' +
+      'Always create a backup before running maintenance operations.</p></div>' +
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">' +
+
+    // Sheet diagnostics
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">📊 Sheet Diagnostics</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Check all sheets exist and report any unknown sheets.</p>' +
+        '<button class="btn btn-secondary btn-sm" onclick="runMaint(\'diagnoseSheets\',this)">Run Diagnostics</button>' +
+        '<div id="maint-diagnose-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    // Rebuild account balances
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">⚖️ Rebuild Account Balances</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Recalculates all COA current balances from the Transactions sheet. Use if balances look incorrect.</p>' +
+        '<button class="btn btn-secondary btn-sm" onclick="runMaint(\'rebuildAccountBalances\',this)">Rebuild Balances</button>' +
+        '<div id="maint-rebuild-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    // Clean duplicate transactions
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">🧹 Clean Duplicate Transactions</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Finds and removes exact duplicate transaction rows from the Transactions sheet.</p>' +
+        '<button class="btn btn-secondary btn-sm" onclick="runMaint(\'cleanDuplicateTxns\',this)">Clean Duplicates</button>' +
+        '<div id="maint-clean-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    // Create backup
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">💾 Create Backup</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Creates a full copy of the spreadsheet in Google Drive.</p>' +
+        '<button class="btn btn-primary btn-sm" onclick="runMaint(\'createBackup\',this)">Create Backup Now</button>' +
+        '<div id="maint-backup-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    // Initialise system
+    '<div class="card" style="border:2px solid var(--red-200)"><div class="card-hdr"><span class="card-ttl" style="color:var(--red-600)">⚡ Initialise System</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Creates all required sheets if they are missing. Safe to run on an existing installation — does not delete data.</p>' +
+        '<button class="btn btn-secondary btn-sm" onclick="runMaint(\'initializeSystem\',this)">Initialise</button>' +
+        '<div id="maint-init-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    // Verify integrity
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">🔍 Verify Integrity</span></div>' +
+      '<div class="card-body">' +
+        '<p style="font-size:13px;color:var(--g600);margin-bottom:12px">Checks deployment key, schema, and version match.</p>' +
+        '<button class="btn btn-secondary btn-sm" onclick="runMaint(\'verifyIntegrity\',this)">Run Check</button>' +
+        '<div id="maint-verify-out" style="margin-top:10px"></div>' +
+      '</div></div>' +
+
+    '</div>'
+  );
+}
+
+async function runMaint(action, btn) {
+  var outId = 'maint-'+action.replace(/([A-Z])/g,function(m){ return '-'+m.toLowerCase(); }).replace('maint-','').replace(/^-/,'')+'-out';
+  var actionMap = {
+    diagnoseSheets: 'maint-diagnose-out',
+    rebuildAccountBalances: 'maint-rebuild-out',
+    cleanDuplicateTxns: 'maint-clean-out',
+    createBackup: 'maint-backup-out',
+    initializeSystem: 'maint-init-out',
+    verifyIntegrity: 'maint-verify-out'
+  };
+  var elId = actionMap[action] || outId;
+  var el = document.getElementById(elId);
+  if (btn) { btn.disabled=true; btn.textContent='Running...'; }
+  if (el) el.innerHTML = '<div class="loader" style="height:40px"><div class="spin"></div></div>';
+  var r = await api(action, {});
+  if (btn) { btn.disabled=false; btn.textContent=btn.textContent.replace('Running...', btn.getAttribute('data-label')||'Run'); }
+  if (el) {
+    if (r && r.success !== false) {
+      var summary = r.message || JSON.stringify(r, null, 2);
+      // For diagnoseSheets, show a nice summary
+      if (action==='diagnoseSheets' && r.known) {
+        summary = '✅ '+r.known.length+' known sheets · '+(r.unknown&&r.unknown.length?'⚠ '+r.unknown.length+' unknown':'no unknown sheets');
+      }
+      el.innerHTML = '<div class="alert alert-success" style="padding:8px 12px;font-size:12px"><p>'+summary+'</p></div>';
+    } else {
+      el.innerHTML = '<div class="alert alert-error" style="padding:8px 12px;font-size:12px"><p>'+(r?r.message||r.error:'Unknown error')+'</p></div>';
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. SECURITY & AUDIT LOG (Superuser only)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showSecurity() {
+  if (!App.user || App.user.role !== 'Superuser') {
+    showContent('<div class="empty"><h3>Access Denied</h3><p>This page is restricted to Superuser accounts.</p></div>');
+    return;
+  }
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">🔒 Security & Audit</div>' +
+      '<div class="page-sub">Integrity status, audit trail and access log</div></div>' +
+      '<div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="showSecurity()">🔄 Refresh</button></div>' +
+    '</div>' +
+    '<div id="sec-integrity" style="margin-bottom:18px"><div class="loader"><div class="spin"></div><span>Checking integrity...</span></div></div>' +
+    '<div class="card"><div class="card-hdr">' +
+      '<span class="card-ttl">📋 Audit Log</span>' +
+      '<div style="display:flex;gap:8px;align-items:center">' +
+        '<input type="text" class="form-input" id="audit-search" placeholder="Filter by user or action..." style="width:200px;padding:5px 9px;font-size:12px" oninput="filterAuditLog(this.value)">' +
+        '<select class="form-select" id="audit-action" style="width:160px;font-size:12px" onchange="filterAuditLog()">' +
+          '<option value="">All actions</option>' +
+          '<option value="CREATE">Creates</option>' +
+          '<option value="UPDATE">Updates</option>' +
+          '<option value="DELETE">Deletes</option>' +
+          '<option value="SUBMIT">Submissions</option>' +
+          '<option value="LOGIN">Logins</option>' +
+          '<option value="ATTACH">Attachments</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div id="audit-log-body"><div class="loader"><div class="spin"></div></div></div>' +
+    '</div>'
+  );
+  loadIntegrityStatus();
+  loadAuditLog();
+}
+
+async function loadIntegrityStatus() {
+  var el = document.getElementById('sec-integrity'); if (!el) return;
+  var r = await api('getIntegrityStatus', {});
+  if (!r || !r.success) {
+    el.innerHTML = '<div class="alert alert-error"><p>Could not check integrity: '+(r?r.message:'unknown')+'</p></div>';
+    return;
+  }
+  var ok = r.versionMatch && r.hasKey;
+  el.innerHTML =
+    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Deployment Key</div>' +
+        '<div style="font-weight:600;color:'+(r.hasKey?'var(--green-600)':'var(--red-500)')+'">'+
+          (r.hasKey ? '✓ Present ('+r.keyPrefix+')' : '✗ Missing')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Version</div>' +
+        '<div style="font-weight:600;color:'+(r.versionMatch?'var(--green-600)':'var(--amber-500)')+'">'+
+          (r.currentVersion||'—')+(r.versionMatch?' ✓':' ⚠ mismatch')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Deployed By</div>' +
+        '<div style="font-size:12px;font-weight:600">'+(r.deployedBy||'—')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Deployment Date</div>' +
+        '<div style="font-size:12px;font-weight:600">'+(r.deploymentDate||'—')+'</div></div>' +
+    '</div>';
+}
+
+var _auditEntries = [];
+async function loadAuditLog() {
+  var el = document.getElementById('audit-log-body'); if (!el) return;
+  var r = await api('getAuditLog', { limit:200 });
+  if (!r || !r.success) {
+    el.innerHTML = '<div class="tbl-empty"><p>Could not load audit log: '+(r?r.message:'unknown')+'</p></div>';
+    return;
+  }
+  _auditEntries = r.entries || [];
+  renderAuditTable(_auditEntries);
+  // Show total count
+  var hdr = document.querySelector('#audit-log-body')?.previousElementSibling?.querySelector('.card-ttl');
+  if (hdr) hdr.textContent = '📋 Audit Log (' + r.total + ' total, showing ' + _auditEntries.length + ')';
+}
+
+function filterAuditLog(searchVal) {
+  var search = typeof searchVal === 'string' ? searchVal : (document.getElementById('audit-search')||{}).value||'';
+  var action = (document.getElementById('audit-action')||{}).value||'';
+  var filtered = _auditEntries.filter(function(e) {
+    var matchSearch = !search || (e.user+e.action+e.entityType+e.entityId+e.detail).toLowerCase().indexOf(search.toLowerCase()) >= 0;
+    var matchAction = !action || e.action.indexOf(action) >= 0;
+    return matchSearch && matchAction;
+  });
+  renderAuditTable(filtered);
+}
+
+function renderAuditTable(entries) {
+  var el = document.getElementById('audit-log-body'); if (!el) return;
+  if (!entries.length) {
+    el.innerHTML = '<div class="tbl-empty"><p>No entries match the filter</p></div>';
+    return;
+  }
+  // Action badge colours
+  var actionColour = function(a) {
+    if (a.indexOf('CREATE')>=0||a.indexOf('ADD')>=0) return 'badge-green';
+    if (a.indexOf('DELETE')>=0||a.indexOf('VOID')>=0||a.indexOf('REMOVE')>=0) return 'badge-red';
+    if (a.indexOf('UPDATE')>=0||a.indexOf('EDIT')>=0||a.indexOf('SAVE')>=0) return 'badge-blue';
+    if (a.indexOf('SUBMIT')>=0||a.indexOf('APPROVE')>=0) return 'badge-purple';
+    if (a.indexOf('LOGIN')>=0) return 'badge-grey';
+    return 'badge-grey';
+  };
+  el.innerHTML = '<table class="dt"><thead><tr>' +
+    '<th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>ID</th><th>Detail</th>' +
+    '</tr></thead><tbody>' +
+    entries.slice(0,200).map(function(e) {
+      return '<tr>' +
+        '<td style="white-space:nowrap;font-size:11px">'+fmtDate(e.timestamp)+'</td>' +
+        '<td style="font-size:12px">'+e.user+'</td>' +
+        '<td><span class="badge '+actionColour(e.action)+'" style="font-size:10px">'+e.action+'</span></td>' +
+        '<td style="font-size:12px">'+e.entityType+'</td>' +
+        '<td class="mono" style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis">'+e.entityId+'</td>' +
+        '<td style="font-size:11px;color:var(--g600);max-width:200px;overflow:hidden;text-overflow:ellipsis" title="'+e.detail+'">'+e.detail+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table>';
+}
+
+
+
+</script>
