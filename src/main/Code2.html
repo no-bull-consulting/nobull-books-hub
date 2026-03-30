@@ -555,222 +555,292 @@ async function _getWALink(btn) {
 
 function showSettings() {
   var s = App.data.settings || App.settings || {};
-  // Load WA status async after render
-  setTimeout(async function(){
+
+  // ── Async loaders ───────────────────────────────────────────────────────────
+  setTimeout(async function() {
     var el = document.getElementById('wa-status-area');
     if (!el) return;
     var r = await api('getWhatsAppStatus');
-    if (!r) { el.innerHTML='<span style="font-size:12px;color:var(--g400)">Could not load status</span>'; return; }
-    var provLabel = r.provider==='meta' ? 'Meta Cloud API' : r.provider==='twilio' ? 'Twilio' : '';
-    var detail    = r.provider==='meta'
-      ? 'Phone ID: <code>'+r.meta.phoneId+'</code>'
-      : r.provider==='twilio' ? 'From: <code>'+r.twilio.fromNumber+'</code>' : '';
+    if (!r) { el.innerHTML = '<span style="font-size:12px;color:var(--g400)">Could not load status</span>'; return; }
+    var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
+    var detail = r.provider === 'meta'
+      ? 'Phone ID: <code>' + r.meta.phoneId + '</code>'
+      : r.provider === 'twilio' ? 'From: <code>' + r.twilio.fromNumber + '</code>' : '';
     el.innerHTML = r.configured
       ? '<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green-600)">&#10003;</span>' +
-        '<span style="font-size:13px">'+provLabel+' configured &middot; '+detail+'</span></div>'
-      : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured &mdash; follow the steps above and run the setup function from the GAS editor.</div>';
+        '<span style="font-size:13px">' + provLabel + ' configured &middot; ' + detail + '</span></div>'
+      : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured</div>';
   }, 300);
-  // Helper: text input row
+
+  // ── Field helpers ───────────────────────────────────────────────────────────
   function sf(lbl, id, val, type) {
-    return '<div class="form-group"><label class="form-label">'+lbl+'</label>' +
-      '<input type="'+(type||'text')+'" class="form-input" id="s_'+id+'" value="'+(val!=null?val:'')+'" placeholder="'+(type==='number'?'0':'')+'"></div>';
+    return '<div class="form-group"><label class="form-label">' + lbl + '</label>' +
+      '<input type="' + (type || 'text') + '" class="form-input" id="s_' + id + '" value="' + (val != null ? val : '') + '" placeholder="' + (type === 'number' ? '0' : '') + '"></div>';
   }
-  // Helper: checkbox row
   function sc(lbl, id, checked, desc) {
     return '<div class="form-group"><div style="display:flex;align-items:center;gap:8px">' +
-      '<input type="checkbox" id="s_'+id+'"'+(checked?' checked':'')+' style="width:16px;height:16px">' +
-      '<label for="s_'+id+'" style="font-size:13px;font-weight:500;cursor:pointer">'+lbl+'</label></div>' +
-      (desc?'<div style="font-size:11px;color:var(--g400);margin-top:2px">'+desc+'</div>':'')+
-    '</div>';
+      '<input type="checkbox" id="s_' + id + '"' + (checked ? ' checked' : '') + ' style="width:16px;height:16px">' +
+      '<label for="s_' + id + '" style="font-size:13px;font-weight:500;cursor:pointer">' + lbl + '</label></div>' +
+      (desc ? '<div style="font-size:11px;color:var(--g400);margin-top:2px">' + desc + '</div>' : '') +
+      '</div>';
   }
-  // Helper: select row
   function ss(lbl, id, val, opts) {
-    return '<div class="form-group"><label class="form-label">'+lbl+'</label>' +
-      '<select class="form-select" id="s_'+id+'">'+
-      opts.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===val?' selected':'')+'>'+o[1]+'</option>'; }).join('')+
+    return '<div class="form-group"><label class="form-label">' + lbl + '</label>' +
+      '<select class="form-select" id="s_' + id + '">' +
+      opts.map(function(o) { return '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
       '</select></div>';
   }
 
-  showContent(
-    '<div class="page-hdr"><div class="page-title">Settings</div>' +
-      '<div class="page-actions"><button class="btn btn-primary" onclick="saveSettings()">💾 Save Changes</button></div></div>' +
-    '<div class="tabs" style="margin-bottom:18px">'+
-      '<button class="tab active" id="restab-overview" onclick="switchResTab(\'overview\')">Overview</button>'+
-
-    '</div>'+
-    '<div id="res-overview">'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">' +
-
-    // ── Company ───────────────────────────────────────────────────────────────
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">🏢 Company</span></div><div class="card-body">' +
-      sf('Company Name *','companyName',s.companyName) +
-      sf('Address','companyAddress',s.companyAddress) +
-      sf('Postcode','companyPostcode',s.companyPostcode) +
-      sf('Email','companyEmail',s.companyEmail,'email') +
-      sf('Phone','companyPhone',s.companyPhone,'tel') +
-      '<div class="form-group"><label class="form-label">Logo</label>' +
-        (s.logoURL ? '<img src="'+s.logoURL+'" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:8px;border:1px solid var(--g200);border-radius:4px;padding:4px" id="logo-preview">' : '') +
-        '<label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block">Upload Logo' +
-          '<input type="file" accept="image/*" style="display:none" onchange="uploadLogoFile(this)">' +
-        '</label>' +
-        '<span style="font-size:11px;color:var(--g400);margin-left:8px">PNG/SVG/JPG recommended · max 200KB</span>' +
+  // ── Accordion section builder ───────────────────────────────────────────────
+  function acc(id, icon, title, body, open, statusHtml) {
+    return '<div class="sacc" id="sacc-' + id + '">' +
+      '<div class="sacc-hdr" onclick="toggleSettingsAcc(\'' + id + '\')">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:16px">' + icon + '</span>' +
+          '<span class="sacc-title">' + title + '</span>' +
+          (statusHtml ? '<span class="sacc-status">' + statusHtml + '</span>' : '') +
+        '</div>' +
+        '<svg class="sacc-chevron' + (open ? ' open' : '') + '" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+          '<polyline points="5,8 10,13 15,8"></polyline>' +
+        '</svg>' +
       '</div>' +
-    '</div></div>' +
-
-    // ── Invoicing ─────────────────────────────────────────────────────────────
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">🧾 Invoicing</span></div><div class="card-body">' +
-      sf('Invoice Prefix','invoicePrefix',s.invoicePrefix) +
-      sf('Next Invoice No.','nextInvoiceNumber',s.nextInvoiceNumber,'number') +
-      sf('Bill Prefix','billPrefix',s.billPrefix) +
-      sf('Next Bill No.','nextBillNumber',s.nextBillNumber,'number') +
-      sf('PO Prefix','poPrefix',s.poPrefix) +
-      sf('Next PO No.','nextPONumber',s.nextPONumber,'number') +
-      sf('Default Payment Terms (days)','defaultPaymentTerms',s.defaultPaymentTerms||30,'number') +
-      '<div class="form-group"><label class="form-label">Invoice Footer Text</label>' +
-        '<textarea class="form-textarea" id="s_invoiceFooter" rows="2" placeholder="Shown at bottom of PDF invoices">'+(s.invoiceFooter||'')+'</textarea></div>' +
-    '</div></div>' +
-
-    // ── VAT ───────────────────────────────────────────────────────────────────
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">% VAT</span></div><div class="card-body">' +
-      sc('VAT Registered','vatRegistered', s.vatRegistered,
-        'Enables Tax Invoice labelling and VAT calculations') +
-      '<div id="vat-fields-section">' +
-      sf('VAT Registration Number','vatRegNumber',s.vatRegNumber) +
-      ss('VAT Scheme','vatScheme',s.vatScheme||'standard',[
-        ['standard','Standard (Accruals)'],
-        ['cash','Cash Accounting'],
-        ['flat','Flat Rate']
-      ]) +
-      sf('Standard VAT Rate (%)','vatRate',s.vatRate||20,'number') +
-      ss('Filing Frequency','vatFrequency',s.vatFrequency||'quarterly',[
-        ['quarterly','Quarterly'],
-        ['monthly','Monthly'],
-        ['annual','Annual']
-      ]) +
+      '<div class="sacc-body"' + (open ? '' : ' style="display:none"') + '>' +
+        body +
       '</div>' +
-      '<div class="form-group" style="border-top:1px solid var(--g100);padding-top:12px;margin-top:4px">' +
-        '<label class="form-label" style="font-weight:700">Financial Year</label></div>' +
+    '</div>';
+  }
+
+  // ── Section: Company ────────────────────────────────────────────────────────
+  var secCompany =
+    sf('Company Name *', 'companyName', s.companyName) +
+    sf('Address', 'companyAddress', s.companyAddress) +
+    sf('Postcode', 'companyPostcode', s.companyPostcode) +
+    sf('Email', 'companyEmail', s.companyEmail, 'email') +
+    sf('Phone', 'companyPhone', s.companyPhone, 'tel') +
+    '<div class="form-group"><label class="form-label">Logo</label>' +
+      (s.logoURL ? '<img src="' + s.logoURL + '" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:8px;border:1px solid var(--g200);border-radius:4px;padding:4px" id="logo-preview">' : '') +
+      '<label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block">Upload Logo' +
+        '<input type="file" accept="image/*" style="display:none" onchange="uploadLogoFile(this)">' +
+      '</label>' +
+      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PNG/SVG/JPG recommended · max 200KB</span>' +
+    '</div>';
+
+  // ── Section: Invoicing ──────────────────────────────────────────────────────
+  var secInvoicing =
+    '<div class="form-grid-2">' +
+      sf('Invoice Prefix', 'invoicePrefix', s.invoicePrefix) +
+      sf('Next Invoice No.', 'nextInvoiceNumber', s.nextInvoiceNumber, 'number') +
+      sf('Bill Prefix', 'billPrefix', s.billPrefix) +
+      sf('Next Bill No.', 'nextBillNumber', s.nextBillNumber, 'number') +
+      sf('PO Prefix', 'poPrefix', s.poPrefix) +
+      sf('Next PO No.', 'nextPONumber', s.nextPONumber, 'number') +
+      sf('Default Payment Terms (days)', 'defaultPaymentTerms', s.defaultPaymentTerms || 30, 'number') +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Invoice Footer Text</label>' +
+      '<textarea class="form-textarea" id="s_invoiceFooter" rows="2" placeholder="Shown at bottom of PDF invoices">' + (s.invoiceFooter || '') + '</textarea>' +
+    '</div>';
+
+  // ── Section: Invoice PDF Template ───────────────────────────────────────────
+  var secTemplate =
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Accent Colour</label>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<input type="color" id="s_templateAccentColor" value="' + (s.templateAccentColor || '#1a3c6b') + '" style="width:44px;height:36px;padding:2px;border:1px solid var(--g300);border-radius:var(--r8);cursor:pointer">' +
+          '<span style="font-size:12px;color:var(--g500)">Heading and table header colour</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group"><label class="form-label">Logo Position</label>' +
+        '<select class="form-select" id="s_templateLogoPosition">' +
+          '<option value="left"'  + ((s.templateLogoPosition || 'left') === 'left'  ? ' selected' : '') + '>Left (default)</option>' +
+          '<option value="right"' + (s.templateLogoPosition === 'right' ? ' selected' : '') + '>Right</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-group"><label class="form-label">Font Style</label>' +
+        '<select class="form-select" id="s_templateFont">' +
+          '<option value="sans"'  + ((s.templateFont || 'sans') === 'sans'  ? ' selected' : '') + '>Sans-serif</option>' +
+          '<option value="serif"' + (s.templateFont === 'serif' ? ' selected' : '') + '>Serif</option>' +
+          '<option value="mono"'  + (s.templateFont === 'mono'  ? ' selected' : '') + '>Monospace</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>';
+
+  // ── Section: Financial Year ─────────────────────────────────────────────────
+  var secFY =
+    '<div class="form-grid-2">' +
+      sf('Business Start Date', 'businessStartDate', s.businessStartDate || '', 'date') +
+      sf('Year End (day/month)', 'yearEndDay', s.yearEndDay || '31 March') +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--g500);margin-bottom:8px">e.g. <strong>31 March</strong>, <strong>31 December</strong>, <strong>30 April</strong>. The system derives the current financial year automatically.</div>' +
+    '<div id="fy-preview" style="font-size:12px;color:var(--blue-600);padding:6px 10px;background:var(--blue-50);border-radius:var(--r8)"></div>';
+
+  // ── Section: VAT ────────────────────────────────────────────────────────────
+  var secVAT =
+    sc('VAT Registered', 'vatRegistered', s.vatRegistered, 'Enables Tax Invoice labelling and VAT calculations') +
+    '<div id="vat-fields-section">' +
       '<div class="form-grid-2">' +
-        sf('Business Start Date','businessStartDate',s.businessStartDate||'','date') +
-        sf('Year End (day/month)','yearEndDay',s.yearEndDay||'31 March') +
+        sf('VAT Registration Number', 'vatRegNumber', s.vatRegNumber) +
+        ss('VAT Scheme', 'vatScheme', s.vatScheme || 'standard', [
+          ['standard', 'Standard (Accruals)'],
+          ['cash', 'Cash Accounting'],
+          ['flat', 'Flat Rate']
+        ]) +
+        sf('Standard VAT Rate (%)', 'vatRate', s.vatRate || 20, 'number') +
+        ss('Filing Frequency', 'vatFrequency', s.vatFrequency || 'quarterly', [
+          ['quarterly', 'Quarterly'],
+          ['monthly', 'Monthly'],
+          ['annual', 'Annual']
+        ]) +
       '</div>' +
-      '<div class="form-group"><label class="form-label" style="font-size:11px;color:var(--g500)">Year end day/month e.g. <strong>31 March</strong>, <strong>31 December</strong>, <strong>30 April</strong>. ' +
-        'The system derives the current financial year automatically from the current date.</label></div>' +
-      '<div id="fy-preview" style="font-size:12px;color:var(--blue-600);padding:6px 10px;background:var(--blue-50);border-radius:var(--r8);margin-top:4px"></div>' +
-    '</div></div>' +
+    '</div>';
 
-    // ── Email Template ────────────────────────────────────────────────────────
-    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">✉️ Invoice Email Template</span>' +
-      '<span style="font-size:11px;color:var(--g400)">Variables: {{invoiceNumber}} {{clientName}} {{total}} {{dueDate}} {{companyName}} {{paymentDetails}}</span>' +
-    '</div><div class="card-body">' +
+  // ── Section: Bank Details ───────────────────────────────────────────────────
+  var secBank =
+    '<div class="form-grid-2">' +
+      sf('Bank Name', 'bankName', s.bankName) +
+      sf('Account Name', 'accountName', s.accountName) +
+      sf('Sort Code', 'sortCode', s.sortCode) +
+      sf('Account Number', 'accountNumber', s.accountNumber) +
+    '</div>';
+
+  // ── Section: Email Template ─────────────────────────────────────────────────
+  var secEmail =
+    '<div style="font-size:11px;color:var(--g400);margin-bottom:12px">Variables: <code>{{invoiceNumber}} {{clientName}} {{total}} {{dueDate}} {{companyName}} {{paymentDetails}}</code></div>' +
+    sf('Email Subject', 'emailSubject', s.emailSubject || 'Invoice {{invoiceNumber}} from {{companyName}}') +
+    '<div class="form-group"><label class="form-label">Email Body (HTML supported)</label>' +
+      '<textarea class="form-textarea" id="s_emailBody" rows="8" style="font-family:var(--mono);font-size:12px">' + (s.emailBody || _defaultEmailBody()) + '</textarea>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button class="btn btn-secondary btn-sm" onclick="previewEmailTemplate()">👁 Preview</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="resetEmailTemplate()">↩ Reset to Default</button>' +
+    '</div>';
+
+  // ── Section: HMRC / MTD ─────────────────────────────────────────────────────
+  var secHMRC =
+    '<div id="hmrc-status-bar"></div>' +
+    '<div class="form-grid-2">' +
+      sf('HMRC Client ID', 'hmrcClientID', s.hmrcClientID) +
+      sf('HMRC Client Secret', 'hmrcClientSecret', '', 'password') +
+    '</div>' +
+    '<div class="alert alert-info" style="margin-bottom:12px">' +
+      '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. Leave Secret blank to keep existing value.</p>' +
+    '</div>' +
+    sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox — disable for live submission') +
+    '<div style="display:flex;gap:8px;margin-top:12px">' +
+      '<button class="btn btn-secondary btn-sm" onclick="testHMRCConn()">🔌 Test Connection</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openHMRCConnectModal()">🔑 Connect / Re-authenticate</button>' +
+    '</div>';
+
+  // ── Section: Currency ───────────────────────────────────────────────────────
+  var currencyNames = {
+    'GBP':'GBP — British Pound','EUR':'EUR — Euro','USD':'USD — US Dollar',
+    'CHF':'CHF — Swiss Franc','SEK':'SEK — Swedish Krona','NOK':'NOK — Norwegian Krone',
+    'DKK':'DKK — Danish Krone','JPY':'JPY — Japanese Yen','CAD':'CAD — Canadian Dollar','AUD':'AUD — Australian Dollar'
+  };
+  var currencies = ['GBP','EUR','USD','CHF','SEK','NOK','DKK','JPY','CAD','AUD'];
+  var enabledCurr = s.enabledCurrencies || ['GBP','EUR','USD'];
+  var secCurrency =
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Base Currency</label>' +
+        '<select class="form-select" id="s_baseCurrency">' +
+          currencies.map(function(cc) {
+            return '<option value="' + cc + '"' + ((s.baseCurrency || 'GBP') === cc ? ' selected' : '') + '>' + currencyNames[cc] + '</option>';
+          }).join('') +
+        '</select>' +
+        '<div style="font-size:11px;color:var(--g400);margin-top:4px">All reports and journals use this currency.</div>' +
+      '</div>' +
+      '<div class="form-group"><label class="form-label">Enabled Currencies</label>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">' +
+          currencies.map(function(cc) {
+            return '<label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">' +
+              '<input type="checkbox" class="curr-toggle" value="' + cc + '"' + (enabledCurr.indexOf(cc) >= 0 ? ' checked' : '') + ' style="width:14px;height:14px"> ' + cc + '</label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // ── Section: WhatsApp ───────────────────────────────────────────────────────
+  var secWhatsApp =
+    '<div id="wa-status-area"><div class="loader" style="height:40px"><div class="spin"></div></div></div>' +
+    '<div style="margin-top:12px">' +
+      '<button class="btn btn-ghost btn-sm" onclick="toggleWAGuide()" id="wa-guide-btn">📖 Show setup guide</button>' +
+    '</div>' +
+    '<div id="wa-guide" style="display:none;margin-top:14px;padding:14px;background:var(--g50);border-radius:var(--r8);border:1px solid var(--g200)">' +
       '<div class="form-grid-2">' +
-        '<div class="form-group" style="grid-column:1/-1"><label class="form-label">Email Subject</label>' +
-          '<input type="text" class="form-input" id="s_emailSubject" value="'+(s.emailSubject||'Invoice {{invoiceNumber}} from {{companyName}}')+'"></div>' +
-      '</div>' +
-      '<div class="form-group"><label class="form-label">Email Body (HTML supported)</label>' +
-        '<textarea class="form-textarea" id="s_emailBody" rows="8" style="font-family:var(--mono);font-size:12px">'+(s.emailBody||_defaultEmailBody())+'</textarea></div>' +
-      '<div style="display:flex;gap:8px;margin-top:8px">' +
-        '<button class="btn btn-secondary btn-sm" onclick="previewEmailTemplate()">👁 Preview</button>' +
-        '<button class="btn btn-ghost btn-sm" onclick="resetEmailTemplate()">↩ Reset to Default</button>' +
-      '</div>' +
-    '</div></div>' +
-
-    // ── HMRC / MTD ────────────────────────────────────────────────────────────
-
-    '<div class="card"><div id="hmrc-status-bar"></div>' +
-      '<div class="card-hdr"><span class="card-ttl">🏛 HMRC / MTD</span></div><div class="card-body">' +
-      sf('HMRC Client ID','hmrcClientID',s.hmrcClientID) +
-      sf('HMRC Client Secret','hmrcClientSecret','','password') +
-      '<div class="alert alert-info" style="margin:4px 0 10px">' +
-        '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. ' +
-        'Leave Secret blank to keep existing value.</p></div>' +
-      sc('Sandbox (Test) Mode','hmrcTestMode', s.hmrcTestMode !== false,
-        'Use HMRC sandbox — disable for live submission') +
-      '<div style="display:flex;gap:8px;margin-top:10px">' +
-        '<button class="btn btn-secondary btn-sm" onclick="testHMRCConn()">🔌 Test Connection</button>' +
-        '<button class="btn btn-secondary btn-sm" onclick="openHMRCConnectModal()">🔑 Connect / Re-authenticate</button>' +
-      '</div>' +
-    '</div></div>' +
-
-    // ── Currency ──────────────────────────────────────────────────────────────
-    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">Currency</span></div><div class="card-body">' +
-      '<div class="form-grid-2">' +
-        '<div class="form-group"><label class="form-label">Base Currency</label>' +
-          '<select class="form-select" id="s_baseCurrency">' +
-            ['GBP','EUR','USD','CHF','SEK','NOK','DKK','JPY','CAD','AUD'].map(function(cc){
-              var names={'GBP':'GBP — British Pound','EUR':'EUR — Euro','USD':'USD — US Dollar','CHF':'CHF — Swiss Franc','SEK':'SEK — Swedish Krona','NOK':'NOK — Norwegian Krone','DKK':'DKK — Danish Krone','JPY':'JPY — Japanese Yen','CAD':'CAD — Canadian Dollar','AUD':'AUD — Australian Dollar'};
-              return '<option value="'+cc+'"'+((s.baseCurrency||'GBP')===cc?' selected':'')+'>'+names[cc]+'</option>';
-            }).join('') +
-          '</select>' +
-          '<div style="font-size:11px;color:var(--g400);margin-top:4px">All reports and journals use this currency.</div></div>' +
-        '<div class="form-group"><label class="form-label">Enabled Currencies</label>' +
-          '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">' +
-            ['GBP','EUR','USD','CHF','SEK','NOK','DKK','JPY','CAD','AUD'].map(function(cc){
-              var en=(s.enabledCurrencies||['GBP','EUR','USD']);
-              var checked=en.indexOf(cc)>=0;
-              return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">' +
-                '<input type="checkbox" class="curr-toggle" value="'+cc+'"'+(checked?' checked':'')+' style="width:14px;height:14px"> '+cc+'</label>';
-            }).join('') +
-          '</div></div>' +
-      '</div>' +
-    '</div></div>' +
-
-    // ── WhatsApp Delivery ─────────────────────────────────────────────────────
-    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">WhatsApp Delivery</span></div><div class="card-body">' +
-      '<div class="form-grid-2" style="margin-bottom:14px">' +
-        '<div><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option A — Meta Cloud API (recommended)</div>' +
-          '<div style="font-size:12px;color:var(--g500);line-height:1.6">' +
+        '<div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option A — Meta Cloud API (recommended)</div>' +
+          '<div style="font-size:12px;color:var(--g500);line-height:1.7">' +
             '1. Go to <strong>developers.facebook.com</strong> → My Apps → your app → WhatsApp → API Setup<br>' +
-            '2. Copy the <strong>Phone Number ID</strong> (long number on that page)<br>' +
-            '3. For testing: click Generate to get a temporary token (24h).<br>' +
-            '   For production: Business Settings → System Users → create a user with WhatsApp send permissions → copy their permanent token.<br>' +
-            '4. In GAS editor run: <code>saveMetaCredentials(phoneNumberId, accessToken)</code>' +
-          '</div></div>' +
-        '<div><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option B — Twilio (legacy)</div>' +
-          '<div style="font-size:12px;color:var(--g500);line-height:1.6">' +
+            '2. Copy the <strong>Phone Number ID</strong><br>' +
+            '3. Generate or copy your access token<br>' +
+            '4. In GAS editor run:<br><code style="font-size:11px">saveMetaCredentials(phoneNumberId, accessToken)</code>' +
+          '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option B — Twilio (legacy)</div>' +
+          '<div style="font-size:12px;color:var(--g500);line-height:1.7">' +
             '1. Sign up at <strong>twilio.com</strong><br>' +
-            '2. Enable WhatsApp sandbox (Messaging → Try it out)<br>' +
-            '3. In GAS editor run: <code>saveTwilioCredentials(sid, token, fromNumber)</code>' +
-          '</div></div>' +
+            '2. Enable WhatsApp sandbox<br>' +
+            '3. In GAS editor run:<br><code style="font-size:11px">saveTwilioCredentials(sid, token, fromNumber)</code>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div style="font-size:11px;color:var(--g400);margin-bottom:10px">Credentials are stored in Script Properties only and never written to the spreadsheet.</div>' +
-      '<div id="wa-status-area"><div class="loader" style="height:40px"><div class="spin"></div></div></div>' +
-    '</div></div>' +
+      '<div style="font-size:11px;color:var(--g400);margin-top:10px">Credentials are stored in Script Properties only and never written to the spreadsheet.</div>' +
+    '</div>';
 
-    // ── Invoice Template ─────────────────────────────────────────────────────
-    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">Invoice PDF Template</span></div><div class="card-body">' +
-      '<div class="form-grid-2">' +
-        '<div class="form-group"><label class="form-label">Accent Colour</label>' +
-          '<div style="display:flex;align-items:center;gap:8px">' +
-            '<input type="color" id="s_templateAccentColor" value="'+(s.templateAccentColor||'#1a3c6b')+'" style="width:44px;height:36px;padding:2px;border:1px solid var(--g300);border-radius:var(--r8);cursor:pointer">' +
-            '<span style="font-size:12px;color:var(--g500)">Heading and table header colour</span>' +
-          '</div></div>' +
-        '<div class="form-group"><label class="form-label">Logo Position</label>' +
-          '<select class="form-select" id="s_templateLogoPosition">' +
-            '<option value="left"'   + ((s.templateLogoPosition||'left')==='left'?' selected':'')  + '>Left (default)</option>' +
-            '<option value="right"'  + (s.templateLogoPosition==='right'?' selected':'')           + '>Right</option>' +
-          '</select></div>' +
-        '<div class="form-group"><label class="form-label">Font Style</label>' +
-          '<select class="form-select" id="s_templateFont">' +
-            '<option value="sans"'   + ((s.templateFont||'sans')==='sans'?' selected':'')          + '>Sans-serif</option>' +
-            '<option value="serif"'  + (s.templateFont==='serif'?' selected':'')                   + '>Serif</option>' +
-            '<option value="mono"'   + (s.templateFont==='mono'?' selected':'')                    + '>Monospace</option>' +
-          '</select></div>' +
-      '</div>' +
-    '</div></div>' +
+  // ── Section: Chart of Accounts ────────────────────────────────────────────
+  var secCOA =
+    '<div id="coa-seed-status" style="margin-bottom:14px">' +
+      '<div class="loader" style="height:32px"><div class="spin"></div></div>' +
+    '</div>' +
+    '<p style="font-size:13px;color:var(--g600);margin-bottom:16px;line-height:1.6">' +
+      'Seed your Chart of Accounts with the standard UK nominal accounts. ' +
+      'Existing accounts are never overwritten — only missing accounts are added.' +
+    '</p>' +
+    '<div style="margin-bottom:16px">' +
+      '<label class="form-label">Template</label>' +
+      '<select class="form-select" id="coa-template-sel" style="max-width:320px">' +
+        '<option value="uk_standard">UK Standard (90 accounts — recommended)</option>' +
+        '<option value="uk_sole_trader">UK Sole Trader Simplified (50 accounts)</option>' +
+      '</select>' +
+      '<div style="font-size:11px;color:var(--g400);margin-top:4px">The standard template covers all common account types for UK SMEs including MTD VAT accounts.</div>' +
+    '</div>' +
+    '<button class="btn btn-primary" id="coa-seed-btn" onclick="doSeedCOA()">🌱 Seed Chart of Accounts</button>' +
+    '<span style="font-size:12px;color:var(--g400);margin-left:12px">Safe to run on existing data — skips accounts that already exist</span>';
 
-    // ── Bank Details (for invoice PDFs) ───────────────────────────────────────
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">🏦 Bank Details (for invoices)</span></div><div class="card-body">' +
-      sf('Bank Name','bankName',s.bankName) +
-      sf('Account Name','accountName',s.accountName) +
-      sf('Sort Code','sortCode',s.sortCode) +
-      sf('Account Number','accountNumber',s.accountNumber) +
-    '</div></div>' +
+  // ── Render ──────────────────────────────────────────────────────────────────
+  showContent(
+    '<div class="page-hdr">' +
+      '<div class="page-title">⚙️ Settings</div>' +
+      '<div class="page-actions"><button class="btn btn-primary" onclick="saveSettings()">💾 Save Changes</button></div>' +
+    '</div>' +
 
-    '</div>' // end grid
+    '<style>' +
+    '.sacc{background:#fff;border:1px solid var(--g200);border-radius:12px;margin-bottom:10px;overflow:hidden}' +
+    '.sacc-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background .15s}' +
+    '.sacc-hdr:hover{background:var(--g50)}' +
+    '.sacc-title{font-size:14px;font-weight:600;color:var(--g900)}' +
+    '.sacc-status{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--g100);color:var(--g600)}' +
+    '.sacc-chevron{width:18px;height:18px;color:var(--g400);transition:transform .2s;flex-shrink:0}' +
+    '.sacc-chevron.open{transform:rotate(180deg)}' +
+    '.sacc-body{padding:20px;border-top:1px solid var(--g100)}' +
+    '@media(max-width:600px){.form-grid-2{grid-template-columns:1fr!important}.sacc-body{padding:14px}}' +
+    '</style>' +
+
+    acc('company',    '🏢', 'Company',             secCompany,   true)  +
+    acc('invoicing',  '🧾', 'Invoicing',            secInvoicing, false) +
+    acc('template',   '🎨', 'Invoice PDF Template', secTemplate,  false) +
+    acc('fy',         '📅', 'Financial Year',       secFY,        false) +
+    acc('coa',         '📊', 'Chart of Accounts',    secCOA,       false) +
+    acc('vat',        '%',  'VAT',                  secVAT,       false, s.vatRegistered ? '✓ Registered' : '') +
+    acc('bank',       '🏦', 'Bank Details',         secBank,      false) +
+    acc('email',      '✉️', 'Email Template',       secEmail,     false) +
+    acc('hmrc',       '🏛', 'HMRC / MTD',           secHMRC,      false) +
+    acc('currency',   '💱', 'Currency',             secCurrency,  false) +
+    acc('whatsapp',   '💬', 'WhatsApp Delivery',    secWhatsApp,  false)
   );
-  // Load HMRC status asynchronously
+
   loadHMRCStatusBar();
+  loadCOASeedStatus();
   setTimeout(initVATToggle, 50);
   setTimeout(updateFYPreview, 50);
   var yed = document.getElementById('s_yearEndDay');
@@ -778,6 +848,75 @@ function showSettings() {
   if (yed) yed.addEventListener('change', updateFYPreview);
   if (bsd) bsd.addEventListener('change', updateFYPreview);
 }
+
+function toggleSettingsAcc(id) {
+  var body    = document.getElementById('sacc-' + id).querySelector('.sacc-body');
+  var chevron = document.getElementById('sacc-' + id).querySelector('.sacc-chevron');
+  var isOpen  = body.style.display !== 'none';
+  body.style.display   = isOpen ? 'none' : 'block';
+  if (isOpen) { chevron.classList.remove('open'); } else { chevron.classList.add('open'); }
+}
+
+function toggleWAGuide() {
+  var guide = document.getElementById('wa-guide');
+  var btn   = document.getElementById('wa-guide-btn');
+  var isOpen = guide.style.display !== 'none';
+  guide.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '📖 Show setup guide' : '📖 Hide setup guide';
+}
+
+async function loadCOASeedStatus() {
+  var el = document.getElementById('coa-seed-status');
+  if (!el) return;
+  var r = await api('getAccounts', { filters: {} });
+  var count = 0;
+  if (r && r.accounts) count = r.accounts.length;
+  else if (r && Array.isArray(r)) count = r.length;
+
+  if (count === 0) {
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;' +
+        'background:var(--amber-50);border:1px solid var(--amber-200);border-radius:8px">' +
+        '<span style="font-size:18px">⚠️</span>' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:600;color:#92400e">No accounts found</div>' +
+          '<div style="font-size:12px;color:#92400e">Your Chart of Accounts is empty — seed it to get started.</div>' +
+        '</div>' +
+      '</div>';
+  } else {
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;' +
+        'background:var(--green-50);border:1px solid var(--green-200);border-radius:8px">' +
+        '<span style="font-size:18px">✅</span>' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:600;color:var(--green-700)">' + count + ' accounts in your Chart of Accounts</div>' +
+          '<div style="font-size:12px;color:var(--green-600)">Seeding will only add accounts that are missing — existing accounts are safe.</div>' +
+        '</div>' +
+      '</div>';
+  }
+}
+
+async function doSeedCOA() {
+  var btn = document.getElementById('coa-seed-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Seeding…'; }
+
+  var r = await api('seedCOA', {});
+
+  if (btn) { btn.disabled = false; btn.textContent = '🌱 Seed Chart of Accounts'; }
+
+  if (r && r.success) {
+    var msg = r.created > 0
+      ? r.created + ' accounts added' + (r.skipped > 0 ? ', ' + r.skipped + ' already existed' : '') + '.'
+      : 'All ' + r.skipped + ' accounts already exist — nothing to add.';
+    toast(msg, r.created > 0 ? 'success' : 'info', 5000);
+    loadCOASeedStatus(); // refresh the status badge
+  } else {
+    toast('Seeding failed: ' + (r ? r.message || r.error : 'unknown error'), 'error');
+  }
+}
+
+
+
 
 function updateFYPreview() {
   var el = document.getElementById('fy-preview'); if (!el) return;
