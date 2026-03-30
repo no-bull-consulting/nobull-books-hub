@@ -560,16 +560,23 @@ function showSettings() {
   setTimeout(async function() {
     var el = document.getElementById('wa-status-area');
     if (!el) return;
-    var r = await api('getWhatsAppStatus');
-    if (!r) { el.innerHTML = '<span style="font-size:12px;color:var(--g400)">Could not load status</span>'; return; }
-    var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
-    var detail = r.provider === 'meta'
-      ? 'Phone ID: <code>' + r.meta.phoneId + '</code>'
-      : r.provider === 'twilio' ? 'From: <code>' + r.twilio.fromNumber + '</code>' : '';
-    el.innerHTML = r.configured
-      ? '<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green-600)">&#10003;</span>' +
-        '<span style="font-size:13px">' + provLabel + ' configured &middot; ' + detail + '</span></div>'
-      : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured</div>';
+    try {
+      var r = await api('getWhatsAppStatus');
+      if (!r || r.error) {
+        el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
+        return;
+      }
+      var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
+      var detail = r.provider === 'meta'
+        ? 'Phone ID: <code>' + r.meta.phoneId + '</code>'
+        : r.provider === 'twilio' ? 'From: <code>' + r.twilio.fromNumber + '</code>' : '';
+      el.innerHTML = r.configured
+        ? '<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green-600)">&#10003;</span>' +
+          '<span style="font-size:13px">' + provLabel + ' configured &middot; ' + detail + '</span></div>'
+        : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured — use the setup guide below.</div>';
+    } catch(e) {
+      el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
+    }
   }, 300);
 
   // ── Field helpers ───────────────────────────────────────────────────────────

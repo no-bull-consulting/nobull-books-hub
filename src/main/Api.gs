@@ -339,3 +339,27 @@ function _buildPermissions(ctx) {
 function _safe(fn) {
   try { return fn() || {}; } catch(e) { Logger.log('_safe: ' + e); return {}; }
 }
+
+/**
+ * getWhatsAppStatus()
+ * Returns WhatsApp/Twilio configuration status.
+ * Full implementation pending — returns not-configured stub for now.
+ */
+function getWhatsAppStatus() {
+  try {
+    var props = PropertiesService.getScriptProperties().getProperties();
+    var metaConfigured   = !!(props['META_PHONE_ID'] && props['META_ACCESS_TOKEN']);
+    var twilioConfigured = !!(props['TWILIO_SID'] && props['TWILIO_TOKEN']);
+    if (metaConfigured) {
+      return { success: true, configured: true, provider: 'meta',
+        meta: { phoneId: props['META_PHONE_ID'].substring(0, 6) + '...' } };
+    }
+    if (twilioConfigured) {
+      return { success: true, configured: true, provider: 'twilio',
+        twilio: { fromNumber: props['TWILIO_FROM'] || 'configured' } };
+    }
+    return { success: true, configured: false, provider: null };
+  } catch(e) {
+    return { success: false, configured: false, error: e.toString() };
+  }
+}
