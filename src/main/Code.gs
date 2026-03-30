@@ -17,6 +17,7 @@ function doGet(e) {
     var tmpl = HtmlService.createTemplateFromFile('Index');
     tmpl.clientSheetId = sheetId;
     tmpl.scriptUrl     = ScriptApp.getService().getUrl();
+    tmpl.ownerEmail    = e.parameter.ownerEmail || '';
 
     return tmpl.evaluate()
       .setTitle('no~bull books')
@@ -27,7 +28,6 @@ function doGet(e) {
   // ── Landing page ────────────────────────────────────────────────────────────
   var setupUrl = PropertiesService.getScriptProperties()
     .getProperty('SETUP_SERVICE_URL') || '#';
-  var appUrl   = ScriptApp.getService().getUrl();
 
   return HtmlService.createHtmlOutput(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
@@ -46,7 +46,9 @@ function doGet(e) {
     'p{font-size:15px;color:#64748b;line-height:1.7;margin:16px 0 28px}' +
     '.btn-primary{display:inline-block;background:#2563eb;color:#fff;' +
       'text-decoration:none;padding:14px 32px;border-radius:8px;' +
-      'font-weight:600;font-size:15px;width:100%;text-align:center}' +
+      'font-weight:600;font-size:15px;width:100%;text-align:center;' +
+      'cursor:pointer;border:none;font-family:inherit}' +
+    '.btn-primary:hover{background:#1d4ed8}' +
     '.sub{font-size:12px;color:#94a3b8;margin-top:14px}' +
     '</style></head><body>' +
     '<div class="card">' +
@@ -54,11 +56,14 @@ function doGet(e) {
       '<div class="logo">no~bull <span>books</span></div>' +
       '<p>Straightforward accounting for UK sole traders &amp; small businesses.<br>' +
         'Your data lives in your own Google Sheet.</p>' +
-      '<a href="' + setupUrl + '" class="btn-primary">Get started free →</a>' +
+      '<button class="btn-primary" onclick="window.top.location.href=\'' + setupUrl + '\'">Get started free →</button>' +
       '<p class="sub">14-day free trial · No credit card required</p>' +
     '</div>' +
     '</body></html>'
-  );
+  )
+  .setTitle('no~bull books')
+  .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+  .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /**
@@ -88,9 +93,20 @@ function include(filename) {
 /**
  * setSetupServiceUrl(url)
  * Run once from the Apps Script editor after deploying SetupService.
- * Stores the setup microservice URL so the landing page can link to it.
  */
 function setSetupServiceUrl(url) {
   PropertiesService.getScriptProperties().setProperty('SETUP_SERVICE_URL', url);
   Logger.log('SETUP_SERVICE_URL set to: ' + url);
+}
+
+/**
+ * Verify script properties are set correctly.
+ * Run from editor to check configuration.
+ */
+function _checkProps() {
+  var props = PropertiesService.getScriptProperties().getProperties();
+  Logger.log('SETUP_SERVICE_URL: ' + props['SETUP_SERVICE_URL']);
+  Logger.log('REGISTRY_SHEET_ID: ' + props['REGISTRY_SHEET_ID']);
+  Logger.log('TRIAL_DAYS: '        + props['TRIAL_DAYS']);
+  Logger.log('GEMINI_API_KEY: '    + (props['GEMINI_API_KEY'] ? 'set (' + props['GEMINI_API_KEY'].substring(0,8) + '...)' : 'NOT SET'));
 }

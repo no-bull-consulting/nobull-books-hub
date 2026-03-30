@@ -22,7 +22,8 @@ function checkAndInitSheet(params) {
         'hmrcNINO','mtdBusinessId','cnPrefix','nextCNNumber','poPrefix','nextPONumber',
         'lockedBefore','emailSubject','emailBody','paymentTerms','invoiceFooter',
         'templateAccentColor','templateLogoPosition','templateShowReference','templateFont',
-        'baseCurrency','enabledCurrencies','businessStartDate','yearEndDay'
+        'baseCurrency','enabledCurrencies','businessStartDate','yearEndDay',
+        'ownerEmail'
       ],
       'Clients': [
         'ClientId','Name','Email','Phone','Address','Postcode','Country',
@@ -161,11 +162,33 @@ function checkAndInitSheet(params) {
     // ── Seed Users sheet with the caller as Owner (bootstrap only) ────────────
     var usersSheet = ss.getSheetByName('Users');
     if (usersSheet && usersSheet.getLastRow() < 2) {
-      var ownerEmail = '';
-      try { ownerEmail = Session.getActiveUser().getEmail(); } catch(e) {}
+      // Prefer the email passed from SetupService (real client email)
+      // over Session.getActiveUser() which always returns edward in hub model
+      var ownerEmail = (params && params._ownerEmail) ? params._ownerEmail : '';
+      if (!ownerEmail) {
+        try { ownerEmail = Session.getActiveUser().getEmail(); } catch(e) {}
+      }
       if (ownerEmail) {
         usersSheet.appendRow([ownerEmail, 'Owner', 'system', new Date(), true, 'Initial setup']);
         Logger.log('Initializer: seeded Owner — ' + ownerEmail);
+
+        // ── Store ownerEmail in Settings so Auth.gs can identify the user ──────
+        // Since the hub runs as edward (USER_DEPLOYING), we cannot use
+        // Session.getActiveUser() to identify clients. We store their email
+        // in the Settings sheet so every API call can resolve identity.
+        var settingsSheet = ss.getSheetByName('Settings');
+        if (settingsSheet && settingsSheet.getLastRow() >= 1) {
+          var headers = settingsSheet.getRange(1, 1, 1, settingsSheet.getLastColumn()).getValues()[0];
+          var ownerEmailCol = headers.indexOf('ownerEmail');
+          if (ownerEmailCol >= 0) {
+            // Ensure row 2 exists
+            if (settingsSheet.getLastRow() < 2) {
+              settingsSheet.appendRow([]);
+            }
+            settingsSheet.getRange(2, ownerEmailCol + 1).setValue(ownerEmail);
+            Logger.log('Initializer: stored ownerEmail in Settings — ' + ownerEmail);
+          }
+        }
       }
     }
 

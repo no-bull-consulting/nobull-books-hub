@@ -231,8 +231,9 @@
 <script>
 
 const CLIENT_CONTEXT = {
-  sheetId:   "<?!= clientSheetId ?>",
-  scriptUrl: "<?!= scriptUrl ?>"
+  sheetId:    "<?!= clientSheetId ?>",
+  scriptUrl:  "<?!= scriptUrl ?>",
+  ownerEmail: "<?!= ownerEmail ?>"
 };
 
 'use strict';
@@ -254,6 +255,7 @@ async function api(action, params) {
     params = params !== undefined ? { value: params } : {};
   }
   params._sheetId = CLIENT_CONTEXT.sheetId;
+  if (CLIENT_CONTEXT.ownerEmail) params._ownerEmail = CLIENT_CONTEXT.ownerEmail;
   return new Promise(function(resolve) {
     google.script.run
       .withSuccessHandler(function(res) {

@@ -48,10 +48,41 @@ function _canDoPermission(role, action) {
  */
 function _getCurrentUserContext(params) {
   var email = '';
-  try {
-    email = Session.getActiveUser().getEmail();
-    if (!email) email = Session.getEffectiveUser().getEmail();
-  } catch(e) {}
+
+  // ── Identity: read owner email stored in Settings sheet ───────────────────
+  // Since the hub runs as USER_DEPLOYING (always edward), we cannot use
+  // Session.getActiveUser() to identify the real client. Instead, the client's
+  // email is stored in their Settings sheet during onboarding by SetupService,
+  // and read here on every request.
+  //
+  // Security model: knowing the ?id=SHEET_ID URL = authorised access.
+  // The sheet ID is a 44-character random string — effectively a private key.
+  if (params && params._sheetId) {
+    try {
+      var ss       = getDb(params);
+      var settings = ss.getSheetByName(SHEETS.SETTINGS);
+      if (settings && settings.getLastRow() >= 2) {
+        var sData = settings.getRange(2, 1, 1, settings.getLastColumn()).getValues()[0];
+        // ownerEmail is stored in the Settings sheet column named 'ownerEmail'
+        // We look it up by header position
+        var headers = settings.getRange(1, 1, 1, settings.getLastColumn()).getValues()[0];
+        var ownerEmailCol = headers.indexOf('ownerEmail');
+        if (ownerEmailCol >= 0 && sData[ownerEmailCol]) {
+          email = sData[ownerEmailCol].toString().toLowerCase().trim();
+        }
+      }
+    } catch(e) {
+      Logger.log('Identity: could not read ownerEmail from Settings: ' + e.toString());
+    }
+  }
+
+  // ── Fallback: GAS session (works for edward's own instances) ──────────────
+  if (!email) {
+    try {
+      email = Session.getActiveUser().getEmail();
+      if (!email) email = Session.getEffectiveUser().getEmail();
+    } catch(e) {}
+  }
 
   function makeCtx(em, role) {
     return {
@@ -66,10 +97,27 @@ function _getCurrentUserContext(params) {
   if (!email) return makeCtx('', 'ReadOnly');
 
   // ── Superuser override ────────────────────────────────────────────────────
+  // Check 1: the resolved identity email matches the superuser email
   if (typeof SUPERUSER_EMAIL !== 'undefined' &&
-      email.toLowerCase() === SUPERUSER_EMAIL.toLowerCase()) {
+      email && email.toLowerCase() === SUPERUSER_EMAIL.toLowerCase()) {
     return { email: email, role: 'Superuser', canDo: function() { return true; } };
   }
+
+  // Check 2: the GAS session itself is the superuser (bypass for any client instance)
+  // This allows edward to open any client's ?id=SHEET_ID URL and get Superuser access
+  // even though their Settings sheet has the client's email as ownerEmail.
+  try {
+    var sessionEmail = Session.getActiveUser().getEmail();
+    if (!sessionEmail) sessionEmail = Session.getEffectiveUser().getEmail();
+    if (sessionEmail && typeof SUPERUSER_EMAIL !== 'undefined' &&
+        sessionEmail.toLowerCase() === SUPERUSER_EMAIL.toLowerCase()) {
+      return {
+        email: sessionEmail,
+        role:  'Superuser',
+        canDo: function() { return true; }
+      };
+    }
+  } catch(e) {}
 
   try {
     var ss    = getDb(params || {});
