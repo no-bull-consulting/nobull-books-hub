@@ -225,7 +225,7 @@ function setSuperuserEmail(email) {
 }
 
 // ── Application version ───────────────────────────────────────────────────────
-var APP_VERSION = '1.0.0';
+var APP_VERSION = '2.0.0';
 
 // ── Google Identity Services — OAuth Client ID ────────────────────────────────
 // Used for client-side Sign in with Google (verifies user identity in hub model)
