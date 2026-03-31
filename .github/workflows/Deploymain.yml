@@ -1,0 +1,44 @@
+name: Deploy — Main Hub
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/main/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Push to Google Apps Script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Authenticate clasp
+        run: |
+          echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
+
+      - name: Write .clasp.json
+        run: |
+          echo '{"scriptId":"${{ secrets.MAIN_SCRIPT_ID }}","rootDir":"src/main"}' > .clasp.json
+
+      - name: Push to Apps Script
+        run: clasp push --force
+
+      - name: Deploy new version
+        run: |
+          if [ -n "${{ secrets.MAIN_DEPLOYMENT_ID }}" ]; then
+            clasp deploy --deploymentId "${{ secrets.MAIN_DEPLOYMENT_ID }}" --description "Auto-deploy $(date +'%Y-%m-%d %H:%M') — ${{ github.sha }}"
+          else
+            clasp deploy --description "Auto-deploy $(date +'%Y-%m-%d %H:%M') — ${{ github.sha }}"
+          fi
