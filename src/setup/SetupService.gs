@@ -25,7 +25,7 @@
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 // Replace with your actual main hub /exec URL
-var MAIN_APP_URL = 'https://script.google.com/a/macros/nobull.consulting/s/YOUR_MAIN_DEPLOYMENT_ID/exec';
+var MAIN_APP_URL = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec';
 
 // The Google account the main hub runs as — needs editor access to every client sheet
 var HUB_OPERATOR_EMAIL = 'edward@nobull.consulting';
