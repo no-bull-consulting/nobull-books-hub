@@ -28,19 +28,15 @@ jobs:
       - name: Install clasp
         run: npm install -g @google/clasp
 
-      - name: Write Workload Identity credential config
-        run: |
-          echo '${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}' > /tmp/wif-config.json
-
       - name: Authenticate via Workload Identity Federation
         uses: google-github-actions/auth@v2
         with:
-          credential_file: /tmp/wif-config.json
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
 
-      - name: Generate clasp token from service account
+      - name: Generate clasp token
         run: |
-          ACCESS_TOKEN=$(gcloud auth print-access-token --impersonate-service-account=${{ secrets.SERVICE_ACCOUNT_EMAIL }})
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "{\"token\":{\"access_token\":\"${ACCESS_TOKEN}\",\"token_type\":\"Bearer\",\"expiry_date\":9999999999999},\"oauth2ClientSettings\":{\"clientId\":\"\",\"clientSecret\":\"\",\"redirectUri\":\"\"},\"isLocalCreds\":false}" > ~/.clasprc.json
 
       - name: Write .clasp.json
