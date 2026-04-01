@@ -25,6 +25,22 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
+  // ── Registry ping from SetupService ────────────────────────────────────────
+  // Called by SetupService after creating a new client sheet
+  if (e.parameter.action === 'pingRegistry') {
+    try {
+      pingRegistry(e.parameter.sheetId, {
+        email:       e.parameter.email       || '',
+        companyName: e.parameter.companyName || '',
+        version:     APP_VERSION
+      });
+    } catch(pingErr) {
+      Logger.log('doGet pingRegistry error: ' + pingErr.toString());
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   // ── Landing page ────────────────────────────────────────────────────────────
   var setupUrl = PropertiesService.getScriptProperties()
     .getProperty('SETUP_SERVICE_URL') || '#';
