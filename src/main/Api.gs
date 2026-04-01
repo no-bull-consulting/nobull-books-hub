@@ -189,7 +189,7 @@ function _route(action, params, ctx) {
 
     // ── BANKING ───────────────────────────────────────────────────────────────
     case 'getBankAccounts':             return getBankAccounts(params);
-    case 'createBankAccount':          _auth('banking.reconcile', params); return createBankAccount(params);
+    case 'createBankAccount':          _auth('banking.write', params); return createBankAccount(params, params);
     case 'getBankTransactions':         return getBankTransactions(params.accountId, params.fromDate, params.toDate, params);
     case 'getUnreconciledTransactions': return getUnreconciledTransactions(params.accountId, params);
     case 'getReconciliationSummary':    return getReconciliationSummary(params.accountId, params);
