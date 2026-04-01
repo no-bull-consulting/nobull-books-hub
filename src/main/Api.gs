@@ -229,10 +229,10 @@ function _route(action, params, ctx) {
     case 'submitVATReturn':     _auth('mtd.submit',  params); return submitVATReturn(params.vrn, params.periodKey, params);
     case 'getVATLiabilities':   _auth('reports.tax', params); return getVATLiabilities(params.vrn, params.fromDate, params.toDate, params);
     case 'getVATPayments':      _auth('reports.tax', params); return getVATPayments(params.vrn, params.fromDate, params.toDate, params);
-    case 'getHMRCAuthStatus':   return getHMRCAuthStatus();
-    case 'getHMRCAuthUrl':      return getHMRCManualAuthUrl();
-    case 'exchangeHMRCCode':   _auth('credentials.manage', params); return exchangeHMRCCode(params.code);
-    case 'testHMRCConnection':  return testHMRCConnection();
+    case 'getHMRCAuthStatus':   return getHMRCAuthStatus(params);
+    case 'getHMRCAuthUrl':      return getHMRCManualAuthUrl(params);
+    case 'exchangeHMRCCode':   _auth('credentials.manage', params); return exchangeHMRCCode(params.code, params);
+    case 'testHMRCConnection':  return testHMRCConnection(params);
 
     // ── WHATSAPP / EMAIL ──────────────────────────────────────────────────────
     case 'sendInvoiceWhatsApp': _auth('invoices.write', params); return sendInvoiceWhatsApp(params.invoiceId, params.overrides||{}, params);

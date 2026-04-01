@@ -104,10 +104,20 @@ function getInvoiceById(invoiceId, params) {
           paymentDate: safeSerializeDate(data[i][15]),
           notes: data[i][16] || '',
           pdfUrl: data[i][17] || '',
-          bankAccountId: data[i][18] ? data[i][18].toString() : '',
-          currency:     data[i][19] ? data[i][19].toString() : '',
-          exchangeRate: parseFloat(data[i][20]) || 1,
-          baseTotal:    parseFloat(data[i][21]) || 0
+          // col 18 = Currency (written by createInvoice)
+          // col 19 = ExchangeRate
+          // col 20 = BaseTotal
+          // BankAccount is not stored in the Invoices sheet currently
+          bankAccountId: '',
+          currency:     (function(v) {
+            var s = v ? v.toString().trim() : '';
+            return /^[A-Z]{3}$/.test(s) ? s : 'GBP';
+          })(data[i][18]),
+          exchangeRate: (function(v) {
+            var r = parseFloat(v);
+            return (r && r > 0.001 && r < 10000) ? r : 1;
+          })(data[i][19]),
+          baseTotal:    parseFloat(data[i][20]) || 0
         };
       }
     }
@@ -957,7 +967,10 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
     var baseCurr   = settings.baseCurrency || 'GBP';
     var invCurr    = invoice.currency || baseCurr;
     var isForeign  = invCurr !== baseCurr;
-    var fxRate     = parseFloat(invoice.exchangeRate) || 1;
+    var fxRate     = (function(r) {
+      var n = parseFloat(r);
+      return (n && n > 0.001 && n < 10000) ? n : 1;
+    })(invoice.exchangeRate);
     var currSymbol = { GBP:'£', EUR:'€', USD:'$', CHF:'Fr', SEK:'kr', NOK:'kr', DKK:'kr', JPY:'¥', CAD:'$', AUD:'$' }[invCurr] || invCurr+' ';
     var baseSymbol = { GBP:'£', EUR:'€', USD:'$' }[baseCurr] || baseCurr+' ';
     var invoiceLabel = isDraft
@@ -1143,7 +1156,7 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
     var toEmail = overrides.to || invoice.clientEmail || '';
     if (!toEmail) return { success: false, message: 'No recipient email address' };
     
-    var pdfResult = generateInvoicePDF(invoiceId);
+    var pdfResult = generateInvoicePDF(invoiceId, params);
     if (!pdfResult.success) return pdfResult;
     
     var pdfFile = DriveApp.getFileById(pdfResult.fileId);

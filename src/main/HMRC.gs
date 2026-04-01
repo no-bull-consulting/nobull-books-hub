@@ -34,10 +34,10 @@ function _getHMRCToken() {
 // AUTH STATUS
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getHMRCAuthStatus() {
+function getHMRCAuthStatus(params) {
   try {
     var t        = _getHMRCToken();
-    var settings = getSettings();
+    var settings = getSettings(params || {});
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.accessToken) {
@@ -70,10 +70,10 @@ function getHMRCAuthStatus() {
 // OAUTH — MANUAL FLOW (copy-paste code)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getHMRCManualAuthUrl() {
+function getHMRCManualAuthUrl(params) {
   try {
     var t        = _getHMRCToken();
-    var settings = getSettings();
+    var settings = getSettings(params || {});
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.clientId) {
@@ -100,10 +100,10 @@ function getHMRCManualAuthUrl() {
   }
 }
 
-function exchangeHMRCCode(code) {
+function exchangeHMRCCode(code, params) {
   try {
     var t        = _getHMRCToken();
-    var settings = getSettings();
+    var settings = getSettings(params || {});
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.clientId || !t.clientSecret) {
@@ -146,10 +146,10 @@ function exchangeHMRCCode(code) {
   }
 }
 
-function testHMRCConnection() {
+function testHMRCConnection(params) {
   try {
     var t    = _getHMRCToken();
-    var settings = getSettings();
+    var settings = getSettings(params || {});
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.accessToken) {
