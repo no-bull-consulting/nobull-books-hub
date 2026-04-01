@@ -24,18 +24,20 @@ function getAllClients(params) {
       var r = rows[i];
       if (!r[0]) continue; // skip empty rows
       clients.push({
-        clientId:    r[0]  ? r[0].toString()  : '',
-        name:        r[1]  ? r[1].toString()  : '',
-        email:       r[2]  ? r[2].toString()  : '',
-        phone:       r[3]  ? r[3].toString()  : '',
-        address:     r[4]  ? r[4].toString()  : '',
-        postcode:    r[5]  ? r[5].toString()  : '',
-        country:     r[6]  ? r[6].toString()  : '',
-        vatNumber:   r[7]  ? r[7].toString()  : '',
-        contactName: r[8]  ? r[8].toString()  : '',
-        notes:       r[9]  ? r[9].toString()  : '',
-        createdDate: r[10] ? r[10].toString() : '',
-        active:      r[11] !== false && r[11] !== 'FALSE' && r[11] !== ''
+        clientId:     r[0]  ? r[0].toString()  : '',
+        clientName:   r[1]  ? r[1].toString()  : '',
+        name:         r[1]  ? r[1].toString()  : '',  // alias for compatibility
+        email:        r[2]  ? r[2].toString()  : '',
+        phone:        r[3]  ? r[3].toString()  : '',
+        address:      r[4]  ? r[4].toString()  : '',
+        postcode:     r[5]  ? r[5].toString()  : '',
+        country:      r[6]  ? r[6].toString()  : '',
+        vatRegNumber: r[7]  ? r[7].toString()  : '',
+        vatNumber:    r[7]  ? r[7].toString()  : '',  // alias
+        contactName:  r[8]  ? r[8].toString()  : '',
+        notes:        r[9]  ? r[9].toString()  : '',
+        createdDate:  r[10] ? r[10].toString() : '',
+        active:       r[11] !== false && r[11] !== 'FALSE' && r[11] !== ''
       });
     }
     return { success: true, clients: clients };
@@ -161,18 +163,20 @@ function getAllSuppliers(params) {
       var r = rows[i];
       if (!r[0]) continue;
       suppliers.push({
-        supplierId:  r[0]  ? r[0].toString()  : '',
-        name:        r[1]  ? r[1].toString()  : '',
-        email:       r[2]  ? r[2].toString()  : '',
-        phone:       r[3]  ? r[3].toString()  : '',
-        address:     r[4]  ? r[4].toString()  : '',
-        postcode:    r[5]  ? r[5].toString()  : '',
-        country:     r[6]  ? r[6].toString()  : '',
-        vatNumber:   r[7]  ? r[7].toString()  : '',
-        contactName: r[8]  ? r[8].toString()  : '',
-        notes:       r[9]  ? r[9].toString()  : '',
-        createdDate: r[10] ? r[10].toString() : '',
-        active:      r[11] !== false && r[11] !== 'FALSE' && r[11] !== ''
+        supplierId:   r[0]  ? r[0].toString()  : '',
+        supplierName: r[1]  ? r[1].toString()  : '',
+        name:         r[1]  ? r[1].toString()  : '',  // alias
+        email:        r[2]  ? r[2].toString()  : '',
+        phone:        r[3]  ? r[3].toString()  : '',
+        address:      r[4]  ? r[4].toString()  : '',
+        postcode:     r[5]  ? r[5].toString()  : '',
+        country:      r[6]  ? r[6].toString()  : '',
+        vatRegNumber: r[7]  ? r[7].toString()  : '',
+        vatNumber:    r[7]  ? r[7].toString()  : '',  // alias
+        contactName:  r[8]  ? r[8].toString()  : '',
+        notes:        r[9]  ? r[9].toString()  : '',
+        createdDate:  r[10] ? r[10].toString() : '',
+        active:       r[11] !== false && r[11] !== 'FALSE' && r[11] !== ''
       });
     }
     return { success: true, suppliers: suppliers };
