@@ -916,14 +916,32 @@ function generateInvoicePDF(invoiceId, params) {
 function generateInvoiceHTML(invoice, lines, settings, params) {
   try {
     var logoBase64 = '';
+    // Extract Drive file ID from the stored logo URL and use DriveApp directly
+    // This is more reliable than UrlFetchApp which struggles with Drive auth
     if (settings && settings.logoURL) {
       try {
-        var res = UrlFetchApp.fetch(settings.logoURL, { muteHttpExceptions:true });
-        if (res.getResponseCode() === 200) {
-          var b = res.getBlob();
-          logoBase64 = 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes());
+        var logoFileId = null;
+        // Parse file ID from thumbnail URL: https://drive.google.com/thumbnail?id=FILE_ID&sz=...
+        var thumbMatch = settings.logoURL.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (thumbMatch) { logoFileId = thumbMatch[1]; }
+        // Parse file ID from standard Drive URL: https://drive.google.com/file/d/FILE_ID/...
+        if (!logoFileId) {
+          var driveMatch = settings.logoURL.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (driveMatch) { logoFileId = driveMatch[1]; }
         }
-      } catch(e) { Logger.log('Logo fetch: ' + e); }
+        if (logoFileId) {
+          var logoFile = DriveApp.getFileById(logoFileId);
+          var logoBlob = logoFile.getBlob();
+          logoBase64 = 'data:' + logoBlob.getContentType() + ';base64,' + Utilities.base64Encode(logoBlob.getBytes());
+        } else {
+          // Fallback: try fetching URL directly
+          var res = UrlFetchApp.fetch(settings.logoURL, { muteHttpExceptions:true });
+          if (res.getResponseCode() === 200) {
+            var b = res.getBlob();
+            logoBase64 = 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes());
+          }
+        }
+      } catch(e) { Logger.log('Logo load error: ' + e); }
     }
 
     var tz         = Session.getScriptTimeZone();
