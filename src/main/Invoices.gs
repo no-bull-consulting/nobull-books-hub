@@ -881,10 +881,10 @@ function diagnoseInvoiceColumns() {
 
 function generateInvoicePDF(invoiceId, params) {
   try {
-    var invoice = getInvoiceById(invoiceId);
+    var invoice = getInvoiceById(invoiceId, params);
     if (!invoice) return { success: false, message: 'Invoice not found' };
     
-    var lines = getInvoiceLines(invoiceId);
+    var lines = getInvoiceLines(invoiceId, params);
     var settings = getSettings(params);
     var html = generateInvoiceHTML(invoice, lines, settings);
     
@@ -1136,7 +1136,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
 function sendInvoiceEmail(invoiceId, overrides, params) {
   try {
     overrides = overrides || {};
-    var invoice = getInvoiceById(invoiceId);
+    var invoice = getInvoiceById(invoiceId, params);
     var settings = getSettings(params);
     
     if (!invoice) return { success: false, message: 'Invoice not found' };
@@ -1597,39 +1597,4 @@ function markBadDebtVATClaimed(badDebtId, claimDate, params) {
 // DELETE CLIENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-function deleteClient(clientId, params) {
-  try {
-    _auth('clients.write', params);
-    var ss     = getDb(params || {});
-    var sheet  = ss.getSheetByName(SHEETS.CLIENTS);
-    if (!sheet) return { success: false, message: 'Clients sheet not found.' };
-
-    var data = sheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (data[i][0] && data[i][0].toString() === clientId) {
-        // Safety check — refuse if client has unpaid invoices
-        var invSheet = ss.getSheetByName(SHEETS.INVOICES);
-        if (invSheet) {
-          var invData = invSheet.getDataRange().getValues();
-          for (var j = 1; j < invData.length; j++) {
-            if (invData[j][2] && invData[j][2].toString() === clientId) {
-              var status = (invData[j][14] || '').toString();
-              var due    = parseFloat(invData[j][13]) || 0;
-              if (due > 0 && status !== 'Void') {
-                return { success: false, message: 'Cannot delete client with outstanding invoices (£' + due.toFixed(2) + ' due). Void or write off all invoices first.' };
-              }
-            }
-          }
-        }
-        var clientName = data[i][1] ? data[i][1].toString() : clientId;
-        sheet.deleteRow(i + 1);
-        logAudit('DELETE', 'Client', clientId, { name: clientName });
-        return { success: true, message: 'Client "' + clientName + '" deleted.' };
-      }
-    }
-    return { success: false, message: 'Client not found.' };
-  } catch(e) {
-    Logger.log('deleteClient error: ' + e.toString());
-    return { success: false, message: e.toString() };
-  }
-}
+// deleteClient moved to Contacts.gs
