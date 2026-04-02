@@ -2532,6 +2532,63 @@ function showSuppliers() {
     )+'</div>'
   );
 }
+
+function openAddBankAccountModal() {
+  openModal('add-bank-acct', 'Add Bank Account',
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Account Name *</label><input type="text" class="form-input" id="ba-name" placeholder="e.g. Business Current Account"></div>' +
+      '<div class="form-group"><label class="form-label">Bank Name *</label><input type="text" class="form-input" id="ba-bank" placeholder="e.g. HSBC, Barclays"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Account Type</label>' +
+        '<select class="form-select" id="ba-type">' +
+          '<option value="Current">Current</option>' +
+          '<option value="Savings">Savings</option>' +
+          '<option value="Credit Card">Credit Card</option>' +
+          '<option value="PayPal">PayPal</option>' +
+          '<option value="Other">Other</option>' +
+        '</select></div>' +
+      '<div class="form-group"><label class="form-label">Opening Balance (£)</label><input type="number" class="form-input" id="ba-balance" value="0" step="0.01"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Sort Code</label><input type="text" class="form-input" id="ba-sort" placeholder="00-00-00"></div>' +
+      '<div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-input" id="ba-num" placeholder="12345678"></div>' +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'add-bank-acct\')">Cancel</button>' +
+    '<button class="btn btn-primary" id="ba-save" onclick="saveNewBankAccount()">Add Account</button>',
+    'modal-md'
+  );
+}
+async function saveNewBankAccount() {
+  var name    = document.getElementById('ba-name').value.trim();
+  var bank    = document.getElementById('ba-bank').value.trim();
+  var type    = document.getElementById('ba-type').value;
+  var balance = parseFloat(document.getElementById('ba-balance').value) || 0;
+  var sort    = document.getElementById('ba-sort').value.trim();
+  var num     = document.getElementById('ba-num').value.trim();
+  if (!name) { toast('Account name is required', 'warning'); return; }
+  if (!bank) { toast('Bank name is required', 'warning'); return; }
+  var btn = document.getElementById('ba-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  var r = await api('createBankAccount', {
+    accountName: name, bankName: bank, accountType: type,
+    openingBalance: balance, sortCode: sort, accountNumber: num
+  });
+  if (r && r.success) {
+    closeModal('add-bank-acct');
+    toast('Bank account added', 'success');
+    var fresh = await api('getStartupData');
+    if (fresh && fresh.success) {
+      App.data.bankAccounts = fresh.bankAccounts || [];
+      App.data.selectedAccount = r.accountId;
+    }
+    showBanking();
+  } else {
+    if (btn) { btn.disabled = false; btn.textContent = 'Add Account'; }
+    toast('Error: ' + (r ? r.message || r.error : 'unknown'), 'error');
+  }
+}
+
 function showBanking() {
   var accts = App.data.bankAccounts||[], selId = App.data.selectedAccount;
   var acct  = accts.find(function(a){return a.accountId===selId;})||accts[0];
@@ -2546,6 +2603,7 @@ function showBanking() {
     '</div>' : '';
   var actions =
     '<div class="page-actions" style="margin-bottom:16px">' +
+      '<button class="btn btn-secondary btn-sm" onclick="openAddBankAccountModal()">+ Add Account</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openSpendMoneyModal()">💸 Spend</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openReceiveMoneyModal()">💰 Receive</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openTransferMoneyModal()">🔄 Transfer</button>' +
