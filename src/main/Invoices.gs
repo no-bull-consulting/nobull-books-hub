@@ -52,10 +52,11 @@ function getAllInvoices(params) {
           paymentDate: row[15] ? safeSerializeDate(row[15]) : '',
           notes: row[16] ? row[16].toString() : '',
           pdfUrl: row[17] ? row[17].toString() : '', // Extra column
-          bankAccountId: row[18] ? row[18].toString() : '', // Bank account used for payment
-          currency:     row[19] ? row[19].toString() : '',
-          exchangeRate: parseFloat(row[20]) || 1,
-          baseTotal:    parseFloat(row[21]) || 0
+          // col 18=Currency, 19=ExchangeRate, 20=BaseTotal (written by createInvoice)
+          bankAccountId: '',
+          currency:     (function(v){ var s=v?v.toString().trim():''; return /^[A-Z]{3}$/.test(s)?s:'GBP'; })(row[18]),
+          exchangeRate: (function(v){ var r=parseFloat(v); return (r&&r>0.001&&r<10000)?r:1; })(row[19]),
+          baseTotal:    parseFloat(row[20]) || 0
         };
         
         invoices.push(invoice);

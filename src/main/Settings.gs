@@ -419,7 +419,9 @@ function getSettings(params) {
       hmrcClientID:         hmrcProps.hmrcClientID,
       hmrcClientSecret:     hmrcProps.hmrcClientSecret,
       hmrcAccessToken:      hmrcProps.hmrcAccessToken,
-      hmrcTokenExpiry:      hmrcProps.hmrcTokenExpiry
+      hmrcTokenExpiry:      hmrcProps.hmrcTokenExpiry,
+      // Pass _sheetId through so updateSettings() can find the correct sheet
+      _sheetId:             params && params._sheetId ? params._sheetId : ''
     };
   } catch(e) {
     Logger.log('getSettings error: ' + e.toString());

@@ -1393,9 +1393,15 @@ async function saveInvoice() {
   var r = await api('createInvoice', { clientId:clientId, lines:lineData, dueDate:dueDate, notes:notes, currency:invCurrency, exchangeRate:invFxRate });
   if (r && r.success) {
     closeModal('inv-create');
-    toast('Invoice created', 'success');
+    toast('Invoice ' + r.invoiceNumber + ' created', 'success');
+    // Refresh invoices list and settings (to update next invoice number)
     var fresh = await api('getAllInvoices');
     if (fresh && fresh.success) App.data.invoices = fresh.invoices || [];
+    var freshSettings = await api('getSettings');
+    if (freshSettings && freshSettings.settings) {
+      App.data.settings = freshSettings.settings;
+      App.settings = freshSettings.settings;
+    }
     showInvoices();
   } else {
     if (btn) { btn.disabled = false; btn.textContent = 'Create Invoice'; }
