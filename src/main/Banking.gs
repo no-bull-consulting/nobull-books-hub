@@ -756,8 +756,8 @@ function _createDoubleEntry(date, type, reference, debitAccount, creditAccount, 
       false
     ]);
     
-    _updateAccountBalance(debitAccount, amount, true);
-    _updateAccountBalance(creditAccount, amount, false);
+    _updateAccountBalance(debitAccount, amount, true, params);
+    _updateAccountBalance(creditAccount, amount, false, params);
     
     return { success: true, transactionId: txnId };
   } catch (e) {
@@ -770,7 +770,7 @@ function _createDoubleEntry(date, type, reference, debitAccount, creditAccount, 
 // All modules call createDoubleEntry() with no prefix. Banking uses _createDoubleEntry().
 // Both route to the same implementation.
 function createDoubleEntry(date, type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId, params) {
-  return _createDoubleEntry(date, type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId);
+  return _createDoubleEntry(date, type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId, params);
 }
 function createTransaction(type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId) {
   return _createTransaction(type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId);

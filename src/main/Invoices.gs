@@ -171,7 +171,7 @@ function getInvoiceLines(invoiceId, params) {
   }
 }
 
-function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, issueDate, params) {
+function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, issueDateParam, params) {
   try {
     _auth('invoices.write', params);
     _checkPeriodLock(new Date(), params); // check today's date
@@ -217,7 +217,7 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
     var invoiceNumber = settings.invoicePrefix + settings.nextInvoiceNumber.toString().padStart(4, '0');
     var invoiceId = generateId('INV');
     // Use provided issueDate or default to today
-    var issueDate = issueDate ? _parseLocalDate(issueDate) : new Date();
+    var issueDate = issueDateParam ? _parseLocalDate(issueDateParam) : new Date();
     // Use client payment terms if no explicit due date provided
     var clientTermsDays = 30;
     for (var ci = 1; ci < clientsData.length; ci++) {
@@ -361,6 +361,7 @@ function deleteInvoice(invoiceId, params) {
         if (status !== 'Draft') {
           return { success:false, message:'Only Draft invoices can be deleted. Use Void for '+status+' invoices.' };
         }
+        var deletedInvoiceNumber = data[i][1] ? data[i][1].toString() : '';
         sheet.deleteRow(i + 1);
         // Delete lines
         var lineSheet = ss.getSheetByName(SHEETS.INVOICE_LINES);
@@ -370,7 +371,19 @@ function deleteInvoice(invoiceId, params) {
             if (lineData[j][1] === invoiceId) lineSheet.deleteRow(j + 1);
           }
         }
-        logAudit('DELETE', 'Invoice', invoiceId, { invoiceNumber: data[i][1] });
+        // Decrement invoice counter — re-read remaining invoices to find highest number
+        try {
+          var settings = getSettings(params);
+          var remaining = sheet.getLastRow() > 1 ? sheet.getRange(2, 2, sheet.getLastRow()-1, 1).getValues() : [];
+          var maxNum = 0;
+          for (var k = 0; k < remaining.length; k++) {
+            var num = parseInt((remaining[k][0]||'').toString().replace(/[^0-9]/g,'')) || 0;
+            if (num > maxNum) maxNum = num;
+          }
+          settings.nextInvoiceNumber = maxNum + 1;
+          updateSettings(settings, params);
+        } catch(ne) { Logger.log('Invoice counter reset failed: ' + ne); }
+        logAudit('DELETE', 'Invoice', invoiceId, { invoiceNumber: deletedInvoiceNumber }, params);
         return { success:true, message:'Invoice deleted' };
       }
     }
