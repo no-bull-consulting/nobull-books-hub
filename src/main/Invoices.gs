@@ -4,6 +4,22 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+/**
+ * _parseLocalDate(dateStr)
+ * Parses a date string (YYYY-MM-DD) as LOCAL time to avoid UTC timezone shift.
+ * e.g. "2026-03-31" parsed as UTC becomes Mar 30 in UK timezone — this fixes that.
+ */
+function _parseLocalDate(dateStr) {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+  var s = dateStr.toString().substring(0, 10); // take YYYY-MM-DD part only
+  var parts = s.split('-');
+  if (parts.length === 3) {
+    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  }
+  return new Date(dateStr);
+}
+
 function getAllInvoices(params) {
   try {
     Logger.log('=== getAllInvoices(params) called ===');
@@ -155,7 +171,7 @@ function getInvoiceLines(invoiceId, params) {
   }
 }
 
-function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, params) {
+function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, issueDate, params) {
   try {
     _auth('invoices.write', params);
     _checkPeriodLock(new Date(), params); // check today's date
@@ -200,7 +216,8 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
 
     var invoiceNumber = settings.invoicePrefix + settings.nextInvoiceNumber.toString().padStart(4, '0');
     var invoiceId = generateId('INV');
-    var issueDate = new Date();
+    // Use provided issueDate or default to today
+    var issueDate = issueDate ? _parseLocalDate(issueDate) : new Date();
     // Use client payment terms if no explicit due date provided
     var clientTermsDays = 30;
     for (var ci = 1; ci < clientsData.length; ci++) {
@@ -209,7 +226,7 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
         break;
       }
     }
-    var calculatedDueDate = dueDate ? new Date(dueDate) : new Date(issueDate.getTime() + clientTermsDays*24*60*60*1000);
+    var calculatedDueDate = dueDate ? _parseLocalDate(dueDate) : new Date(issueDate.getTime() + clientTermsDays*24*60*60*1000);
     
     var subtotal = 0;
     var vatTotal = 0;

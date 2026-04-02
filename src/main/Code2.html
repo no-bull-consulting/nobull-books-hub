@@ -1390,7 +1390,7 @@ async function saveInvoice() {
   });
   var invCurrency = (document.getElementById('ic-currency')||{}).value||'';
   var invFxRate   = parseFloat((document.getElementById('ic-fxrate')||{}).value)||1;
-  var r = await api('createInvoice', { clientId:clientId, lines:lineData, dueDate:dueDate, notes:notes, currency:invCurrency, exchangeRate:invFxRate });
+  var r = await api('createInvoice', { clientId:clientId, lines:lineData, issueDate:issueDate, dueDate:dueDate, notes:notes, currency:invCurrency, exchangeRate:invFxRate });
   if (r && r.success) {
     closeModal('inv-create');
     toast('Invoice ' + r.invoiceNumber + ' created', 'success');

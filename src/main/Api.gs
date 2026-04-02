@@ -112,7 +112,7 @@ function _route(action, params, ctx) {
 
     // ── INVOICES ──────────────────────────────────────────────────────────────
     case 'getAllInvoices':    return getAllInvoices(params);
-    case 'createInvoice':    _auth('invoices.write', params); return createInvoice(params.clientId, params.lines, params.dueDate, params.notes, params.currency, params.exchangeRate, params);
+    case 'createInvoice':    _auth('invoices.write', params); return createInvoice(params.clientId, params.lines, params.dueDate, params.notes, params.currency, params.exchangeRate, params.issueDate, params);
     case 'editInvoice':      _auth('invoices.write', params); return editInvoice(params.invoiceId, params);
     case 'deleteInvoice':    _auth('invoices.write', params); return deleteInvoice(params.invoiceId, params);
     case 'approveInvoice':   _auth('invoices.write', params); return approveInvoice(params.invoiceId, params);
