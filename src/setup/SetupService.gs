@@ -163,17 +163,24 @@ function _createAndRedirect(companyName) {
 
     // Redirect to main app — window.top breaks out of any iframe
     return HtmlService.createHtmlOutput(
-      '<!DOCTYPE html><html><head><title>Redirecting…</title></head>' +
+      '<!DOCTYPE html><html>' +
+      '<head>' +
+        '<title>Redirecting…</title>' +
+        '<meta http-equiv="refresh" content="0;url=' + appUrl + '">' +
+      '</head>' +
       '<body style="font-family:sans-serif;display:flex;align-items:center;' +
         'justify-content:center;min-height:100vh;background:#0f172a">' +
         '<div style="text-align:center;color:#94a3b8">' +
           '<div style="font-size:48px;margin-bottom:16px">🐂</div>' +
           '<p>Opening your workspace…</p>' +
           '<p style="font-size:12px;margin-top:8px">' +
-            '<a href="' + appUrl + '" target="_top" style="color:#60a5fa">Click here if not redirected</a>' +
+            '<a href="' + appUrl + '" style="color:#60a5fa">Click here if not redirected</a>' +
           '</p>' +
         '</div>' +
-        '<script>window.top.location.href = "' + appUrl + '";<\/script>' +
+        '<script>' +
+          'try { window.top.location.href = "' + appUrl + '"; } catch(e) {' +
+          '  window.location.href = "' + appUrl + '"; }' +
+        '<\/script>' +
       '</body></html>'
     )
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
