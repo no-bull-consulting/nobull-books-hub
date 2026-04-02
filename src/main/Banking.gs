@@ -935,8 +935,9 @@ function recordPaymentWithBank(invoiceId, amount, paymentDate, bankAccountId, no
             type: 'Credit',
             bankAccountId: bankAccountId,
             category: 'Sales',
-            notes: notes || ''
-          });
+            notes: notes || '',
+            _sheetId: params && params._sheetId ? params._sheetId : ''
+          }, params);
         }
         
         // Create accounting transaction
@@ -1038,8 +1039,9 @@ function recordBillPaymentWithBank(billId, amount, paymentDate, bankAccountId, n
             type: 'Debit',
             bankAccountId: bankAccountId,
             category: 'Expenses',
-            notes: notes || ''
-          });
+            notes: notes || '',
+            _sheetId: params && params._sheetId ? params._sheetId : ''
+          }, params);
         }
         
         // Create accounting transaction
@@ -1106,11 +1108,20 @@ function getBankAccountCode(accountId, params) {
 
     // Fallback: name-match against COA (for legacy accounts with no nominalCode)
     var coaResult = getAccounts({}, params);
-    if (!coaResult.success) return '1000';
-    var account = coaResult.accounts.find(function(a) {
-      return a.accountName.indexOf(bankAccount.accountName) >= 0 && a.accountType === 'Asset';
-    });
-    return account ? account.accountCode : '1000';
+    if (!coaResult.success) return '1200';
+    // Try exact match first, then partial
+    var bankName = bankAccount.accountName ? bankAccount.accountName.toLowerCase().trim() : '';
+    var exact    = coaResult.accounts.filter(function(a) {
+      return a.accountType === 'Asset' && a.accountName.toLowerCase().trim() === bankName;
+    })[0];
+    if (exact) return exact.accountCode;
+    // Partial match — only use if account is in Bank Accounts category
+    var partial = coaResult.accounts.filter(function(a) {
+      return a.accountType === 'Asset' &&
+             (a.accountCategory === 'Bank Accounts' || a.accountCategory === 'Bank') &&
+             a.accountName.toLowerCase().indexOf(bankName) >= 0;
+    })[0];
+    return partial ? partial.accountCode : '1000';
   } catch (e) {
     Logger.log('Error in getBankAccountCode: ' + e.toString());
     return '1000';
@@ -1143,7 +1154,7 @@ function createBankTransactionFromPayment(data, params) {
       data.notes || ''
     ]);
     
-    updateBankBalance(data.bankAccountId, data.amount);
+    updateBankBalance(data.bankAccountId, data.amount, params);
     
     return { success: true, transactionId: bankTxId };
   } catch (e) {

@@ -525,7 +525,9 @@ function getInvoiceFiles(invoiceId, params) {
           invoiceId: data[i][1] ? data[i][1].toString() : '',
           fileName: data[i][2] ? data[i][2].toString() : '',
           fileURL: data[i][3] ? data[i][3].toString() : '',
+          fileUrl: data[i][3] ? data[i][3].toString() : '',  // alias for frontend
           fileType: data[i][4] ? data[i][4].toString() : '',
+          fileSize: '',  // not stored, placeholder for UI
           uploadedBy: data[i][5] ? data[i][5].toString() : '',
           uploadedDate: data[i][6] ? safeSerializeDate(data[i][6]) : '',
           description: data[i][7] ? data[i][7].toString() : ''
@@ -569,7 +571,9 @@ function getBillFiles(billId, params) {
           billId: data[i][1] ? data[i][1].toString() : '',
           fileName: data[i][2] ? data[i][2].toString() : '',
           fileURL: data[i][3] ? data[i][3].toString() : '',
+          fileUrl: data[i][3] ? data[i][3].toString() : '',  // alias for frontend
           fileType: data[i][4] ? data[i][4].toString() : '',
+          fileSize: '',  // not stored, placeholder for UI
           uploadedBy: data[i][5] ? data[i][5].toString() : '',
           uploadedDate: data[i][6] ? safeSerializeDate(data[i][6]) : '',
           description: data[i][7] ? data[i][7].toString() : ''
