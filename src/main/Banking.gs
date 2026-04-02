@@ -42,7 +42,7 @@ function createBankAccount(accountData, params) {
     _auth('banking.write', params);
     var ss      = getDb(params || {});
     var sheet   = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
-    var coaSheet = ss.getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
+    var coaSheet = ss.getSheetByName('ChartOfAccounts');
     if (!sheet) return { success: false, message: 'Bank accounts sheet not found' };
 
     // Auto-assign a COA nominal code if not provided
@@ -96,7 +96,7 @@ function createBankAccount(accountData, params) {
       }
     }
 
-    logAudit('CREATE', 'BankAccount', accountId, { name: accountData.accountName, nominalCode: nominalCode }, params);
+    logAudit('CREATE', 'BankAccount', accountId, { name: accountData.accountName, nominalCode: nominalCode });
     return { success: true, accountId: accountId, nominalCode: nominalCode };
   } catch (e) {
     Logger.log('Error in createBankAccount: ' + e.toString());
