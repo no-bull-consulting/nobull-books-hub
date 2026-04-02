@@ -457,7 +457,9 @@ function getDefaultSettings() {
  * Saves all settings to the client's Settings sheet.
  * settings must contain _sheetId so getDb() can find the right spreadsheet.
  */
-function updateSettings(settings) {
+function updateSettings(settings, params) {
+  // Merge _sheetId from params if settings doesn't have it
+  if (params && params._sheetId && !settings._sheetId) settings._sheetId = params._sheetId;
   try {
     var ss = getDb(settings);
     if (!ss) return { success: false, message: 'Could not open spreadsheet. Check _sheetId.' };

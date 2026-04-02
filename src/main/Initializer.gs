@@ -37,6 +37,7 @@ function checkAndInitSheet(params) {
         'InvoiceId','InvoiceNumber','ClientId','ClientName','ClientEmail','ClientAddress',
         'IssueDate','DueDate','Subtotal','VATRate','VAT','Total',
         'AmountPaid','AmountDue','Status','PaymentDate','Notes','PDFURL',
+        'Currency','ExchangeRate','BaseTotal',
         'BankAccount','VoidDate','VoidReason','VoidedBy'
       ],
       'InvoiceLines': [

@@ -175,11 +175,13 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
     for (var i = 1; i < clientsData.length; i++) {
       if (clientsData[i][0] === clientId) {
         client = {
-          clientId: clientsData[i][0],
-          clientName: clientsData[i][1],
-          email: clientsData[i][3],
-          address: clientsData[i][5],
-          postcode: clientsData[i][6]
+          clientId:    clientsData[i][0],
+          clientName:  clientsData[i][1],
+          email:       clientsData[i][2],  // col 2 = Email
+          phone:       clientsData[i][3],  // col 3 = Phone
+          address:     clientsData[i][4],  // col 4 = Address
+          postcode:    clientsData[i][5],  // col 5 = Postcode
+          country:     clientsData[i][6]   // col 6 = Country
         };
         break;
       }
@@ -229,7 +231,7 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
       client.clientId,                              // C: ClientId
       client.clientName,                            // D: ClientName
       client.email,                                 // E: ClientEmail
-      client.address + ', ' + client.postcode,      // F: ClientAddress
+      (client.address || '') + (client.postcode ? ', ' + client.postcode : '') + (client.country && client.country !== 'UK' ? ', ' + client.country : ''),  // F: ClientAddress
       safeSerializeDate(issueDate),             // G: IssueDate
       safeSerializeDate(calculatedDueDate),         // H: DueDate
       subtotal,                                     // I: Subtotal
