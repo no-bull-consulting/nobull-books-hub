@@ -40,10 +40,25 @@ function getBankAccounts(params) {
 function createBankAccount(accountData, params) {
   try {
     _auth('banking.write', params);
-    var accountId = generateId('BA');
-    var sheet = getDb(params || {}).getSheetByName(SHEETS.BANK_ACCOUNTS);
+    var ss      = getDb(params || {});
+    var sheet   = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
+    var coaSheet = ss.getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
     if (!sheet) return { success: false, message: 'Bank accounts sheet not found' };
-    
+
+    // Auto-assign a COA nominal code if not provided
+    // Find highest existing bank account code (1000-1099 range) and increment
+    var nominalCode = accountData.nominalCode || '';
+    if (!nominalCode && coaSheet) {
+      var coaData = coaSheet.getDataRange().getValues();
+      var maxBankCode = 999;
+      for (var c = 1; c < coaData.length; c++) {
+        var code = parseInt(coaData[c][0]) || 0;
+        if (code >= 1000 && code <= 1099) maxBankCode = Math.max(maxBankCode, code);
+      }
+      nominalCode = (maxBankCode + 1).toString();
+    }
+
+    var accountId = generateId('BA');
     sheet.appendRow([
       accountId,
       accountData.accountName,
@@ -55,10 +70,34 @@ function createBankAccount(accountData, params) {
       parseFloat(accountData.openingBalance) || 0,
       '',    // LastReconciled
       true,  // Active
-      accountData.nominalCode || ''  // COA nominal account code (col 11)
+      nominalCode
     ]);
-    
-    return { success: true, accountId: accountId };
+
+    // Auto-create corresponding COA entry
+    if (coaSheet && nominalCode) {
+      // Check it doesn't already exist
+      var coaData2 = coaSheet.getDataRange().getValues();
+      var exists = false;
+      for (var d = 1; d < coaData2.length; d++) {
+        if (coaData2[d][0] && coaData2[d][0].toString() === nominalCode) { exists = true; break; }
+      }
+      if (!exists) {
+        coaSheet.appendRow([
+          nominalCode,
+          accountData.accountName + (accountData.bankName ? ' (' + accountData.bankName + ')' : ''),
+          'Asset',
+          'Bank Accounts',
+          parseFloat(accountData.openingBalance) || 0,
+          parseFloat(accountData.openingBalance) || 0,
+          true,
+          'Auto-created with bank account'
+        ]);
+        Logger.log('Auto-created COA entry: ' + nominalCode + ' — ' + accountData.accountName);
+      }
+    }
+
+    logAudit('CREATE', 'BankAccount', accountId, { name: accountData.accountName, nominalCode: nominalCode }, params);
+    return { success: true, accountId: accountId, nominalCode: nominalCode };
   } catch (e) {
     Logger.log('Error in createBankAccount: ' + e.toString());
     return { success: false, message: e.toString() };
