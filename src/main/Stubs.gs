@@ -582,25 +582,33 @@ function getAuditLog(params) {
 function pingRegistry(event)           { /* no-op if REGISTRY_URL not set */ }
 function getAllInstances(params) {
   try {
-    // getAllInstances reads from the Registry sheet (hub-level)
-    // It's called from the Admin Panel on any instance — use Registry functions
     var r = getAllRegistryClients(params);
     if (!r.success) return { success: true, instances: [] };
+    // Return the full client object — _rowToClient already has all fields
     var instances = (r.clients || []).map(function(c) {
       return {
-        companyName:   c.companyName || '—',
-        companyEmail:  c.email || '—',
-        version:       c.version || '—',
-        lastSeen:      c.lastSeen || '',
-        invoiceCount:  c.invoiceCount || 0,
-        clientCount:   c.clientCount || 0,
-        billCount:     c.billCount || 0,
-        spreadsheetUrl: c.sheetId ? 'https://docs.google.com/spreadsheets/d/' + c.sheetId : '#',
-        status:        c.status || 'Active'
+        registryId:    c.registryId    || '',
+        companyName:   c.companyName   || '—',
+        companyEmail:  c.contactEmail  || c.email || '—',
+        contactEmail:  c.contactEmail  || '',
+        plan:          c.plan          || 'Trial',
+        status:        c.status        || 'Trial',
+        createdDate:   c.createdDate   || '',
+        trialEnd:      c.trialEnd      || '',
+        trialDaysLeft: c.trialDaysLeft,
+        lastSeen:      c.lastSeen      || '',
+        invoiceCount:  c.invoiceCount  || 0,
+        clientCount:   c.clientCount   || 0,
+        billCount:     c.billCount     || 0,
+        version:       c.version       || '—',
+        sheetId:       c.sheetId       || '',
+        spreadsheetUrl: c.sheetLink    || (c.sheetId ? 'https://docs.google.com/spreadsheets/d/' + c.sheetId : ''),
+        appLink:       c.appLink       || ''
       };
     });
     return { success: true, instances: instances };
   } catch(e) {
+    Logger.log('getAllInstances error: ' + e);
     return { success: true, instances: [] };
   }
 }
