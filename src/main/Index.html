@@ -561,42 +561,53 @@ var _aiHistory = [];
 function showAIAssistant() {
   showContent(
     '<div class="page-hdr">' +
-      '<div><div class="page-title">✨ AI Assistant</div>' +
-      '<div class="page-sub">Ask anything about your accounts, invoices, or how to use no~bull books</div></div>' +
+      '<div><div class="page-title">AI Assistant</div>' +
+      '<div class="page-sub">Ask anything about your accounts or how to use no~bull books</div></div>' +
       '<button class="btn btn-ghost btn-sm" onclick="_aiClear()">Clear chat</button>' +
     '</div>' +
     '<div style="display:flex;flex-direction:column;height:calc(100vh - 200px);gap:12px">' +
       '<div id="ai-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 0">' +
-        '<div style="text-align:center;color:var(--g400);font-size:13px;padding:40px 0">' +
-          '<div style="font-size:32px;margin-bottom:8px">🤖</div>' +
+        '<div id="ai-welcome" style="text-align:center;color:var(--g400);font-size:13px;padding:40px 0">' +
+          '<div style="font-size:32px;margin-bottom:8px">&#x1F916;</div>' +
           '<div>Ask me anything about your accounts or how to use no~bull books.</div>' +
-          '<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;What are my outstanding invoices?&quot;;_aiSend()">Outstanding invoices</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;How do I submit a VAT return?&quot;;_aiSend()">VAT return help</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;Summarise my financial position&quot;;_aiSend()">Financial summary</button>' +
-          '</div>' +
         '</div>' +
       '</div>' +
-      '<div style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">' +
+      '<div id="ai-input-row" style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">' +
         '<textarea id="ai-input" class="form-textarea" placeholder="Ask a question..." ' +
-          'style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0" ' +
-          'onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();_aiSend();}"></textarea>' +
-        '<button class="btn btn-primary" onclick="_aiSend()" style="align-self:flex-end">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
-        '</button>' +
+          'style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0"></textarea>' +
+        '<button class="btn btn-primary" id="ai-send-btn" style="align-self:flex-end">Send</button>' +
       '</div>' +
     '</div>'
   );
+  // Wire up events after DOM is ready
+  setTimeout(function() {
+    var btn = document.getElementById('ai-send-btn');
+    var inp = document.getElementById('ai-input');
+    if (btn) btn.onclick = _aiSend;
+    if (inp) inp.onkeydown = function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _aiSend(); }
+    };
+    // Add quick-start buttons
+    var welcome = document.getElementById('ai-welcome');
+    if (welcome) {
+      var btns = document.createElement('div');
+      btns.style.cssText = 'margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap';
+      var questions = ['What are my outstanding invoices?', 'Summarise my financial position', 'How do I submit a VAT return?'];
+      questions.forEach(function(q) {
+        var b = document.createElement('button');
+        b.className = 'btn btn-secondary btn-sm';
+        b.textContent = q;
+        b.onclick = function() { inp.value = q; _aiSend(); };
+        btns.appendChild(b);
+      });
+      welcome.appendChild(btns);
+    }
+  }, 50);
 }
 
 function _aiClear() {
   _aiHistory = [];
   showAIAssistant();
-}
-
-function _aiAsk(question) {
-  var input = document.getElementById('ai-input');
-  if (input) { input.value = question; _aiSend(); }
 }
 
 async function _aiSend() {
@@ -607,45 +618,42 @@ async function _aiSend() {
   if (!q) return;
   input.value = '';
 
+  // Hide welcome
+  var welcome = document.getElementById('ai-welcome');
+  if (welcome) welcome.style.display = 'none';
+
   // Add user message
   _aiHistory.push({ role: 'user', content: q });
-  chat.innerHTML += '<div style="display:flex;justify-content:flex-end;margin-bottom:4px">' +
-    '<div style="background:var(--blue-600);color:#fff;border-radius:12px 12px 2px 12px;' +
-    'padding:10px 14px;max-width:75%;font-size:13px;line-height:1.5">' + _escHtml(q) + '</div></div>';
+  var userDiv = document.createElement('div');
+  userDiv.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:4px';
+  userDiv.innerHTML = '<div style="background:var(--blue-600);color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:75%;font-size:13px;line-height:1.5">' + _escHtml(q) + '</div>';
+  chat.appendChild(userDiv);
 
-  // Add thinking indicator
-  var thinkId = 'ai-think-' + Date.now();
-  chat.innerHTML += '<div id="' + thinkId + '" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px">' +
-    '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">🤖</div>' +
-    '<div style="background:var(--g100);border-radius:2px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--g500)">' +
-    '<span class="spin" style="display:inline-block;width:12px;height:12px;border-width:2px;margin-right:6px"></span>Thinking…</div></div>';
+  // Thinking indicator
+  var thinkDiv = document.createElement('div');
+  thinkDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:4px';
+  thinkDiv.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">&#x1F916;</div>' +
+    '<div style="background:var(--g100);border-radius:2px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--g500)">Thinking…</div>';
+  chat.appendChild(thinkDiv);
   chat.scrollTop = chat.scrollHeight;
 
-  // Build context from app data
   var ctx = _aiBuildContext();
+  var r = await api('askGemini', { question: q, context: ctx, history: _aiHistory.slice(-10) });
 
-  var r = await api('askGemini', {
-    question: q,
-    context: ctx,
-    history: _aiHistory.slice(-10)
-  });
-
-  // Remove thinking indicator
-  var think = document.getElementById(thinkId);
-  if (think) think.remove();
+  chat.removeChild(thinkDiv);
 
   var answer = (r && r.success) ? (r.analysis || r.answer || r.response || 'No response') : ('Error: ' + (r ? r.error || r.message : 'unknown'));
   _aiHistory.push({ role: 'assistant', content: answer });
 
-  // Format answer
-    var formatted = (answer || '')
-    .split('**').map(function(p,i){return i%2===1?'<strong>'+p+'</strong>':p;}).join('')
+  var formatted = answer
+    .split('**').map(function(p, i) { return i % 2 === 1 ? '<strong>' + p + '</strong>' : p; }).join('')
     .split('\n').join('<br>');
 
-  chat.innerHTML += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px">' +
-    '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">🤖</div>' +
-    '<div style="background:var(--g0);border:1px solid var(--g200);border-radius:2px 12px 12px 12px;' +
-    'padding:10px 14px;max-width:80%;font-size:13px;line-height:1.6;color:var(--g800)">' + formatted + '</div></div>';
+  var replyDiv = document.createElement('div');
+  replyDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:4px';
+  replyDiv.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">&#x1F916;</div>' +
+    '<div style="background:var(--g0);border:1px solid var(--g200);border-radius:2px 12px 12px 12px;padding:10px 14px;max-width:80%;font-size:13px;line-height:1.6;color:var(--g800)">' + formatted + '</div>';
+  chat.appendChild(replyDiv);
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -655,24 +663,25 @@ function _aiBuildContext() {
   var inv = d.invoices || [];
   var bil = d.bills || [];
   var ba  = d.bankAccounts || [];
-  var totalReceivable = inv.filter(function(i){ return i.status !== 'Paid' && i.status !== 'Void' && i.status !== 'Draft'; })
-    .reduce(function(s,i){ return s + (parseFloat(i.amountDue)||0); }, 0);
-  var totalPayable = bil.filter(function(b){ return b.status !== 'Paid' && b.status !== 'Void'; })
-    .reduce(function(s,b){ return s + (parseFloat(b.amountDue)||0); }, 0);
-  var cashPosition = ba.reduce(function(s,a){ return s + (parseFloat(a.currentBalance)||0); }, 0);
-  return 'Company: ' + (s.companyName||'Unknown') + '. ' +
-    'VAT registered: ' + (s.vatRegistered?'Yes':'No') + '. ' +
-    'Total invoices: ' + inv.length + ' (' + inv.filter(function(i){return i.status==='Paid';}).length + ' paid, ' +
-    inv.filter(function(i){return i.status==='Draft';}).length + ' draft). ' +
-    'Outstanding receivable: £' + totalReceivable.toFixed(2) + '. ' +
-    'Total bills: ' + bil.length + '. Outstanding payable: £' + totalPayable.toFixed(2) + '. ' +
-    'Cash position: £' + cashPosition.toFixed(2) + '. ' +
-    'Financial year: ' + (s.currentFinancialYear||'') + '.';
+  var rcv = inv.filter(function(i){ return i.status !== 'Paid' && i.status !== 'Void' && i.status !== 'Draft'; })
+    .reduce(function(sum, i){ return sum + (parseFloat(i.amountDue) || 0); }, 0);
+  var pay = bil.filter(function(b){ return b.status !== 'Paid' && b.status !== 'Void'; })
+    .reduce(function(sum, b){ return sum + (parseFloat(b.amountDue) || 0); }, 0);
+  var cash = ba.reduce(function(sum, a){ return sum + (parseFloat(a.currentBalance) || 0); }, 0);
+  return 'Company: ' + (s.companyName || 'Unknown') + '. ' +
+    'VAT registered: ' + (s.vatRegistered ? 'Yes' : 'No') + '. ' +
+    'Total invoices: ' + inv.length + ' (' + inv.filter(function(i){ return i.status === 'Paid'; }).length + ' paid, ' +
+    inv.filter(function(i){ return i.status === 'Draft'; }).length + ' draft). ' +
+    'Outstanding receivable: GBP ' + rcv.toFixed(2) + '. ' +
+    'Total bills: ' + bil.length + '. Outstanding payable: GBP ' + pay.toFixed(2) + '. ' +
+    'Cash position: GBP ' + cash.toFixed(2) + '. ' +
+    'Financial year: ' + (s.currentFinancialYear || '') + '.';
 }
 
 function _escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
 
 function showResources() {
   showContent(

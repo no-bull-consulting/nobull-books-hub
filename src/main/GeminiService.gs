@@ -48,9 +48,11 @@ function handleGeminiRequest(params, ctx) {
   // Add history turns (capped at last 10 exchanges = 20 entries)
   var recentHistory = history.slice(-20);
   recentHistory.forEach(function(h) {
+    var txt = h.text || h.content || '';
+    if (!txt) return; // skip empty entries
     contents.push({
-      role:  h.role === 'model' ? 'model' : 'user',
-      parts: [{ text: h.text }]
+      role:  h.role === 'model' || h.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: txt }]
     });
   });
 
