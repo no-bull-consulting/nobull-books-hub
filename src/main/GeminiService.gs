@@ -26,8 +26,9 @@ function handleGeminiRequest(params, ctx) {
   }
 
   // ── Inputs ──────────────────────────────────────────────────────────────────
-  var userMessage = params.userMessage || 'Give me a financial health summary of this business.';
+  var userMessage = params.question || params.userMessage || 'Give me a financial health summary of this business.';
   var reportData  = params.reportData  || {};
+  var contextStr  = params.context || '';
   var history     = Array.isArray(params.history) ? params.history : [];
 
   // ── System prompt ───────────────────────────────────────────────────────────
@@ -39,7 +40,7 @@ function handleGeminiRequest(params, ctx) {
     '(use **bold** for key figures, bullet points for lists, ## for section headings). ' +
     'Focus on actionable insight. If the data is insufficient to answer, say so clearly. ' +
     'Do not invent figures.\n\n' +
-    'FINANCIAL CONTEXT:\n' + JSON.stringify(reportData, null, 2);
+    'FINANCIAL CONTEXT:\n' + (contextStr || JSON.stringify(reportData, null, 2));
 
   // ── Build contents array (conversation history + new message) ───────────────
   var contents = [];

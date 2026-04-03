@@ -25,6 +25,25 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
+  // ── Auto-initialise sheet if first visit ────────────────────────────────────
+  // If the sheet exists but hasn't been initialised (no Settings tab), init it now.
+  // This ensures the app works even if the setup service redirect was interrupted.
+  if (e.parameter.id) {
+    try {
+      var testSs    = getDb({ _sheetId: e.parameter.id });
+      var testSheet = testSs ? testSs.getSheetByName('Settings') : null;
+      if (!testSheet) {
+        Logger.log('Auto-initialising sheet: ' + e.parameter.id);
+        checkAndInitSheet({
+          _sheetId:    e.parameter.id,
+          _ownerEmail: e.parameter.ownerEmail || ''
+        });
+      }
+    } catch(autoInitErr) {
+      Logger.log('Auto-init error (non-fatal): ' + autoInitErr.toString());
+    }
+  }
+
   // ── Registry ping from SetupService ────────────────────────────────────────
   // Called by SetupService after creating a new client sheet
   if (e.parameter.action === 'pingRegistry') {

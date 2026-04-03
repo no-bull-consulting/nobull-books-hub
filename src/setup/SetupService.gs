@@ -145,6 +145,15 @@ function _createAndRedirect(companyName) {
 
     var id    = ss.getId();
     var email = Session.getActiveUser().getEmail();
+
+    // Initialise all sheets immediately so the app works even if redirect is slow
+    try {
+      var initParams = { _sheetId: id, _ownerEmail: email };
+      checkAndInitSheet(initParams);
+      Logger.log('Sheet initialised OK: ' + id);
+    } catch(initErr) {
+      Logger.log('Init warning (non-fatal): ' + initErr.toString());
+    }
     // Pass email to main app so Initializer can seed the correct Owner
     var appUrl = MAIN_APP_URL + '?id=' + id +
       (email ? '&ownerEmail=' + encodeURIComponent(email) : '');
