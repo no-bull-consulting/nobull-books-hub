@@ -3874,7 +3874,7 @@ async function calcVAT() {
     if (res.success) {
       // Basic Markdown Bold/Linebreak conversion
       box.innerHTML = '<div class="ai-content">' + 
-        (res.analysis||'').split('**').map(function(p,i){return i%2===1?'<b>'+p+'</b>':p;}).join('').split('\n').join('<br>')      '</div>';
+        (res.analysis||'').split('**').map(function(p,i){return i%2===1?'<b>'+p+'</b>':p;}).join('').split('\n').join('<br>') + '</div>';
     } else {
       box.innerHTML = '<p style="color:red">Error: ' + res.error + '</p>';
     }
