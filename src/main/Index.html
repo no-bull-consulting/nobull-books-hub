@@ -571,9 +571,9 @@ function showAIAssistant() {
           '<div style="font-size:32px;margin-bottom:8px">🤖</div>' +
           '<div>Ask me anything about your accounts or how to use no~bull books.</div>' +
           '<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'What are my outstanding invoices?\'))">Outstanding invoices</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'How do I submit a VAT return?\'))">VAT return help</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'Summarise my financial position\'))">Financial summary</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;What are my outstanding invoices?&quot;;_aiSend()">Outstanding invoices</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;How do I submit a VAT return?&quot;;_aiSend()">VAT return help</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(&quot;ai-input&quot;).value=&quot;Summarise my financial position&quot;;_aiSend()">Financial summary</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -3865,8 +3865,7 @@ async function calcVAT() {
     if (res.success) {
       // Basic Markdown Bold/Linebreak conversion
       box.innerHTML = '<div class="ai-content">' + 
-        res.analysis.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') + 
-        '</div>';
+        (res.analysis||'').split('**').map(function(p,i){return i%2===1?'<b>'+p+'</b>':p;}).join('').split('\n').join('<br>')      '</div>';
     } else {
       box.innerHTML = '<p style="color:red">Error: ' + res.error + '</p>';
     }
