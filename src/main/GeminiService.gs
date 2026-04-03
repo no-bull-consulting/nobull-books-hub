@@ -64,10 +64,9 @@ function handleGeminiRequest(params, ctx) {
     });
   });
 
-  // Add current user message (with system context injected on first turn only)
-  var messageText = history.length === 0
-    ? systemPrompt + '\n\nUser question: ' + userMessage
-    : userMessage;
+  // Always inject system context with the user message
+  // Context is compact enough to include every time for accuracy
+  var messageText = systemPrompt + '\n\nUser question: ' + userMessage;
 
   contents.push({ role: 'user', parts: [{ text: messageText }] });
 

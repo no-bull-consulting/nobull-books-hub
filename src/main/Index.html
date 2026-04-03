@@ -639,8 +639,7 @@ async function _aiSend() {
   var welcome = document.getElementById('ai-welcome');
   if (welcome) welcome.style.display = 'none';
 
-  // Add user message
-  _aiHistory.push({ role: 'user', content: q });
+  // Add user message to display (push to history after response)
   var userDiv = document.createElement('div');
   userDiv.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:4px';
   userDiv.innerHTML = '<div style="background:var(--blue-600);color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:75%;font-size:13px;line-height:1.5">' + _escHtml(q) + '</div>';
@@ -656,6 +655,7 @@ async function _aiSend() {
 
   var ctx = _aiBuildContext();
   var r = await api('askGemini', { question: q, context: ctx, history: _aiHistory.slice(-10) });
+  _aiHistory.push({ role: 'user', content: q });
 
   chat.removeChild(thinkDiv);
 
