@@ -1470,6 +1470,45 @@ async function _bulkDeleteBils() {
 // ═══════════════════════════════════════════════════════════════════════════
 // MULTI-TENANT ADMIN PANEL (Superuser only)
 // ═══════════════════════════════════════════════════════════════════════════
+
+function _editRegistryClient(registryId, companyName, status, plan) {
+  openModal('reg-edit', 'Edit — ' + companyName,
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Status</label>' +
+        '<select class="form-select" id="reg-status">' +
+          '<option value="Trial"'+(status==='Trial'?' selected':'')+'>Trial</option>' +
+          '<option value="Active"'+(status==='Active'?' selected':'')+'>Active</option>' +
+          '<option value="Suspended"'+(status==='Suspended'?' selected':'')+'>Suspended</option>' +
+          '<option value="Cancelled"'+(status==='Cancelled'?' selected':'')+'>Cancelled</option>' +
+        '</select></div>' +
+      '<div class="form-group"><label class="form-label">Plan</label>' +
+        '<select class="form-select" id="reg-plan">' +
+          '<option value="Trial"'+(plan==='Trial'?' selected':'')+'>Trial</option>' +
+          '<option value="Solo"'+(plan==='Solo'?' selected':'')+'>Solo</option>' +
+          '<option value="Business"'+(plan==='Business'?' selected':'')+'>Business</option>' +
+        '</select></div>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Notes</label>' +
+      '<input type="text" class="form-input" id="reg-notes" placeholder="Optional notes"></div>',
+    '<button class="btn btn-secondary" onclick="closeModal(&quot;reg-edit&quot;)">Cancel</button>' +
+    '<button class="btn btn-primary" onclick="_saveRegistryEdit(&quot;' + registryId + '&quot;)">Save</button>',
+    'modal-sm'
+  );
+}
+async function _saveRegistryEdit(registryId) {
+  var status = document.getElementById('reg-status').value;
+  var plan   = document.getElementById('reg-plan').value;
+  var notes  = document.getElementById('reg-notes').value;
+  var r = await api('updateRegistryClient', { registryId: registryId, status: status, plan: plan, notes: notes });
+  if (r && r.success) {
+    closeModal('reg-edit');
+    toast('Registry updated', 'success');
+    showAdminPanel();
+  } else {
+    toast('Error: ' + (r ? r.message || r.error : 'unknown'), 'error');
+  }
+}
+
 async function showAdminPanel() {
   if (!App.user||App.user.role!=='Superuser') { toast('Superuser access required','error'); return; }
   showLoader();
@@ -1531,11 +1570,17 @@ async function showAdminPanel() {
                 var status = inst.status||'Active';
                 var plan   = inst.plan||'Trial';
                 var daysLeft = inst.trialDaysLeft;
-                var statusBadge = status==='Active'
+                // Status logic: Active = paid. Trial = free trial. Never show Active if plan is Trial.
+                var effectiveStatus = (status === 'Active' && plan === 'Trial') ? 'Trial' : status;
+                var statusBadge = effectiveStatus === 'Active'
                   ? '<span class=\"badge badge-green\">Active</span>'
-                  : daysLeft!==null && daysLeft>0
-                    ? '<span class=\"badge badge-amber\">Trial \u2014 '+daysLeft+'d left</span>'
-                    : '<span class=\"badge badge-red\">Trial expired</span>';
+                  : effectiveStatus === 'Suspended'
+                    ? '<span class=\"badge badge-red\">Suspended</span>'
+                    : effectiveStatus === 'Cancelled'
+                      ? '<span class=\"badge badge-grey\">Cancelled</span>'
+                      : daysLeft !== null && daysLeft > 0
+                        ? '<span class=\"badge badge-amber\">Trial \u2014 '+daysLeft+'d left</span>'
+                        : '<span class=\"badge badge-red\">Trial expired</span>';
                 var appUrl = inst.appLink || (inst.sheetId ? 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id='+inst.sheetId : '');
                 var sheetUrl = inst.spreadsheetUrl || inst.sheetLink || (inst.sheetId ? 'https://docs.google.com/spreadsheets/d/'+inst.sheetId : '');
                 return '<tr>' +
@@ -1549,7 +1594,8 @@ async function showAdminPanel() {
                   '<td class=\"mono\" style=\"font-size:12px\">'+(inst.billCount||0)+'</td>' +
                   '<td style=\"white-space:nowrap\">' +
                     (appUrl ? '<a href=\"'+appUrl+'\" target=\"_blank\" class=\"btn btn-primary btn-xs\" style=\"margin-right:4px\">App</a>' : '') +
-                    (sheetUrl ? '<a href=\"'+sheetUrl+'\" target=\"_blank\" class=\"btn btn-ghost btn-xs\">Sheet</a>' : '') +
+                    (sheetUrl ? '<a href=\"'+sheetUrl+'\" target=\"_blank\" class=\"btn btn-ghost btn-xs\" style=\"margin-right:4px\">Sheet</a>' : '') +
+                    '<button class=\"btn btn-ghost btn-xs\" onclick=\"_editRegistryClient(\''+inst.registryId+'\',\''+inst.companyName+'\',\''+inst.status+'\',\''+inst.plan+'\')\">Edit</button>' +
                   '</td>' +
                 '</tr>';
               }).join('') +
@@ -2740,6 +2786,66 @@ function showSuppliers() {
   );
 }
 
+
+function openEditBankAccountModal() {
+  var accts = App.data.bankAccounts || [];
+  var selId = App.data.selectedAccount;
+  var acct  = accts.find(function(a){ return a.accountId === selId; }) || accts[0];
+  if (!acct) { toast('No account selected', 'warning'); return; }
+  openModal('edit-bank-acct', 'Edit — ' + acct.accountName,
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Account Name *</label><input type="text" class="form-input" id="eba-name" value="' + (acct.accountName||'') + '"></div>' +
+      '<div class="form-group"><label class="form-label">Bank Name *</label><input type="text" class="form-input" id="eba-bank" value="' + (acct.bankName||'') + '"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">Sort Code</label><input type="text" class="form-input" id="eba-sort" value="' + (acct.sortCode||'') + '"></div>' +
+      '<div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-input" id="eba-num" value="' + (acct.accountNumber||'') + '"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">IBAN</label><input type="text" class="form-input" id="eba-iban" value="' + (acct.iban||'') + '" placeholder="GB29 NWBK..."></div>' +
+      '<div class="form-group"><label class="form-label">BIC / SWIFT</label><input type="text" class="form-input" id="eba-bic" value="' + (acct.bic||'') + '" placeholder="NWBKGB2L"></div>' +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeModal(&quot;edit-bank-acct&quot;)">Cancel</button>' +
+    '<button class="btn btn-danger btn-sm" onclick="deleteCurrentBankAccount(&quot;' + acct.accountId + '&quot;)" style="margin-right:auto">Delete Account</button>' +
+    '<button class="btn btn-primary" id="eba-save-btn" onclick="saveEditBankAccount(&quot;' + acct.accountId + '&quot;)">Save</button>',
+    'modal-md'
+  );
+}
+async function saveEditBankAccount(accountId) {
+  var name = document.getElementById('eba-name').value.trim();
+  var bank = document.getElementById('eba-bank').value.trim();
+  var sort = document.getElementById('eba-sort').value.trim();
+  var num  = document.getElementById('eba-num').value.trim();
+  var iban = (document.getElementById('eba-iban')||{}).value||'';
+  var bic  = (document.getElementById('eba-bic')||{}).value||'';
+  if (!name) { toast('Account name required', 'warning'); return; }
+  var btn = document.getElementById('eba-save-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
+  var r = await api('updateBankAccount', { accountId:accountId, accountName:name, bankName:bank, sortCode:sort, accountNumber:num, iban:iban, bic:bic });
+  if (r && r.success) {
+    closeModal('edit-bank-acct');
+    toast('Account updated', 'success');
+    App.data.bankAccounts = App.data.bankAccounts.map(function(a){
+      return a.accountId===accountId ? Object.assign({},a,{accountName:name,bankName:bank,sortCode:sort,accountNumber:num,iban:iban,bic:bic}) : a;
+    });
+    showBanking();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Save'; }
+    toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+  }
+}
+async function deleteCurrentBankAccount(accountId) {
+  if (!confirm('Delete this bank account? This cannot be undone.')) return;
+  var r = await api('deleteBankAccount', { accountId:accountId });
+  if (r && r.success) {
+    closeModal('edit-bank-acct');
+    toast('Account deleted', 'success');
+    App.data.bankAccounts = App.data.bankAccounts.filter(function(a){ return a.accountId!==accountId; });
+    App.data.selectedAccount = App.data.bankAccounts.length ? App.data.bankAccounts[0].accountId : null;
+    showBanking();
+  } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+}
+
 function openAddBankAccountModal() {
   openModal('add-bank-acct', 'Add Bank Account',
     '<div class="form-grid-2">' +
@@ -2760,6 +2866,10 @@ function openAddBankAccountModal() {
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Sort Code</label><input type="text" class="form-input" id="ba-sort" placeholder="00-00-00"></div>' +
       '<div class="form-group"><label class="form-label">Account Number</label><input type="text" class="form-input" id="ba-num" placeholder="12345678"></div>' +
+    '</div>' +
+    '<div class="form-grid-2">' +
+      '<div class="form-group"><label class="form-label">IBAN (optional)</label><input type="text" class="form-input" id="ba-iban" placeholder="GB29 NWBK 6016 1331 9268 19"></div>' +
+      '<div class="form-group"><label class="form-label">BIC / SWIFT (optional)</label><input type="text" class="form-input" id="ba-bic" placeholder="NWBKGB2L"></div>' +
     '</div>',
     '<button class="btn btn-secondary" onclick="closeModal(\'add-bank-acct\')">Cancel</button>' +
     '<button class="btn btn-primary" id="ba-save" onclick="saveNewBankAccount()">Add Account</button>',
@@ -2777,9 +2887,12 @@ async function saveNewBankAccount() {
   if (!bank) { toast('Bank name is required', 'warning'); return; }
   var btn = document.getElementById('ba-save');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  var iban = (document.getElementById('ba-iban')||{}).value||'';
+  var bic  = (document.getElementById('ba-bic')||{}).value||'';
   var r = await api('createBankAccount', {
     accountName: name, bankName: bank, accountType: type,
-    openingBalance: balance, sortCode: sort, accountNumber: num
+    openingBalance: balance, sortCode: sort, accountNumber: num,
+    iban: iban, bic: bic
   });
   if (r && r.success) {
     closeModal('add-bank-acct');
@@ -2811,6 +2924,7 @@ function showBanking() {
   var actions =
     '<div class="page-actions" style="margin-bottom:16px">' +
       '<button class="btn btn-secondary btn-sm" onclick="openAddBankAccountModal()">+ Add Account</button>' +
+      (acct ? '<button class="btn btn-ghost btn-sm" onclick="openEditBankAccountModal()">⚙️ Edit Account</button>' : '') +
       '<button class="btn btn-secondary btn-sm" onclick="openSpendMoneyModal()">💸 Spend</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openReceiveMoneyModal()">💰 Receive</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openTransferMoneyModal()">🔄 Transfer</button>' +

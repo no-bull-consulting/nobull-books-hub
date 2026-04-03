@@ -170,8 +170,10 @@ function getAllTransactions(startDate, endDate, params) {
     var data = sheet.getDataRange().getValues();
     var transactions = [];
 
-    var start = startDate ? new Date(startDate) : null;
-    var end   = endDate   ? new Date(endDate)   : null;
+    var start = startDate && startDate.length > 0 ? new Date(startDate) : null;
+    var end   = endDate   && endDate.length   > 0 ? new Date(endDate)   : null;
+    if (start && isNaN(start.getTime())) start = null;
+    if (end   && isNaN(end.getTime()))   end   = null;
     if (end) end.setHours(23, 59, 59, 999);
 
     for (var i = 1; i < data.length; i++) {

@@ -104,6 +104,68 @@ function createBankAccount(accountData, params) {
   }
 }
 
+
+function updateBankAccount(accountId, updates, params) {
+  try {
+    _auth('banking.write', params);
+    var ss    = getDb(params || {});
+    var sheet = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
+    if (!sheet) return { success: false, message: 'BankAccounts sheet not found' };
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString() === accountId) {
+        var row = i + 1;
+        if (updates.accountName !== undefined) sheet.getRange(row, 2).setValue(updates.accountName);
+        if (updates.bankName    !== undefined) sheet.getRange(row, 3).setValue(updates.bankName);
+        if (updates.sortCode    !== undefined) sheet.getRange(row, 5).setValue(updates.sortCode);
+        if (updates.accountNumber !== undefined) sheet.getRange(row, 6).setValue(updates.accountNumber);
+        // Update COA name if linked
+        if (updates.accountName && data[i][10]) {
+          var coaSheet = ss.getSheetByName('ChartOfAccounts');
+          if (coaSheet) {
+            var coaData = coaSheet.getDataRange().getValues();
+            for (var c = 1; c < coaData.length; c++) {
+              if (coaData[c][0] && coaData[c][0].toString() === data[i][10].toString()) {
+                coaSheet.getRange(c + 1, 2).setValue(updates.accountName + (updates.bankName ? ' (' + updates.bankName + ')' : ''));
+                break;
+              }
+            }
+          }
+        }
+        logAudit('UPDATE', 'BankAccount', accountId, { name: updates.accountName });
+        return { success: true };
+      }
+    }
+    return { success: false, message: 'Account not found' };
+  } catch(e) {
+    Logger.log('updateBankAccount error: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+function deleteBankAccount(accountId, params) {
+  try {
+    _auth('banking.write', params);
+    var sheet = getDb(params || {}).getSheetByName(SHEETS.BANK_ACCOUNTS);
+    if (!sheet) return { success: false, message: 'BankAccounts sheet not found' };
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString() === accountId) {
+        var balance = parseFloat(data[i][7]) || 0;
+        if (Math.abs(balance) > 0.01) {
+          return { success: false, message: 'Cannot delete account with non-zero balance (£' + balance.toFixed(2) + '). Clear balance first.' };
+        }
+        sheet.deleteRow(i + 1);
+        logAudit('DELETE', 'BankAccount', accountId, {});
+        return { success: true };
+      }
+    }
+    return { success: false, message: 'Account not found' };
+  } catch(e) {
+    return { success: false, message: e.toString() };
+  }
+}
+
 function updateBankBalance(accountId, amount, params) {
   // Guard: never update balance for Statement-type imports
   // importBankStatement writes directly and does not call this function,
@@ -570,7 +632,7 @@ function getReconciliationSummary(accountId, params) {
     var account = accounts.accounts.find(function(a) { return a.accountId === accountId; });
     if (!account) return { success: false, message: 'Account not found' };
 
-    var txResult    = getUnreconciledTransactions(accountId);
+    var txResult    = getUnreconciledTransactions(accountId, params);
     var allUnrecon  = txResult.transactions || [];
 
     // Separate statement lines from book entries
@@ -591,8 +653,8 @@ function getReconciliationSummary(accountId, params) {
       else totalDebits += Math.abs(bookEntries[i].amount);
     }
 
-    var invoicesResult = getUnallocatedInvoices();
-    var billsResult    = getUnallocatedBills();
+    var invoicesResult = getUnallocatedInvoices(null, params);
+    var billsResult    = getUnallocatedBills(null, params);
 
     return {
       success: true,
@@ -714,7 +776,7 @@ function receiveMoney(data, params) {
 
 function transferMoney(data, params) {
   try {
-    try { _checkPeriodLock(data && data.date ? new Date(data.date) : new Date()); } catch(le) { return { success:false, message:le.message }; }
+    try { _checkPeriodLock(data && data.date ? new Date(data.date) : new Date(), params); } catch(le) { return { success:false, message:le.message }; }
     var txSheet = getDb(params || {}).getSheetByName(SHEETS.BANK_TRANSACTIONS);
     if (!txSheet) return { success: false, message: 'BankTransactions sheet not found' };
     

@@ -1223,7 +1223,7 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
         .replace(/\{\{invoiceNumber\}\}/g, invoice.invoiceNumber || '')
         .replace(/\{\{clientName\}\}/g,    invoice.clientName    || '')
         .replace(/\{\{total\}\}/g,         '£' + (invoice.total||0).toFixed(2))
-        .replace(/\{\{dueDate\}\}/g,       formatDate ? formatDate(invoice.dueDate) : (invoice.dueDate||''))
+        .replace(/\{\{dueDate\}\}/g,       invoice.dueDate ? Utilities.formatDate(new Date(invoice.dueDate), Session.getScriptTimeZone(), 'dd MMM yyyy') : '')
         .replace(/\{\{amountDue\}\}/g,     '£' + (invoice.amountDue||0).toFixed(2))
         .replace(/\{\{companyName\}\}/g,   settings.companyName  || '')
         .replace(/\{\{paymentDetails\}\}/g,paymentDetails);
