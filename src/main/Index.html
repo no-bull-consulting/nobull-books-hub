@@ -558,28 +558,46 @@ function nbNav(page, params) {
 
 var _aiHistory = [];
 
+var _aiTopics = [
+  { label: '📊 Financial Summary',   q: 'Give me a summary of my current financial position including cash, outstanding invoices and bills.' },
+  { label: '🧾 Outstanding Invoices', q: 'Which invoices are outstanding and what is the total amount owed to me?' },
+  { label: '⚠️ Overdue Invoices',    q: 'Do I have any overdue invoices? What should I do about them?' },
+  { label: '📦 Bills & Payables',    q: 'What bills do I have outstanding and when are they due?' },
+  { label: '💰 Cash Flow',           q: 'How is my cash flow looking? What is my net position?' },
+  { label: '📈 Profit & Loss',       q: 'Can you explain my profit and loss position based on my invoices and bills?' },
+  { label: '% VAT Return',           q: 'How do I prepare and submit a VAT return using no~bull books?' },
+  { label: '🏦 Bank Reconciliation', q: 'How does bank reconciliation work in no~bull books?' },
+  { label: '➕ Create an Invoice',   q: 'How do I create and send an invoice in no~bull books?' },
+  { label: '📤 MTD Submission',      q: 'How do I connect to HMRC and submit a Making Tax Digital VAT return?' },
+  { label: '⚙️ Settings',            q: 'What can I configure in the Settings section of no~bull books?' },
+  { label: '📝 Credit Notes',        q: 'How do I create a credit note in no~bull books?' },
+];
+
 function showAIAssistant() {
   showContent(
     '<div class="page-hdr">' +
-      '<div><div class="page-title">AI Assistant</div>' +
+      '<div><div class="page-title">&#x1F916; AI Assistant</div>' +
       '<div class="page-sub">Ask anything about your accounts or how to use no~bull books</div></div>' +
       '<button class="btn btn-ghost btn-sm" onclick="_aiClear()">Clear chat</button>' +
     '</div>' +
-    '<div style="display:flex;flex-direction:column;height:calc(100vh - 200px);gap:12px">' +
-      '<div id="ai-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 0">' +
-        '<div id="ai-welcome" style="text-align:center;color:var(--g400);font-size:13px;padding:40px 0">' +
-          '<div style="font-size:32px;margin-bottom:8px">&#x1F916;</div>' +
-          '<div>Ask me anything about your accounts or how to use no~bull books.</div>' +
+    '<div style="display:grid;grid-template-columns:200px 1fr;gap:16px;height:calc(100vh - 180px)">' +
+      '<div style="display:flex;flex-direction:column;gap:4px;overflow-y:auto" id="ai-topics"></div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;min-height:0">' +
+        '<div id="ai-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0">' +
+          '<div id="ai-welcome" style="text-align:center;color:var(--g400);font-size:13px;padding:32px 0">' +
+            '<div style="font-size:36px;margin-bottom:10px">&#x1F916;</div>' +
+            '<div style="font-weight:600;color:var(--g600);margin-bottom:6px">Hello! I'm your no~bull books assistant.</div>' +
+            '<div>Select a topic on the left or type your question below.</div>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<div id="ai-input-row" style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">' +
-        '<textarea id="ai-input" class="form-textarea" placeholder="Ask a question..." ' +
-          'style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0"></textarea>' +
-        '<button class="btn btn-primary" id="ai-send-btn" style="align-self:flex-end">Send</button>' +
+        '<div style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">' +
+          '<textarea id="ai-input" class="form-textarea" placeholder="Ask a question..." ' +
+            'style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0"></textarea>' +
+          '<button class="btn btn-primary" id="ai-send-btn" style="align-self:flex-end">Send</button>' +
+        '</div>' +
       '</div>' +
     '</div>'
   );
-  // Wire up events after DOM is ready
   setTimeout(function() {
     var btn = document.getElementById('ai-send-btn');
     var inp = document.getElementById('ai-input');
@@ -587,20 +605,20 @@ function showAIAssistant() {
     if (inp) inp.onkeydown = function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _aiSend(); }
     };
-    // Add quick-start buttons
-    var welcome = document.getElementById('ai-welcome');
-    if (welcome) {
-      var btns = document.createElement('div');
-      btns.style.cssText = 'margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap';
-      var questions = ['What are my outstanding invoices?', 'Summarise my financial position', 'How do I submit a VAT return?'];
-      questions.forEach(function(q) {
+    // Build topic sidebar
+    var topicEl = document.getElementById('ai-topics');
+    if (topicEl) {
+      _aiTopics.forEach(function(t) {
         var b = document.createElement('button');
-        b.className = 'btn btn-secondary btn-sm';
-        b.textContent = q;
-        b.onclick = function() { inp.value = q; _aiSend(); };
-        btns.appendChild(b);
+        b.className = 'btn btn-ghost btn-sm';
+        b.style.cssText = 'text-align:left;justify-content:flex-start;font-size:12px;padding:7px 10px;border-radius:var(--r8)';
+        b.textContent = t.label;
+        b.onclick = function() {
+          inp.value = t.q;
+          _aiSend();
+        };
+        topicEl.appendChild(b);
       });
-      welcome.appendChild(btns);
     }
   }, 50);
 }
@@ -663,19 +681,63 @@ function _aiBuildContext() {
   var inv = d.invoices || [];
   var bil = d.bills || [];
   var ba  = d.bankAccounts || [];
-  var rcv = inv.filter(function(i){ return i.status !== 'Paid' && i.status !== 'Void' && i.status !== 'Draft'; })
-    .reduce(function(sum, i){ return sum + (parseFloat(i.amountDue) || 0); }, 0);
-  var pay = bil.filter(function(b){ return b.status !== 'Paid' && b.status !== 'Void'; })
-    .reduce(function(sum, b){ return sum + (parseFloat(b.amountDue) || 0); }, 0);
+  var today = new Date();
+
+  // Invoice summary
+  var paidInv    = inv.filter(function(i){ return i.status === 'Paid'; });
+  var draftInv   = inv.filter(function(i){ return i.status === 'Draft'; });
+  var sentInv    = inv.filter(function(i){ return i.status === 'Sent' || i.status === 'Approved'; });
+  var overdueInv = inv.filter(function(i){ return (i.status === 'Sent' || i.status === 'Approved') && i.dueDate && new Date(i.dueDate) < today; });
+  var rcv        = sentInv.reduce(function(sum, i){ return sum + (parseFloat(i.amountDue) || 0); }, 0);
+  var totalRevenue = paidInv.reduce(function(sum, i){ return sum + (parseFloat(i.total) || 0); }, 0);
+
+  // Bill summary
+  var pendingBil = bil.filter(function(b){ return b.status !== 'Paid' && b.status !== 'Void'; });
+  var paidBil    = bil.filter(function(b){ return b.status === 'Paid'; });
+  var pay        = pendingBil.reduce(function(sum, b){ return sum + (parseFloat(b.amountDue) || 0); }, 0);
+  var totalSpend = paidBil.reduce(function(sum, b){ return sum + (parseFloat(b.total) || 0); }, 0);
+
+  // Cash
   var cash = ba.reduce(function(sum, a){ return sum + (parseFloat(a.currentBalance) || 0); }, 0);
-  return 'Company: ' + (s.companyName || 'Unknown') + '. ' +
-    'VAT registered: ' + (s.vatRegistered ? 'Yes' : 'No') + '. ' +
-    'Total invoices: ' + inv.length + ' (' + inv.filter(function(i){ return i.status === 'Paid'; }).length + ' paid, ' +
-    inv.filter(function(i){ return i.status === 'Draft'; }).length + ' draft). ' +
-    'Outstanding receivable: GBP ' + rcv.toFixed(2) + '. ' +
-    'Total bills: ' + bil.length + '. Outstanding payable: GBP ' + pay.toFixed(2) + '. ' +
-    'Cash position: GBP ' + cash.toFixed(2) + '. ' +
-    'Financial year: ' + (s.currentFinancialYear || '') + '.';
+
+  // Recent invoices (last 5)
+  var recentInv = inv.slice(-5).map(function(i){
+    return i.invoiceNumber + ' ' + (i.clientName||'') + ' £' + (parseFloat(i.total)||0).toFixed(2) + ' (' + i.status + ')';
+  }).join('; ');
+
+  // Recent bills (last 5)
+  var recentBil = bil.slice(-5).map(function(b){
+    return (b.billNumber||'') + ' ' + (b.supplierName||'') + ' £' + (parseFloat(b.total)||0).toFixed(2) + ' (' + b.status + ')';
+  }).join('; ');
+
+  // Bank accounts
+  var baList = ba.map(function(a){
+    return (a.accountName||'') + ' at ' + (a.bankName||'') + ': £' + (parseFloat(a.currentBalance)||0).toFixed(2);
+  }).join('; ');
+
+  return [
+    'COMPANY: ' + (s.companyName || 'Unknown'),
+    'FINANCIAL YEAR: ' + (s.currentFinancialYear || 'Not set'),
+    'VAT REGISTERED: ' + (s.vatRegistered ? 'Yes, VAT No: ' + (s.vatRegNumber || 'not set') : 'No'),
+    'BASE CURRENCY: GBP (£)',
+    '',
+    'CASH POSITION: £' + cash.toFixed(2),
+    'BANK ACCOUNTS: ' + (baList || 'None'),
+    '',
+    'INVOICES: ' + inv.length + ' total (' + paidInv.length + ' paid, ' + sentInv.length + ' outstanding, ' + draftInv.length + ' draft)',
+    'OUTSTANDING RECEIVABLE: £' + rcv.toFixed(2),
+    'OVERDUE INVOICES: ' + overdueInv.length + (overdueInv.length ? ' (£' + overdueInv.reduce(function(s,i){return s+(parseFloat(i.amountDue)||0);},0).toFixed(2) + ')' : ''),
+    'TOTAL REVENUE (paid invoices): £' + totalRevenue.toFixed(2),
+    'RECENT INVOICES: ' + (recentInv || 'None'),
+    '',
+    'BILLS: ' + bil.length + ' total (' + paidBil.length + ' paid, ' + pendingBil.length + ' pending)',
+    'OUTSTANDING PAYABLE: £' + pay.toFixed(2),
+    'TOTAL SPEND (paid bills): £' + totalSpend.toFixed(2),
+    'RECENT BILLS: ' + (recentBil || 'None'),
+    '',
+    'NET POSITION: £' + (cash + rcv - pay).toFixed(2) + ' (cash + receivable - payable)',
+  ].join('
+');
 }
 
 function _escHtml(t) {
