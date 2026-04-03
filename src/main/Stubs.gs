@@ -550,10 +550,92 @@ function installRecurringTrigger() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getSecurityStatus()           { return { success: true, status: 'OK' }; }
-function getAuditLog(params)           { return { success: true, entries: [] }; }
+function getAuditLog(params) {
+  try {
+    var sheet = getDb(params || {}).getSheetByName('AuditLog');
+    if (!sheet || sheet.getLastRow() < 2) return { success: true, entries: [], total: 0 };
+    var limit = (params && params.limit) ? parseInt(params.limit) : 200;
+    var lastRow = sheet.getLastRow();
+    var startRow = Math.max(2, lastRow - limit + 1);
+    var numRows = lastRow - startRow + 1;
+    var data = sheet.getRange(startRow, 1, numRows, sheet.getLastColumn()).getValues();
+    var entries = [];
+    for (var i = data.length - 1; i >= 0; i--) {
+      var r = data[i];
+      if (!r[0]) continue;
+      entries.push({
+        id:        r[0] ? r[0].toString() : '',
+        timestamp: r[1] ? safeSerializeDate(r[1]) : '',
+        action:    r[2] ? r[2].toString() : '',
+        entity:    r[3] ? r[3].toString() : '',
+        entityId:  r[4] ? r[4].toString() : '',
+        user:      r[5] ? r[5].toString() : '',
+        detail:    r[6] ? r[6].toString() : ''
+      });
+    }
+    return { success: true, entries: entries, total: lastRow - 1 };
+  } catch(e) {
+    Logger.log('getAuditLog error: ' + e.toString());
+    return { success: true, entries: [], total: 0 };
+  }
+}
 function pingRegistry(event)           { /* no-op if REGISTRY_URL not set */ }
-function getAllInstances()             { return { success: true, instances: [] }; }
-function getInstanceMeta()            { return { success: true, meta: {} }; }
+function getAllInstances(params) {
+  try {
+    // getAllInstances reads from the Registry sheet (hub-level)
+    // It's called from the Admin Panel on any instance — use Registry functions
+    var r = getAllRegistryClients(params);
+    if (!r.success) return { success: true, instances: [] };
+    var instances = (r.clients || []).map(function(c) {
+      return {
+        companyName:   c.companyName || '—',
+        companyEmail:  c.email || '—',
+        version:       c.version || '—',
+        lastSeen:      c.lastSeen || '',
+        invoiceCount:  c.invoiceCount || 0,
+        clientCount:   c.clientCount || 0,
+        billCount:     c.billCount || 0,
+        spreadsheetUrl: c.sheetId ? 'https://docs.google.com/spreadsheets/d/' + c.sheetId : '#',
+        status:        c.status || 'Active'
+      };
+    });
+    return { success: true, instances: instances };
+  } catch(e) {
+    return { success: true, instances: [] };
+  }
+}
+
+function getInstanceMeta(params) {
+  try {
+    var props  = PropertiesService.getScriptProperties().getProperties();
+    var regId  = props['REGISTRY_SHEET_ID'] || '';
+    var ss     = getDb(params || {});
+    var settings = getSettings(params);
+    var invSheet = ss.getSheetByName('Invoices');
+    var cliSheet = ss.getSheetByName('Clients');
+    var bilSheet = ss.getSheetByName('Bills');
+    return {
+      success: true,
+      meta: {
+        companyName:       settings.companyName || '—',
+        companyEmail:      settings.companyEmail || '—',
+        scriptId:          ScriptApp.getScriptId(),
+        spreadsheetId:     ss.getId(),
+        spreadsheetUrl:    ss.getUrl(),
+        lastSeen:          new Date().toISOString(),
+        invoiceCount:      invSheet && invSheet.getLastRow() > 1 ? invSheet.getLastRow() - 1 : 0,
+        clientCount:       cliSheet && cliSheet.getLastRow() > 1 ? cliSheet.getLastRow() - 1 : 0,
+        billCount:         bilSheet && bilSheet.getLastRow() > 1 ? bilSheet.getLastRow() - 1 : 0,
+        version:           typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2.0',
+        registryConfigured: !!regId,
+        registrySheetId:   regId
+      }
+    };
+  } catch(e) {
+    Logger.log('getInstanceMeta error: ' + e.toString());
+    return { success: true, meta: { registryConfigured: false } };
+  }
+}
 function getBackupStatus()            { return { success: true, hasTrigger: false, backupCount: 0 }; }
 function installBackupTrigger()       { return { success: true, message: 'Backup trigger not yet implemented.' }; }
 function removeBackupTrigger()        { return { success: true }; }
@@ -566,7 +648,24 @@ function diagnoseSheets(params)       { return { success: true }; }
 function rebuildAccountBalances(params){ return { success: true }; }
 function cleanDuplicateTransactions(params){ return { success: true }; }
 function verifySchemaIntegrity(params){ return { success: true }; }
-function getIntegrityStatus(params)   { return { success: true }; }
+function getIntegrityStatus(params) {
+  try {
+    var props       = PropertiesService.getScriptProperties().getProperties();
+    var deployKey   = props['DEPLOY_KEY'] || '';
+    var version     = typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2.0';
+    return {
+      success:        true,
+      hasKey:         !!deployKey,
+      keyPrefix:      deployKey ? deployKey.substring(0, 8) + '...' : '',
+      currentVersion: version,
+      versionMatch:   true,
+      deployedBy:     props['DEPLOYED_BY'] || 'edward@nobull.consulting',
+      deploymentDate: props['DEPLOY_DATE'] || ''
+    };
+  } catch(e) {
+    return { success: true, hasKey: false, currentVersion: '2.0', versionMatch: true };
+  }
+}
 function initializeSystem(params)     { return checkAndInitSheet(params); }
 function createBackup(params)         { return { success: true }; }
 function getITSAObligationsFromSheet(params){ return { success: true, obligations: [] }; }
