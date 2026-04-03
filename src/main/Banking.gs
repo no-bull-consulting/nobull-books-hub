@@ -312,7 +312,7 @@ function _addBankTransaction(txData, params) {
 
 function getUnreconciledTransactions(accountId, params) {
   try {
-    var result = getBankTransactions(accountId);
+    var result = getBankTransactions(accountId, null, null, params);
     if (!result.success) return result;
 
     // Return ALL unreconciled (statement lines + book entries)
@@ -777,45 +777,48 @@ function receiveMoney(data, params) {
 function transferMoney(data, params) {
   try {
     try { _checkPeriodLock(data && data.date ? new Date(data.date) : new Date(), params); } catch(le) { return { success:false, message:le.message }; }
-    var txSheet = getDb(params || {}).getSheetByName(SHEETS.BANK_TRANSACTIONS);
+    var ss      = getDb(params || {});
+    var txSheet = ss.getSheetByName(SHEETS.BANK_TRANSACTIONS);
     if (!txSheet) return { success: false, message: 'BankTransactions sheet not found' };
-    
+
+    // Look up account names if not provided
+    var fromName = data.fromAccountName || '';
+    var toName   = data.toAccountName   || '';
+    if (!fromName || !toName) {
+      var baResult = getBankAccounts(params);
+      var accounts = (baResult && baResult.accounts) ? baResult.accounts : [];
+      accounts.forEach(function(a) {
+        if (a.accountId === data.fromAccountId) fromName = a.accountName;
+        if (a.accountId === data.toAccountId)   toName   = a.accountName;
+      });
+    }
+
     var transferId = generateId('TRF');
-    var amount = Math.abs(parseFloat(data.amount));
-    
+    var amount     = Math.abs(parseFloat(data.amount));
+    var notes      = data.notes || data.description || 'Bank transfer';
+    var dateVal    = safeSerializeDate(data.date ? new Date(data.date) : new Date());
+
     var debitId = generateId('BTX');
     txSheet.appendRow([
-      debitId,
-      safeSerializeDate(data.date),
-      'Transfer to ' + data.toAccountName,
-      transferId,
-      -amount,
-      'Debit',
-      'Transfer',
-      data.fromAccountId,
-      'Unreconciled',
-      '',
-      '',
-      '',
-      data.notes || ''
+      debitId, dateVal,
+      'Transfer to ' + toName, transferId,
+      -amount, 'Debit', 'Transfer',
+      data.fromAccountId, 'Unreconciled',
+      '', '', '', notes
     ]);
-    
+
     var creditId = generateId('BTX');
     txSheet.appendRow([
-      creditId,
-      safeSerializeDate(data.date),
-      'Transfer from ' + data.fromAccountName,
-      transferId,
-      amount,
-      'Credit',
-      'Transfer',
-      data.toAccountId,
-      'Unreconciled',
-      '',
-      '',
-      '',
-      data.notes || ''
+      creditId, dateVal,
+      'Transfer from ' + fromName, transferId,
+      amount, 'Credit', 'Transfer',
+      data.toAccountId, 'Unreconciled',
+      '', '', '', notes
     ]);
+
+    // Update bank account balances
+    updateBankBalance(data.fromAccountId, -amount, params);
+    updateBankBalance(data.toAccountId,    amount, params);
     
     return { 
       success: true, 

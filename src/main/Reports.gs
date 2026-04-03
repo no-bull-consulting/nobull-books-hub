@@ -9,10 +9,13 @@
 
 function generateProfitLoss(startDate, endDate, params) {
   try {
+    Logger.log('generateProfitLoss: startDate=' + startDate + ' endDate=' + endDate + ' sheetId=' + (params && params._sheetId));
     var txnResult = getAllTransactions(startDate, endDate, params);
+    Logger.log('generateProfitLoss: txnResult.success=' + txnResult.success + ' count=' + (txnResult.transactions || []).length);
     if (!txnResult.success) return txnResult;
 
     var coaResult = getAccounts({}, params);
+    Logger.log('generateProfitLoss: coaResult.success=' + coaResult.success + ' accounts=' + (coaResult.accounts || []).length);
     if (!coaResult.success) return coaResult;
 
     var revenue      = {};
