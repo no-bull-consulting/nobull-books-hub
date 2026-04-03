@@ -460,8 +460,25 @@ function _rowToClient(row) {
     country:        (row[22] || 'UK').toString(),
     accountant:     (row[23] || '').toString(),
     accountantEmail:(row[24] || '').toString(),
-    // Computed
-    sheetLink: row[6] ? 'https://docs.google.com/spreadsheets/d/' + row[6] : ''
+    // Computed fields
+    sheetLink: row[6] ? 'https://docs.google.com/spreadsheets/d/' + row[6] : '',
+    appLink:   row[8] ? row[8] : (row[6] ? 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=' + row[6] : ''),
+    trialEnd:  (function() {
+      // Trial = 14 days from createdDate
+      if (!row[11]) return '';
+      var created = new Date(row[11]);
+      if (isNaN(created.getTime())) return '';
+      var trial = new Date(created.getTime() + 14 * 86400000);
+      return safeSerializeDate(trial);
+    })(),
+    trialDaysLeft: (function() {
+      if (!row[11]) return null;
+      var created = new Date(row[11]);
+      if (isNaN(created.getTime())) return null;
+      var trial = new Date(created.getTime() + 14 * 86400000);
+      var days = Math.ceil((trial - new Date()) / 86400000);
+      return days;
+    })()
   };
 }
 

@@ -1524,18 +1524,33 @@ async function showAdminPanel() {
     '</div><div class="card-body">' +
     (instances
       ? (instances.length
-          ? '<table class="dt" style="margin-bottom:0"><thead><tr><th>Company</th><th>Version</th><th>Last Seen</th><th>Invoices</th><th>Clients</th><th>Bills</th><th></th></tr></thead><tbody>' +
+          ? '<table class="dt" style="margin-bottom:0"><thead><tr><th>Company</th><th>Plan / Status</th><th>Created</th><th>Trial End</th><th>Last Seen</th><th>Inv</th><th>Cli</th><th>Bills</th><th>Links</th></tr></thead><tbody>' +
               instances.map(function(inst) {
                 var ago = inst.lastSeen ? Math.round((Date.now()-new Date(inst.lastSeen))/3600000) : null;
-                var agoStr = ago===null?'—':ago<1?'<1h ago':ago<24?ago+'h ago':Math.round(ago/24)+'d ago';
+                var agoStr = ago===null?'\u2014':ago<1?'<1h ago':ago<24?ago+'h ago':Math.round(ago/24)+'d ago';
+                var status = inst.status||'Active';
+                var plan   = inst.plan||'Trial';
+                var daysLeft = inst.trialDaysLeft;
+                var statusBadge = status==='Active'
+                  ? '<span class=\"badge badge-green\">Active</span>'
+                  : daysLeft!==null && daysLeft>0
+                    ? '<span class=\"badge badge-amber\">Trial \u2014 '+daysLeft+'d left</span>'
+                    : '<span class=\"badge badge-red\">Trial expired</span>';
+                var appUrl = inst.appLink || (inst.sheetId ? 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id='+inst.sheetId : '');
+                var sheetUrl = inst.spreadsheetUrl || inst.sheetLink || (inst.sheetId ? 'https://docs.google.com/spreadsheets/d/'+inst.sheetId : '');
                 return '<tr>' +
-                  '<td><strong>'+inst.companyName+'</strong><div style="font-size:11px;color:var(--g400)">'+inst.companyEmail+'</div></td>' +
-                  '<td>'+badge('v'+inst.version)+'</td>' +
-                  '<td style="font-size:12px">'+agoStr+'</td>' +
-                  '<td class="mono">'+inst.invoiceCount+'</td>' +
-                  '<td class="mono">'+inst.clientCount+'</td>' +
-                  '<td class="mono">'+inst.billCount+'</td>' +
-                  '<td><a href="'+inst.spreadsheetUrl+'" target="_blank" class="btn btn-ghost btn-xs">Sheet</a></td>' +
+                  '<td><strong>'+(inst.companyName||'\u2014')+'</strong><div style=\"font-size:11px;color:var(--g400)\">'+(inst.companyEmail||inst.contactEmail||'')+'</div></td>' +
+                  '<td>'+statusBadge+'<div style=\"font-size:11px;color:var(--g500);margin-top:2px\">'+plan+'</div></td>' +
+                  '<td style=\"font-size:12px\">'+(inst.createdDate ? fmtDate(inst.createdDate) : '\u2014')+'</td>' +
+                  '<td style=\"font-size:12px\">'+(inst.trialEnd ? fmtDate(inst.trialEnd) : '\u2014')+'</td>' +
+                  '<td style=\"font-size:12px\">'+agoStr+'</td>' +
+                  '<td class=\"mono\" style=\"font-size:12px\">'+(inst.invoiceCount||0)+'</td>' +
+                  '<td class=\"mono\" style=\"font-size:12px\">'+(inst.clientCount||0)+'</td>' +
+                  '<td class=\"mono\" style=\"font-size:12px\">'+(inst.billCount||0)+'</td>' +
+                  '<td style=\"white-space:nowrap\">' +
+                    (appUrl ? '<a href=\"'+appUrl+'\" target=\"_blank\" class=\"btn btn-primary btn-xs\" style=\"margin-right:4px\">App</a>' : '') +
+                    (sheetUrl ? '<a href=\"'+sheetUrl+'\" target=\"_blank\" class=\"btn btn-ghost btn-xs\">Sheet</a>' : '') +
+                  '</td>' +
                 '</tr>';
               }).join('') +
             '</tbody></table>'
