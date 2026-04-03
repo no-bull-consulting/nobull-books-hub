@@ -559,45 +559,48 @@ function nbNav(page, params) {
 var _aiHistory = [];
 
 var _aiTopics = [
-  { label: '📊 Financial Summary',   q: 'Give me a summary of my current financial position including cash, outstanding invoices and bills.' },
-  { label: '🧾 Outstanding Invoices', q: 'Which invoices are outstanding and what is the total amount owed to me?' },
-  { label: '⚠️ Overdue Invoices',    q: 'Do I have any overdue invoices? What should I do about them?' },
-  { label: '📦 Bills & Payables',    q: 'What bills do I have outstanding and when are they due?' },
-  { label: '💰 Cash Flow',           q: 'How is my cash flow looking? What is my net position?' },
-  { label: '📈 Profit & Loss',       q: 'Can you explain my profit and loss position based on my invoices and bills?' },
-  { label: '% VAT Return',           q: 'How do I prepare and submit a VAT return using no~bull books?' },
-  { label: '🏦 Bank Reconciliation', q: 'How does bank reconciliation work in no~bull books?' },
-  { label: '➕ Create an Invoice',   q: 'How do I create and send an invoice in no~bull books?' },
-  { label: '📤 MTD Submission',      q: 'How do I connect to HMRC and submit a Making Tax Digital VAT return?' },
-  { label: '⚙️ Settings',            q: 'What can I configure in the Settings section of no~bull books?' },
-  { label: '📝 Credit Notes',        q: 'How do I create a credit note in no~bull books?' },
+  ['Financial Summary',   'Give me a summary of my current financial position including cash, outstanding invoices and bills.'],
+  ['Outstanding Invoices','Which invoices are outstanding and what is the total amount owed to me?'],
+  ['Overdue Invoices',    'Do I have any overdue invoices? What should I do about them?'],
+  ['Bills and Payables',  'What bills do I have outstanding and when are they due?'],
+  ['Cash Flow',           'How is my cash flow looking? What is my net position?'],
+  ['Profit and Loss',     'Can you explain my profit and loss position based on my invoices and bills?'],
+  ['VAT Return',          'How do I prepare and submit a VAT return using no~bull books?'],
+  ['Bank Reconciliation', 'How does bank reconciliation work in no~bull books?'],
+  ['Create an Invoice',   'How do I create and send an invoice in no~bull books?'],
+  ['MTD Submission',      'How do I connect to HMRC and submit a Making Tax Digital VAT return?'],
+  ['Settings',            'What can I configure in the Settings section of no~bull books?'],
+  ['Credit Notes',        'How do I create a credit note in no~bull books?'],
 ];
 
 function showAIAssistant() {
-  showContent(
-    '<div class="page-hdr">' +
-      '<div><div class="page-title">&#x1F916; AI Assistant</div>' +
-      '<div class="page-sub">Ask anything about your accounts or how to use no~bull books</div></div>' +
-      '<button class="btn btn-ghost btn-sm" onclick="_aiClear()">Clear chat</button>' +
-    '</div>' +
-    '<div style="display:grid;grid-template-columns:200px 1fr;gap:16px;height:calc(100vh - 180px)">' +
-      '<div style="display:flex;flex-direction:column;gap:4px;overflow-y:auto" id="ai-topics"></div>' +
-      '<div style="display:flex;flex-direction:column;gap:12px;min-height:0">' +
-        '<div id="ai-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0">' +
-          '<div id="ai-welcome" style="text-align:center;color:var(--g400);font-size:13px;padding:32px 0">' +
-            '<div style="font-size:36px;margin-bottom:10px">&#x1F916;</div>' +
-            '<div style="font-weight:600;color:var(--g600);margin-bottom:6px">Hello! I am your no~bull books assistant.</div>' +
-            '<div>Select a topic on the left or type your question below.</div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">' +
-          '<textarea id="ai-input" class="form-textarea" placeholder="Ask a question..." ' +
-            'style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0"></textarea>' +
-          '<button class="btn btn-primary" id="ai-send-btn" style="align-self:flex-end">Send</button>' +
-        '</div>' +
-      '</div>' +
+  var el = document.getElementById('content');
+  if (!el) return;
+  el.innerHTML = [
+    '<div class="page-hdr">',
+      '<div><div class="page-title">AI Assistant</div>',
+      '<div class="page-sub">Ask anything about your accounts or how to use no~bull books</div></div>',
+      '<button class="btn btn-ghost btn-sm" onclick="_aiClear()">Clear chat</button>',
+    '</div>',
+    '<div style="display:grid;grid-template-columns:200px 1fr;gap:16px;height:calc(100vh - 180px)">',
+      '<div id="ai-topics" style="display:flex;flex-direction:column;gap:4px;overflow-y:auto"></div>',
+      '<div style="display:flex;flex-direction:column;gap:12px;min-height:0">',
+        '<div id="ai-chat" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0">',
+          '<div id="ai-welcome" style="text-align:center;color:var(--g400);font-size:13px;padding:32px 0">',
+            '<div style="font-size:36px;margin-bottom:10px">&#x1F916;</div>',
+            '<div style="font-weight:600;color:var(--g600);margin-bottom:6px">Hello! I am your no~bull books assistant.</div>',
+            '<div>Select a topic on the left or type your question below.</div>',
+          '</div>',
+        '</div>',
+        '<div style="display:flex;gap:8px;background:var(--g0);border:1px solid var(--g300);border-radius:var(--r12);padding:8px 12px">',
+          '<textarea id="ai-input" class="form-textarea" placeholder="Ask a question..."',
+            ' style="border:none;resize:none;min-height:44px;max-height:120px;flex:1;outline:none;font-size:14px;padding:4px 0"></textarea>',
+          '<button class="btn btn-primary" id="ai-send-btn" style="align-self:flex-end">Send</button>',
+        '</div>',
+      '</div>',
     '</div>'
-  );
+  ].join('');
+
   setTimeout(function() {
     var btn = document.getElementById('ai-send-btn');
     var inp = document.getElementById('ai-input');
@@ -605,18 +608,14 @@ function showAIAssistant() {
     if (inp) inp.onkeydown = function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _aiSend(); }
     };
-    // Build topic sidebar
     var topicEl = document.getElementById('ai-topics');
     if (topicEl) {
       _aiTopics.forEach(function(t) {
         var b = document.createElement('button');
         b.className = 'btn btn-ghost btn-sm';
         b.style.cssText = 'text-align:left;justify-content:flex-start;font-size:12px;padding:7px 10px;border-radius:var(--r8)';
-        b.textContent = t.label;
-        b.onclick = function() {
-          inp.value = t.q;
-          _aiSend();
-        };
+        b.textContent = t[0];
+        b.onclick = function() { inp.value = t[1]; _aiSend(); };
         topicEl.appendChild(b);
       });
     }
