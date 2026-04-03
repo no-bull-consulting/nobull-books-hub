@@ -259,6 +259,9 @@ function _route(action, params, ctx) {
     case 'installBackupTrigger':  _auth('maintenance.run', params); return installBackupTrigger();
     case 'runManualBackup':       _auth('maintenance.run', params); return runManualBackup(params);
     case 'getBackupStatus':       return getBackupStatus(params);
+    case 'getInstanceMeta':       return getInstanceMeta(params);
+    case 'getAllInstances':        return getAllInstances(params);
+    case 'getAdminStats':         return getInstanceMeta(params);
 
     // ── REGISTRY / ADMIN ──────────────────────────────────────────────────────
     case 'getAllRegistryClients':   return getAllRegistryClients(params);
