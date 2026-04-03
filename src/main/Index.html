@@ -571,9 +571,9 @@ function showAIAssistant() {
           '<div style="font-size:32px;margin-bottom:8px">🤖</div>' +
           '<div>Ask me anything about your accounts or how to use no~bull books.</div>' +
           '<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-'<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'What are my outstanding invoices?\')">Outstanding invoices</button>' +
-'<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'How do I submit a VAT return?\')">VAT return help</button>' +
-'<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'Summarise my financial position\')">Financial summary</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'What are my outstanding invoices?\'))">Outstanding invoices</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'How do I submit a VAT return?\'))">VAT return help</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="_aiAsk(\'Summarise my financial position\'))">Financial summary</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -638,10 +638,9 @@ async function _aiSend() {
   _aiHistory.push({ role: 'assistant', content: answer });
 
   // Format answer
-  var formatted = answer
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/
-/g, '<br>');
+    var formatted = (answer || '')
+    .split('**').map(function(p,i){return i%2===1?'<strong>'+p+'</strong>':p;}).join('')
+    .split('\n').join('<br>');
 
   chat.innerHTML += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px">' +
     '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">🤖</div>' +
