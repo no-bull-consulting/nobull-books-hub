@@ -2387,7 +2387,7 @@ function _renderBillModal(b) {
     (b.notes?'<div class="alert alert-info" style="margin-bottom:12px"><p><strong>Notes:</strong> '+b.notes+'</p></div>':'')+
     (actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+actions+'</div>':'') +
     '<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">📎 Attachments</div>' +
-    '<div id="bill-attachments"><div class="loader" style="height:48px"><div class="spin"></div></div></div>' +
+    '<div id="bill-attachments"><div style="font-size:12px;color:var(--g400);padding:6px 0">Loading attachments...</div></div>' +
     (cw&&!isVoid?
       '<div style="margin-top:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">+ Attach File' +
         '<input type="file" style="display:none" onchange="attachToBill(this,\''+billId+'\' )" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></label>' +
@@ -2430,15 +2430,31 @@ async function attachToBill(input, billId) {
   var file = input.files&&input.files[0];
   if (!file) return;
   if (file.size > 5242880) { toast('File too large — max 5MB','warning'); return; }
-  var btn = input.parentElement;
-  if (btn) btn.style.opacity='0.5';
+  var label = input.parentElement;
+  if (label) { label.style.opacity='0.5'; label.style.pointerEvents='none'; }
   var reader = new FileReader();
   reader.onload = async function(e) {
     var b64 = e.target.result.split(',')[1];
     var r   = await api('uploadBillFile',{billId:billId,base64Data:b64,fileName:file.name,fileType:file.type,description:''});
-    if (btn) btn.style.opacity='';
-    if (r&&r.success) { toast(file.name+' attached','success'); loadBillAttachments(billId); }
-    else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+    if (label) { label.style.opacity=''; label.style.pointerEvents=''; }
+    if (r && r.success) {
+      toast(file.name+' attached','success');
+      // Append file to list immediately without spinner
+      var el = document.getElementById('bill-attachments');
+      if (el) {
+        // Remove "no attachments" message if present
+        if (el.querySelector && el.textContent.trim() === 'No attachments yet') el.innerHTML = '';
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)';
+        div.setAttribute('data-fid', r.fileId||'');
+        div.innerHTML = '<span style="font-size:16px">'+_fileIcon(file.type)+'</span>' +
+          '<a href="'+(r.fileURL||r.fileUrl||'#')+'" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">'+file.name+'</a>' +
+          '<button class="btn btn-ghost btn-xs" style="color:var(--red-500)" data-fid="'+(r.fileId||'')+'" data-bid="'+billId+'" onclick="_delBF(this)">✕</button>';
+        el.appendChild(div);
+      }
+    } else {
+      toast('Error: '+(r?r.message||r.error:'unknown'),'error');
+    }
   };
   reader.readAsDataURL(file);
 }

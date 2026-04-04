@@ -620,12 +620,10 @@ function deleteInvoiceFile(params) {
 function getBillFiles(billId, params) {
   try {
     var sheet = _getFileSheet('bill', params);
-    Logger.log('getBillFiles: billId=' + billId + ' sheet=' + (sheet ? sheet.getName() : 'NULL') + ' rows=' + (sheet ? sheet.getLastRow() : 0));
     if (!sheet || sheet.getLastRow() < 2) return { success: true, files: [] };
     var data = sheet.getDataRange().getValues();
     var files = [];
     for (var i = 1; i < data.length; i++) {
-      Logger.log('getBillFiles row ' + i + ': col1=' + data[i][1]);
       if (data[i][1] && data[i][1].toString() === billId) {
         files.push({
           fileId: data[i][0] ? data[i][0].toString() : '',
