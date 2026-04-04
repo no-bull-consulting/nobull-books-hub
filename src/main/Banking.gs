@@ -550,6 +550,14 @@ function reconcileTransaction(transactionId, allocations, params) {
     var isStatementLine = tx.category === 'Statement' ||
       String(txData[txRowNum-1][12]||'').indexOf('Imported') >= 0;
 
+    // If no allocations, just mark as reconciled (bank charge, interest, etc)
+    if (!allocations || !allocations.length) {
+      txSheet.getRange(txRowNum, BANK_TX_COLS.STATUS).setValue('Reconciled');
+      txSheet.getRange(txRowNum, BANK_TX_COLS.RECONCILED_DATE).setValue(new Date());
+      txSheet.getRange(txRowNum, BANK_TX_COLS.MATCH_TYPE).setValue('ManualOK');
+      return { success: true, message: 'Marked as reconciled.' };
+    }
+
     for (var j = 0; j < allocations.length; j++) {
       var alloc   = allocations[j];
       var docType = (alloc.documentType || '').toLowerCase();

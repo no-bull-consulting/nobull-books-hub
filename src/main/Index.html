@@ -1737,6 +1737,8 @@ function showLoader()   { showContent('<div class="loader"><div class="spin"></d
 function fmt(n) {
   n = parseFloat(n) || 0;
   return '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+var _CURR_SYMBOLS={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+function _fmtCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+Math.abs(n).toFixed(2)+(n<0?'-':'');}
 }
 function fmtDate(d) {
   if (!d) return '—';
@@ -2439,43 +2441,88 @@ async function openEditBillModal() {
   if (!b) return;
   _editBillId = _viewBillId;
   var lr = await api('getBillLines', { billId:_viewBillId });
-  _editBillLines = Array.isArray(lr) ? lr.map(function(l){
-    return { description:l.description, qty:l.quantity, unitPrice:l.unitPrice, vatRate:l.vatRate };
+  var lines = (lr && lr.lines) ? lr.lines : (Array.isArray(lr) ? lr : []);
+  _editBillLines = lines.length ? lines.map(function(l){
+    return {
+      description: l.description || '',
+      qty:         parseFloat(l.quantity || l.qty) || 1,
+      unitPrice:   parseFloat(l.unitPrice) || 0,
+      vatRate:     parseFloat(l.vatRate) !== undefined ? parseFloat(l.vatRate) : 20
+    };
   }) : [{ description:'', qty:1, unitPrice:0, vatRate:20 }];
-  if (!_editBillLines.length) _editBillLines.push({ description:'', qty:1, unitPrice:0, vatRate:20 });
-  var sups = App.data.suppliers||[];
-  var sOpts = sups.map(function(s){ return '<option value="'+s.supplierId+'"'+(s.supplierId===b.supplierId?' selected':'')+'>'+s.supplierName+'</option>'; }).join('');
-  openModal('bill-edit','Edit Bill — '+(b.billNumber||''),
-    '<div class="form-grid-2" style="margin-bottom:12px">'+
-      '<div class="form-group"><label class="form-label">Supplier</label><select class="form-select" id="ebl-supplier">'+sOpts+'</select></div>'+
-      '<div class="form-group"><label class="form-label">Issue Date</label><input type="date" class="form-input" id="ebl-issue" value="'+(b.issueDate?String(b.issueDate).substring(0,10):'')+'"></div>'+
-      '<div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-input" id="ebl-due" value="'+(b.dueDate?String(b.dueDate).substring(0,10):'')+'"></div>'+
-    '</div>'+
-    '<div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--g700)">Line Items</div>'+
-    '<table style="width:100%;border-collapse:collapse">'+
-      '<thead><tr>'+
-        '<th style="text-align:left;padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200)">Description</th>'+
-        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:55px;text-align:right">Qty</th>'+
-        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:100px;text-align:right">Price</th>'+
-        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:110px;text-align:center">VAT</th>'+
-        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:80px;text-align:right">Total</th>'+
-        '<th style="width:24px;border-bottom:1px solid var(--g200)"></th>'+
-      '</tr></thead>'+
-      '<tbody id="ebl-lines"></tbody>'+
-    '</table>'+
-    '<button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditBillLine()">+ Add Line</button>'+
-    '<div style="text-align:right;margin-top:8px;padding-top:8px;border-top:1px solid var(--g200)">'+
-      'Subtotal: <strong class="mono" id="ebl-sub">£0.00</strong>&emsp;VAT: <strong class="mono" id="ebl-vat">£0.00</strong>&emsp;'+
-      'Total: <strong class="mono" id="ebl-total" style="font-size:15px">£0.00</strong>'+
-    '</div>'+
-    '<div class="form-group" style="margin-top:10px"><label class="form-label">Notes</label>'+
+
+  var sups  = App.data.suppliers || [];
+  var sOpts = sups.map(function(s){
+    return '<option value="'+s.supplierId+'"'+(s.supplierId===b.supplierId?' selected':'')+'>'+s.supplierName+'</option>';
+  }).join('');
+
+  var base     = (App.settings && App.settings.baseCurrency) || 'GBP';
+  var currencies = ((App.settings && App.settings.enabledCurrencies) || ['GBP','EUR','USD']);
+  var billCurr = b.currency || base;
+  var currOpts = currencies.map(function(cc){
+    return '<option value="'+cc+'"'+(cc===billCurr?' selected':'')+'>'+cc+'</option>';
+  }).join('');
+
+  var issueVal = b.issueDate ? String(b.issueDate).substring(0,10) : '';
+  var dueVal   = b.dueDate   ? String(b.dueDate).substring(0,10)   : '';
+
+  openModal('bill-edit', 'Edit Bill — '+(b.billNumber||''),
+    '<div class="form-grid-2" style="margin-bottom:12px">' +
+      '<div class="form-group"><label class="form-label">Supplier</label>' +
+        '<select class="form-select" id="ebl-supplier">'+sOpts+'</select></div>' +
+      '<div class="form-group"><label class="form-label">Bill Reference</label>' +
+        '<input type="text" class="form-input" id="ebl-ref" value="'+(b.reference||b.billReference||b.billNumber||'')+'"></div>' +
+      '<div class="form-group"><label class="form-label">Issue Date</label>' +
+        '<input type="date" class="form-input" id="ebl-issue" value="'+issueVal+'"></div>' +
+      '<div class="form-group"><label class="form-label">Due Date</label>' +
+        '<input type="date" class="form-input" id="ebl-due" value="'+dueVal+'"></div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:8px 12px;background:var(--g50);border-radius:var(--r8);border:1px solid var(--g200)">' +
+      '<span style="font-size:12px;font-weight:600;color:var(--g700);white-space:nowrap">Currency:</span>' +
+      '<select class="form-select" id="ebl-currency" style="width:90px" onchange="_onEditBillCurrencyChange()">'+currOpts+'</select>' +
+      '<input type="number" class="form-input" id="ebl-fxrate" step="0.00001" style="width:110px;'+(billCurr===base?'display:none':'')+'" value="'+(b.exchangeRate||1)+'" placeholder="Rate">' +
+      '<span id="ebl-rate-info" style="font-size:11px;color:var(--g400)">'+(billCurr!==base?'1 '+billCurr+' = '+(b.exchangeRate||1)+' '+base:'')+'</span>' +
+    '</div>' +
+    '<div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--g700)">Line Items</div>' +
+    '<table style="width:100%;border-collapse:collapse">' +
+      '<thead><tr>' +
+        '<th style="text-align:left;padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200)">Description</th>' +
+        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:55px;text-align:right">Qty</th>' +
+        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:120px;text-align:right" id="ebl-price-hdr">Price</th>' +
+        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:110px;text-align:center">VAT</th>' +
+        '<th style="padding:4px 6px;font-size:10px;font-weight:600;color:var(--g500);text-transform:uppercase;border-bottom:1px solid var(--g200);width:80px;text-align:right">Total</th>' +
+        '<th style="width:24px;border-bottom:1px solid var(--g200)"></th>' +
+      '</tr></thead>' +
+      '<tbody id="ebl-lines"></tbody>' +
+    '</table>' +
+    '<button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditBillLine()">+ Add Line</button>' +
+    '<div style="text-align:right;margin-top:8px;padding-top:8px;border-top:1px solid var(--g200)">' +
+      'Subtotal: <strong class="mono" id="ebl-sub">0.00</strong>&emsp;' +
+      'VAT: <strong class="mono" id="ebl-vat">0.00</strong>&emsp;' +
+      'Total: <strong class="mono" id="ebl-total" style="font-size:15px">0.00</strong>' +
+    '</div>' +
+    '<div class="form-group" style="margin-top:10px"><label class="form-label">Notes</label>' +
       '<textarea class="form-textarea" id="ebl-notes" rows="2">'+(b.notes||'')+'</textarea></div>',
-    '<button class="btn btn-secondary" onclick="closeEditBill()">Cancel</button>'+
+    '<button class="btn btn-secondary" onclick="closeEditBill()">Cancel</button>' +
     '<button class="btn btn-primary" id="ebl-save" onclick="saveEditBill()">Save Changes</button>',
     'modal-lg'
   );
   renderEditBillLines();
 }
+
+function _onEditBillCurrencyChange() {
+  var base = (App.settings && App.settings.baseCurrency) || 'GBP';
+  var curr = (document.getElementById('ebl-currency')||{}).value || base;
+  var rateEl = document.getElementById('ebl-fxrate');
+  var infoEl = document.getElementById('ebl-rate-info');
+  var hdrEl  = document.getElementById('ebl-price-hdr');
+  if (rateEl) rateEl.style.display = curr === base ? 'none' : '';
+  if (infoEl) infoEl.textContent   = curr === base ? '' : '1 '+curr+' = ? '+base;
+  if (hdrEl)  hdrEl.textContent    = curr === base ? 'Price' : 'Price ('+curr+')';
+  renderEditBillLines();
+}
+
+
 function _billVatSel(i, val) {
   var opts=[['20','20% Std'],['5','5% Red'],['0','0% Zero'],['exempt','Exempt']];
   var v = val!==undefined?String(val):'20';
@@ -2498,20 +2545,24 @@ function renderEditBillLines() {
   }).join('');
   var sub=0,vat=0;
   _editBillLines.forEach(function(l){ var n=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
+  var curr2 = (document.getElementById('ebl-currency')||{}).value || ((App.settings&&App.settings.baseCurrency)||'GBP');
+  var fmtE = function(n){ return _fmtCurr(n, curr2); };
   var s=document.getElementById('ebl-sub'),v=document.getElementById('ebl-vat'),t=document.getElementById('ebl-total');
-  if(s) s.textContent=fmt(sub); if(v) v.textContent=fmt(vat); if(t) t.textContent=fmt(sub+vat);
+  if(s) s.textContent=fmtE(sub); if(v) v.textContent=fmtE(vat); if(t) t.textContent=fmtE(sub+vat);
 }
 function addEditBillLine()     { _editBillLines.push({description:'',qty:1,unitPrice:0,vatRate:20}); renderEditBillLines(); }
 function removeEditBillLine(i) { _editBillLines.splice(i,1); if(!_editBillLines.length) _editBillLines.push({description:'',qty:1,unitPrice:0,vatRate:20}); renderEditBillLines(); }
 async function saveEditBill() {
   var updates = {
-    billId:     _editBillId,
-    supplierId: (document.getElementById('ebl-supplier')||{}).value,
-    issueDate:  (document.getElementById('ebl-issue')||{}).value,
-    dueDate:    (document.getElementById('ebl-due')||{}).value,
-    notes:      (document.getElementById('ebl-notes')||{}).value,
-    lines:      _editBillLines.filter(function(l){ return l.description; })
-};
+    billId:       _editBillId,
+    supplierId:   (document.getElementById('ebl-supplier')||{}).value,
+    issueDate:    (document.getElementById('ebl-issue')||{}).value,
+    dueDate:      (document.getElementById('ebl-due')||{}).value,
+    notes:        (document.getElementById('ebl-notes')||{}).value,
+    currency:     (document.getElementById('ebl-currency')||{}).value || '',
+    exchangeRate: parseFloat((document.getElementById('ebl-fxrate')||{}).value) || 1,
+    lines:        _editBillLines.filter(function(l){ return l.description; })
+  };
   var btn = document.getElementById('ebl-save');
   if (btn) { btn.disabled=true; btn.textContent='Saving...'; }
   var r = await api('editBill', updates);
@@ -2997,7 +3048,7 @@ async function loadTx() {
   el.innerHTML = '<table class="dt"><thead><tr><th>Date</th><th>Description</th><th>Reference</th><th>Amount</th><th>Type</th><th>Status</th><th></th></tr></thead><tbody>' +
     txs.map(function(t){
       var a=parseFloat(t.amount)||0;
-      return '<tr><td>'+fmtDate(t.date)+'</td><td>'+(t.description||'')+'</td><td class="mono" style="font-size:11px">'+(t.reference||'')+'</td><td>'+amt(a,a>=0)+'</td><td>'+(t.type||'')+'</td><td>'+badge(t.status||'Unreconciled')+'</td><td>'+(t.status!=='Reconciled'?'<button class="btn btn-ghost btn-xs" onclick="openQuickReconcileModal(\''+t.transactionId+'\')">Reconcile</button>':'')+'</td></tr>';
+      return '<tr><td>'+fmtDate(t.date)+'</td><td>'+(t.description||'')+'</td><td class="mono" style="font-size:11px">'+(t.reference||'')+'</td><td>'+amt(a,a>=0)+'</td><td>'+(t.type||'')+'</td><td>'+badge(t.status||'Unreconciled')+'</td></tr>';
     }).join('')+
     '</tbody><tfoot><tr><td colspan="6" style="text-align:right;padding:9px 14px;font-weight:600;color:var(--g500)">Running Balance</td><td style="padding:9px 14px"><span class="mono '+(bal>=0?'amt-pos':'amt-neg')+'">'+fmt(bal)+'</span></td></tr></tfoot></table>';
 }

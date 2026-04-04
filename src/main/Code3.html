@@ -3,346 +3,184 @@
 function _renderReconPage() {
   var id    = _reconState.accountId;
   var acct  = (App.data.bankAccounts||[]).find(function(a){ return a.accountId === id; }) || {};
-  var unr   = _reconState.unreconciled;
-  var book  = _reconState.bookEntries;
-  var all   = _reconState.transactions;
-  // Count reconciled BOOK entries only — statement lines are also marked Reconciled
-  // when matched, which would double the count. One book entry = one reconciled transaction.
-  var reconciledCount = all.filter(function(t) {
-    return t.status === 'Reconciled' &&
-           t.type !== 'Statement' &&
-           t.category !== 'Statement';
+  var stmts = _reconState.unreconciled;   // imported statement lines
+  var books = _reconState.bookEntries;    // system book entries
+
+  var reconciledCount = _reconState.transactions.filter(function(t) {
+    return t.status === 'Reconciled' && t.type !== 'Statement' && t.category !== 'Statement';
   }).length;
-  var totalUnrec       = unr.reduce(function(s,t){ return s + (parseFloat(t.amount)||0); }, 0);
-  // Account selector
-  var baSelector = App.data.bankAccounts.length > 1
-    ? '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">' +
-        '<label class="form-label" style="margin:0;white-space:nowrap">Account</label>' +
-        '<select class="form-select" style="max-width:320px" onchange="_switchReconAccount(this.value)">' +
-        App.data.bankAccounts.map(function(a) {
-          return '<option value="'+a.accountId+'"'+(a.accountId===id?' selected':'')+'>'+
-            a.accountName+' ('+a.bankName+') — '+fmt(a.currentBalance)+'</option>';
-        }).join('') +
-        '</select></div>'
-    : '';
+
   var html =
     '<div class="page-hdr">' +
-      '<div><div class="page-title">Reconciliation</div>' +
-        '<div class="page-sub">'+(acct.accountName||'')+' · '+(acct.bankName||'')+'</div></div>' +
+      '<div><div class="page-title">Reconcile — '+acct.accountName+'</div>' +
+        '<div class="page-sub">'+acct.bankName+' · Balance: '+fmt(parseFloat(acct.currentBalance)||0)+'</div></div>' +
       '<div class="page-actions">' +
-        '<button class="btn btn-secondary btn-sm" onclick="showBanking()">← Banking</button>' +
-        '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">📤 Import Statement</button>' +
+        '<button class="btn btn-secondary btn-sm" onclick="showReconciliation()">&#8592; Accounts</button>' +
+        '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">&#128228; Import Statement</button>' +
       '</div>' +
     '</div>' +
-    baSelector +
-    // Summary bar
-    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">' +
-      '<div class="stat-card"><div class="stat-label">Book Balance</div>' +
-        '<div class="stat-value">'+fmt(acct.currentBalance)+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Unmatched Statement Lines</div>' +
-        '<div class="stat-value" style="color:var(--amber-500)">'+unr.length+'</div>' +
-        '<div class="stat-meta">'+fmt(totalUnrec)+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Unmatched Book Entries</div>' +
-        '<div class="stat-value" style="color:var(--blue-600)">'+book.length+'</div></div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">' +
+      '<div class="stat-card"><div class="stat-label">Statement Lines</div>' +
+        '<div class="stat-value" style="color:var(--amber-500)">'+stmts.length+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Book Entries</div>' +
+        '<div class="stat-value" style="color:var(--blue-600)">'+books.length+'</div></div>' +
       '<div class="stat-card"><div class="stat-label">Reconciled</div>' +
         '<div class="stat-value amt-pos">'+reconciledCount+'</div></div>' +
       '<div class="stat-card"><div class="stat-label">Last Reconciled</div>' +
-        '<div style="font-size:14px;font-weight:600;color:var(--g800);margin-top:4px">' +
-          (acct.lastReconciled ? fmtDate(acct.lastReconciled) : '<span style="color:var(--g400)">Never</span>') +
-        '</div></div>' +
-    '</div>' +
-    // Two-panel layout
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">' +
-      // LEFT — Statement lines
-      '<div class="tbl-wrap">' +
-        '<div class="tbl-bar">' +
-          '<span class="tbl-title" style="color:var(--amber-500)">📄 Statement Lines</span>' +
-          '<span style="font-size:12px;color:var(--g500)">Imported from bank</span>' +
-        '</div>' +
-        (unr.length === 0
-          ? '<div class="tbl-empty"><p>No unmatched statement lines</p>' +
-            '<span>Import a bank statement to start reconciling</span></div>'
-          : '<table class="dt"><thead><tr>' +
-              '<th>Date</th><th>Description</th><th style="text-align:right">Amount</th><th></th>' +
-            '</tr></thead><tbody id="recon-stmt-body">' +
-            unr.map(function(t) {
-              var a = parseFloat(t.amount)||0;
-              return '<tr id="stl-'+t.transactionId+'" data-txid="'+t.transactionId+'" class="recon-stmt-row" onclick="selectStatementLine(this.dataset.txid)" ' +
-                'style="cursor:pointer">' +
-                '<td>'+fmtDate(t.date)+'</td>' +
-                '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
-                  (t.description||'')+'</td>' +
-                '<td style="text-align:right"><span class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</span>' +
-                  '<span style="font-size:10px;color:var(--g400);margin-left:4px">'+(a>=0?'CR':'DR')+'</span></td>' +
-                '<td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_qmr(this)">✓</button></td>' +
-              '</tr>';
-            }).join('')+
-            '</tbody></table>'
-        ) +
-      '</div>' +
-      // RIGHT — Book entries
-      '<div class="tbl-wrap">' +
-        '<div class="tbl-bar">' +
-          '<span class="tbl-title" style="color:var(--blue-600)">📚 Book Entries</span>' +
-          '<span style="font-size:12px;color:var(--g500)">Recorded in system</span>' +
-        '</div>' +
-        (book.length === 0
-          ? '<div class="tbl-empty"><p>No unreconciled book entries</p>' +
-            '<span>All entries have been reconciled</span></div>'
-          : '<table class="dt"><thead><tr>' +
-              '<th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th>' +
-            '</tr></thead><tbody id="recon-book-body">' +
-            book.map(function(t) {
-              var a = parseFloat(t.amount)||0;
-              return '<tr id="bke-'+t.transactionId+'" data-txid="'+t.transactionId+'" class="recon-book-row" onclick="selectBookEntry(this.dataset.txid)" ' +
-                'style="cursor:pointer">' +
-                '<td>'+fmtDate(t.date)+'</td>' +
-                '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
-                  (t.description||'')+'</td>' +
-                '<td><span class="badge badge-grey" style="font-size:10px">'+(t.type||'')+'</span></td>' +
-                '<td style="text-align:right"><span class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</span></td>' +
-                '<td><button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_qmr(this)">✓</button></td>' +
-              '</tr>';
-            }).join('')+
-            '</tbody></table>'
-        ) +
-      '</div>' +
-    '</div>' +
-    // Match action bar — shown when items selected
-    '<div id="recon-match-bar" style="display:none;position:sticky;bottom:0;background:var(--g0);' +
-      'border-top:1px solid var(--g200);padding:12px 0;margin-top:16px">' +
-      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
-        '<div id="recon-sel-info" style="font-size:13px;color:var(--g700);flex:1"></div>' +
-        '<button class="btn btn-secondary btn-sm" onclick="clearReconSelection()">Clear</button>' +
-        '<button class="btn btn-warning btn-sm" id="recon-adj-btn" onclick="openReconAdjModal()" style="display:none">+ Adjustment</button>' +
-        '<button class="btn btn-primary btn-sm" id="recon-match-btn" onclick="matchSelected()">Match Selected</button>' +
-      '</div>' +
-      '<div id="recon-adj-hint" style="display:none;font-size:11px;color:var(--amber-600);margin-top:6px;padding-top:6px;border-top:1px solid var(--g100)">' +
-        '⚠ A difference exists — click <strong>+ Adjustment</strong> to post a bank charge, interest, or rounding entry and reconcile the remaining amount.' +
-      '</div>' +
+        '<div style="font-size:13px;font-weight:600;margin-top:4px">'+(acct.lastReconciled ? fmtDate(acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
     '</div>';
-  showContent(html);
-}
-function _switchReconAccount(id) {
-  App.data.selectedAccount = id;
-  _reconState.accountId = id;
-  showReconciliation();
-}
-// Select a statement line — highlight it and look for auto-match
-function selectStatementLine(txId) {
-  _reconState.selectedTx = txId;
-  document.querySelectorAll('[id^="stl-"]').forEach(function(el) {
-    el.style.background = el.id === 'stl-'+txId ? 'var(--blue-50)' : '';
-  });
-  // Auto-suggest matching book entry by amount
-  var stmtTx = _reconState.unreconciled.find(function(t){ return t.transactionId === txId; });
-  if (stmtTx) {
-    var stmtAmt = Math.abs(parseFloat(stmtTx.amount)||0);
-    var match = _reconState.bookEntries.find(function(t){
-      return Math.abs(Math.abs(parseFloat(t.amount)||0) - stmtAmt) < 0.01;
-    });
-    if (match) {
-      selectBookEntry(match.transactionId);
-      toast('Auto-matched by amount: '+fmt(stmtAmt), 'info', 2000);
-    }
-  }
-  _updateMatchBar();
-}
-function selectBookEntry(txId) {
-  _reconState.selectedBook = txId;
-  document.querySelectorAll('[id^="bke-"]').forEach(function(el) {
-    el.style.background = el.id === 'bke-'+txId ? 'var(--blue-50)' : '';
-  });
-  _updateMatchBar();
-}
-function clearReconSelection() {
-  _reconState.selectedTx   = null;
-  _reconState.selectedBook = null;
-  document.querySelectorAll('[id^="stl-"],[id^="bke-"]').forEach(function(el){
-    el.style.background = '';
-  });
-  _updateMatchBar();
-}
-function _updateMatchBar() {
-  var bar  = document.getElementById('recon-match-bar');
-  var info = document.getElementById('recon-sel-info');
-  var btn  = document.getElementById('recon-match-btn');
-  if (!bar) return;
-  var hasTx   = !!_reconState.selectedTx;
-  var hasBook = !!_reconState.selectedBook;
-  if (!hasTx && !hasBook) { bar.style.display='none'; return; }
-  bar.style.display = 'block';
-  if (hasTx && hasBook) {
-    var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
-    var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
-    var diff = Math.abs((parseFloat((stmt||{}).amount)||0)) - Math.abs((parseFloat((book||{}).amount)||0));
-    var absDiff = Math.abs(diff);
-    var diffStr = absDiff < 0.01
-      ? '<span style="color:var(--green-600)">✓ Amounts match</span>'
-      : '<span style="color:var(--amber-500)">⚠ Difference: '+fmt(absDiff)+'</span>';
-    info.innerHTML = 'Statement: <strong>'+fmtDate((stmt||{}).date)+'</strong> '+fmt(Math.abs(parseFloat((stmt||{}).amount)||0))+
-      ' ↔ Book: <strong>'+fmtDate((book||{}).date)+'</strong> '+fmt(Math.abs(parseFloat((book||{}).amount)||0))+
-      ' &nbsp;'+diffStr;
-    // Show Adjust button when there is a difference
-    var adjBtn  = document.getElementById('recon-adj-btn');
-    var adjHint = document.getElementById('recon-adj-hint');
-    if (adjBtn)  adjBtn.style.display  = absDiff >= 0.01 ? 'inline-flex' : 'none';
-    if (adjHint) adjHint.style.display = absDiff >= 0.01 ? 'block' : 'none';
-    if (btn) btn.disabled = false;
-  } else if (hasTx) {
-    var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
-    info.innerHTML = 'Statement line selected: <strong>'+fmtDate((stmt||{}).date)+'</strong> '+
-      fmt(Math.abs(parseFloat((stmt||{}).amount)||0))+' — select a book entry to match, or click ✓ to mark as reconciled';
-    if (btn) btn.disabled = true;
-  } else {
-    var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
-    info.innerHTML = 'Book entry selected: <strong>'+fmtDate((book||{}).date)+'</strong> '+
-      fmt(Math.abs(parseFloat((book||{}).amount)||0))+' — select a statement line to match';
-    if (btn) btn.disabled = true;
-  }
-}
-// ── Reconciliation Adjustments ────────────────────────────────────────────────
-var _adjTypes = [
-  { label:'Bank Charge',       code:'7500', type:'debit'  },
-  { label:'Interest Received', code:'7900', type:'credit' },
-  { label:'Interest Paid',     code:'7600', type:'debit'  },
-  { label:'Rounding (debit)',  code:'8100', type:'debit'  },
-  { label:'Rounding (credit)', code:'8100', type:'credit' },
-  { label:'Other Debit',       code:'7999', type:'debit'  },
-  { label:'Other Credit',      code:'7999', type:'credit' }
-];
 
-function openReconAdjModal() {
-  var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
-  var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
-  if (!stmt || !book) { toast('Select both a statement line and book entry first','warning'); return; }
-  var stmtAmt = Math.abs(parseFloat(stmt.amount)||0);
-  var bookAmt = Math.abs(parseFloat(book.amount)||0);
-  var diff    = Math.round((stmtAmt - bookAmt) * 100) / 100;
-  var absDiff = Math.abs(diff);
-  var suggestType = diff > 0 ? 'debit' : 'credit'; // stmt > book = extra outgoing = debit adj
-  var today   = new Date().toISOString().split('T')[0];
-  var typeOpts = _adjTypes.map(function(t,i){
-    var sel = t.type === suggestType ? ' selected' : '';
-    return '<option value="'+i+'"'+sel+'>'+t.label+' ('+t.code+')</option>';
+  if (!stmts.length && !books.length) {
+    html += '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+      '<h3>All reconciled!</h3><p>Nothing left to match.</p>' +
+      '<button class="btn btn-secondary" onclick="showReconciliation()">&#8592; Back</button></div>';
+    showContent(html);
+    return;
+  }
+
+  if (!stmts.length) {
+    html += '<div class="alert alert-info" style="margin-bottom:16px">' +
+      '<p><strong>No statement lines imported yet.</strong> Import a bank statement CSV to start matching.</p>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()" style="margin-top:8px">&#128228; Import Statement</button></div>';
+  }
+
+  // Build book entry lookup map for auto-matching
+  var bookMap = {};
+  books.forEach(function(b) { bookMap[b.transactionId] = b; });
+
+  // Auto-match by amount — find best book entry for each statement line
+  function findMatch(stmtAmt) {
+    var abs = Math.abs(stmtAmt);
+    var match = null;
+    books.forEach(function(b) {
+      if (Math.abs(Math.abs(parseFloat(b.amount)||0) - abs) < 0.01) match = b;
+    });
+    return match;
+  }
+
+  // Build statement rows table
+  var stmtRows = stmts.map(function(t) {
+    var a     = parseFloat(t.amount) || 0;
+    var match = findMatch(a);
+    var rowStyle = match ? 'background:var(--green-50);' : '';
+    var matchInfo = match
+      ? '<div style="font-size:11px;color:var(--green-700);font-weight:600">&#10003; Auto-matched: '+
+          (match.description||'')+'</div>'
+      : '';
+
+    // Book entry dropdown for manual selection
+    var bookOpts = '<option value="">— select —</option>' +
+      books.map(function(b) {
+        var ba = parseFloat(b.amount)||0;
+        var diff = Math.abs(Math.abs(ba) - Math.abs(a));
+        var diffStr = diff < 0.01 ? '' : ' (&#916;'+fmt(diff)+')';
+        return '<option value="'+b.transactionId+'"'+(match&&match.transactionId===b.transactionId?' selected':'')+'>'+
+          fmtDate(b.date)+' · '+(b.description||'').substring(0,30)+' · '+fmt(Math.abs(ba))+diffStr+'</option>';
+      }).join('');
+
+    return '<tr id="stmt-'+t.transactionId+'" style="'+rowStyle+'">' +
+      '<td>'+fmtDate(t.date)+'</td>' +
+      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
+        (t.description||'')+'<br>'+matchInfo+'</td>' +
+      '<td class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'<br>' +
+        '<span style="font-size:10px;color:var(--g400)">'+(a>=0?'CR':'DR')+'</span></td>' +
+      '<td style="min-width:240px">' +
+        '<select class="form-select" id="match-sel-'+t.transactionId+'" style="font-size:12px;padding:4px 8px">' +
+          bookOpts +
+        '</select>' +
+      '</td>' +
+      '<td>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
+          '<button class="btn btn-primary btn-xs" onclick="_doMatch(\''+t.transactionId+'\')">&#10003; Match</button>' +
+          '<button class="btn btn-ghost btn-xs" onclick="_doMarkStmt(\''+t.transactionId+'\')">Mark OK</button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>';
   }).join('');
 
-  openModal('recon-adj','Create Reconciliation Adjustment',
-    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
-      '<div class="stat-card" style="padding:10px"><div class="stat-label">Statement</div><div style="font-weight:700">'+fmt(stmtAmt)+'</div></div>'+
-      '<div class="stat-card" style="padding:10px"><div class="stat-label">Book Entry</div><div style="font-weight:700">'+fmt(bookAmt)+'</div></div>'+
-      '<div class="stat-card" style="padding:10px;border-left:3px solid var(--amber-400)"><div class="stat-label">Difference</div><div style="font-weight:700;color:var(--amber-500)">'+fmt(absDiff)+'</div></div>'+
-    '</div>'+
-    '<div class="alert alert-info" style="margin-bottom:12px"><p>An adjustment of <strong>'+fmt(absDiff)+'</strong> will be created and both entries will be marked as reconciled.</p></div>'+
-    '<div class="form-grid-2">'+
-      '<div class="form-group"><label class="form-label">Adjustment Type</label>'+
-        '<select class="form-select" id="radj-type" onchange="_adjTypeChanged()">'+typeOpts+'</select></div>'+
-      '<div class="form-group"><label class="form-label">Amount</label>'+
-        '<input type="number" class="form-input" id="radj-amount" value="'+absDiff.toFixed(2)+'" step="0.01" min="0.01"></div>'+
-      '<div class="form-group"><label class="form-label">Date</label>'+
-        '<input type="date" class="form-input" id="radj-date" value="'+today+'"></div>'+
-      '<div class="form-group"><label class="form-label">COA Account Code</label>'+
-        '<input type="text" class="form-input" id="radj-code" value="'+(_adjTypes[0]||{}).code+'"></div>'+
-    '</div>'+
-    '<div class="form-group"><label class="form-label">Description</label>'+
-      '<input type="text" class="form-input" id="radj-desc" value="'+(_adjTypes[0]||{}).label+'"></div>'+
-    '<div class="form-group"><label class="form-label">Notes</label>'+
-      '<input type="text" class="form-input" id="radj-notes" placeholder="Internal reference (optional)"></div>',
-    '<button class="btn btn-secondary" onclick="closeModal(\'recon-adj\')">Cancel</button>'+
-    '<button class="btn btn-primary" id="radj-save" onclick="saveReconAdj()">Create Adjustment & Reconcile</button>',
-    'modal-md'
-  );
+  // Unmatched book entries table
+  var bookRows = books.map(function(b) {
+    var a = parseFloat(b.amount)||0;
+    return '<tr>' +
+      '<td>'+fmtDate(b.date)+'</td>' +
+      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(b.description||'')+'">'+
+        (b.description||'')+'</td>' +
+      '<td><span class="badge badge-grey" style="font-size:10px">'+(b.type||b.category||'')+'</span></td>' +
+      '<td class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</td>' +
+      '<td><button class="btn btn-ghost btn-xs" onclick="_doMarkBook(\''+b.transactionId+'\')">Mark OK</button></td>' +
+    '</tr>';
+  }).join('');
+
+  html +=
+    '<div style="display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start">' +
+      // LEFT: Statement lines
+      '<div>' +
+        '<div class="tbl-bar"><span class="tbl-title" style="color:var(--amber-600)">&#128196; Bank Statement Lines</span>' +
+          '<span style="font-size:12px;color:var(--g400)">from imported CSV</span></div>' +
+        (stmts.length
+          ? '<table class="dt" style="font-size:12px"><thead><tr>' +
+              '<th>Date</th><th>Description</th><th style="text-align:right">Amount</th>' +
+              '<th>Match to book entry</th><th></th>' +
+            '</tr></thead><tbody>'+stmtRows+'</tbody></table>'
+          : '<div class="tbl-empty"><p>No statement lines — import a CSV first</p></div>') +
+      '</div>' +
+      // RIGHT: Unmatched book entries
+      '<div>' +
+        '<div class="tbl-bar"><span class="tbl-title" style="color:var(--blue-600)">&#128218; Unmatched Book Entries</span>' +
+          '<span style="font-size:12px;color:var(--g400)">recorded in system</span></div>' +
+        (books.length
+          ? '<table class="dt" style="font-size:12px"><thead><tr>' +
+              '<th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th>' +
+            '</tr></thead><tbody>'+bookRows+'</tbody></table>'
+          : '<div class="tbl-empty"><p>&#10003; All book entries matched</p></div>') +
+      '</div>' +
+    '</div>';
+
+  showContent(html);
 }
 
-function _adjTypeChanged() {
-  var idx = parseInt((document.getElementById('radj-type')||{}).value)||0;
-  var t   = _adjTypes[idx]||{};
-  var de  = document.getElementById('radj-desc');
-  var co  = document.getElementById('radj-code');
-  if (de) de.value = t.label||'';
-  if (co) co.value = t.code||'';
-}
+// Match a statement line to selected book entry
+async function _doMatch(stmtId) {
+  var sel = document.getElementById('match-sel-'+stmtId);
+  var bookId = sel ? sel.value : '';
+  if (!bookId) { toast('Select a book entry to match', 'warning'); return; }
 
-async function saveReconAdj() {
-  var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId===_reconState.selectedTx; });
-  var book = _reconState.bookEntries.find(function(t){ return t.transactionId===_reconState.selectedBook; });
-  if (!stmt || !book) { toast('Selection lost — please re-select','error'); return; }
-
-  var idx    = parseInt((document.getElementById('radj-type')||{}).value)||0;
-  var adjT   = _adjTypes[idx]||{ type:'debit', code:'7999' };
-  var amount = parseFloat((document.getElementById('radj-amount')||{}).value)||0;
-  var date   = (document.getElementById('radj-date')||{}).value||'';
-  var desc   = (document.getElementById('radj-desc')||{}).value||'Adjustment';
-  var code   = (document.getElementById('radj-code')||{}).value||adjT.code;
-  var notes  = (document.getElementById('radj-notes')||{}).value||'';
-
-  if (!amount) { toast('Enter an amount','warning'); return; }
-  var btn = document.getElementById('radj-save');
-  if (btn) { btn.disabled=true; btn.textContent='Creating...'; }
-
-  var r = await api('createReconAdjustment', {
-    bankAccountId:  _reconState.accountId,
-    amount:         amount,
-    type:           adjT.type,
-    description:    desc,
-    accountCode:    code,
-    date:           date,
-    statementTxId:  stmt.transactionId,
-    notes:          notes
-  });
-
-  if (r && r.success) {
-    closeModal('recon-adj');
-    toast('Adjustment created and reconciled','success');
-    // Also reconcile the book entry against statement
-    var r2 = await api('reconcileTransaction', {
-      transactionId: book.transactionId,
-      allocations:   [{ documentType:'booked', documentId:stmt.transactionId, amount:amount, notes:'Adj match' }]
-    });
-    // Remove from local lists
-    _reconState.unreconciled = _reconState.unreconciled.filter(function(t){return t.transactionId!==stmt.transactionId;});
-    _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){return t.transactionId!==book.transactionId;});
-    _reconState.selectedTx   = null;
-    _reconState.selectedBook = null;
-    _renderReconPage();
-  } else {
-    if (btn) { btn.disabled=false; btn.textContent='Create Adjustment & Reconcile'; }
-    toast('Error: '+(r?r.message||r.error:'unknown'),'error');
-  }
-}
-
-
-// Match statement line ↔ book entry
-async function matchSelected() {
-  var stmtId = _reconState.selectedTx;
-  var bookId = _reconState.selectedBook;
-  if (!stmtId || !bookId) return;
-  var btn = document.getElementById('recon-match-btn');
-  if (btn) { btn.disabled=true; btn.textContent='Matching...'; }
-  // Reconcile the statement line against the book entry
   var r = await api('reconcileTransaction', {
     transactionId: stmtId,
     allocations: [{ documentType:'booked', documentId:bookId }]
   });
   if (r && r.success) {
-    toast('Matched successfully', 'success');
-    // Remove both from unreconciled lists
+    toast('Matched &#10003;', 'success');
     _reconState.unreconciled = _reconState.unreconciled.filter(function(t){ return t.transactionId!==stmtId; });
     _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){ return t.transactionId!==bookId; });
     _reconState.selectedTx   = null;
     _reconState.selectedBook = null;
     _renderReconPage();
   } else {
-    if (btn) { btn.disabled=false; btn.textContent='Match Selected'; }
     toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
   }
 }
-// Quick mark as reconciled (no matching)
-function _qmr(btn) {
-  var tr = btn;
-  while (tr && tr.tagName !== 'TR') tr = tr.parentElement;
-  if (tr && tr.dataset && tr.dataset.txid) quickMarkReconciled(tr.dataset.txid);
+
+// Mark statement line as reconciled with no book match (bank charge, interest etc)
+async function _doMarkStmt(stmtId) {
+  var r = await api('reconcileTransaction', { transactionId:stmtId, allocations:[] });
+  if (r && r.success) {
+    toast('Marked as reconciled', 'success');
+    _reconState.unreconciled = _reconState.unreconciled.filter(function(t){ return t.transactionId!==stmtId; });
+    _renderReconPage();
+  } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
 }
+
+// Mark book entry as reconciled with no statement match
+async function _doMarkBook(bookId) {
+  var r = await api('reconcileTransaction', { transactionId:bookId, allocations:[] });
+  if (r && r.success) {
+    toast('Marked as reconciled', 'success');
+    _reconState.bookEntries = _reconState.bookEntries.filter(function(t){ return t.transactionId!==bookId; });
+    _renderReconPage();
+  } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
+}
+
 async function quickMarkReconciled(txId) {
   var r = await api('reconcileTransaction', {
     transactionId: txId,

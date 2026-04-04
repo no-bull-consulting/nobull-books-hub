@@ -1611,7 +1611,7 @@ function renderBillLines() {
     return '<tr>' +
       '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px" placeholder="Description" value="'+(l.description||'')+'" oninput="_billLines['+i+'].description=this.value"></td>' +
       '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0.01" step="0.01" value="'+(l.qty||1)+'" onchange="_billLines['+i+'].qty=parseFloat(this.value)||1;updateBillTotals()"></td>' +
-      '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" onchange="_billLines['+i+'].unitPrice=parseFloat(this.value)||0;updateBillTotals()"></td>' +
+      '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0" step="any" value="'+(l.unitPrice||'')+'" oninput="_billLines['+i+'].unitPrice=parseFloat(this.value)||0;updateBillTotals()"></td>' +
       '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0" max="100" step="0.01" value="'+(l.vatRate!==undefined?l.vatRate:_defaultVatRate())+'" oninput="_billLines['+i+'].vatRate=this.value;updateBillTotals()"></td>' +
       '<td style="padding:3px">'+_coaSelect(_coaExpenses, l.accountCode, i, 'expense')+'</td>' +
       '<td style="padding:4px;text-align:right"><span class="mono" style="font-size:13px">'+fmt(tot)+'</span></td>' +
@@ -1626,8 +1626,12 @@ function updateBillTotals() {
     var s=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0);
     sub+=s; vat+=s*(parseFloat(l.vatRate)||0)/100;
   });
+  var curr = (document.getElementById('bl-currency')||{}).value || ((App.settings&&App.settings.baseCurrency)||'GBP');
+  var fmtC = function(n){ return (typeof _fmtCurr === 'function') ? _fmtCurr(n, curr) : fmt(n); };
   var se=document.getElementById('bl-sub'),ve=document.getElementById('bl-vat'),te=document.getElementById('bl-total');
-  if(se)se.textContent=fmt(sub); if(ve)ve.textContent=fmt(vat); if(te)te.textContent=fmt(sub+vat);
+  if(se)se.textContent=fmtC(sub); if(ve)ve.textContent=fmtC(vat); if(te)te.textContent=fmtC(sub+vat);
+  var hdr=document.getElementById('bl-price-hdr');
+  if(hdr) hdr.textContent = curr===((App.settings&&App.settings.baseCurrency)||'GBP') ? 'Unit Price' : 'Unit Price ('+curr+')';
 }
 async function saveBill() {
   var supplierId = document.getElementById('bl-supplier').value;
