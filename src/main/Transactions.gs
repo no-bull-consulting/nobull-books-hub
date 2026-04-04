@@ -172,8 +172,7 @@ function editBill(billId, updates, params) {
             });
             var total = sub + vatAmt;
             sheet.getRange(row, 7).setValue(sub);       // Subtotal
-            sheet.getRange(row, 8).setValue(vatAmt);    // VAT
-            sheet.getRange(row, 9).setValue(vat);       // VATRate (last line's rate)
+            sheet.getRange(row, 8).setValue(vatAmt);    // VAT amount
             sheet.getRange(row, 10).setValue(total);    // Total
             sheet.getRange(row, 12).setValue(total);    // AmountDue (reset)
           }

@@ -1,4 +1,6 @@
 <script>
+var _CURR_SYMBOLS={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+function _fmtCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+(Math.abs(n)||0).toFixed(2);}
 
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
