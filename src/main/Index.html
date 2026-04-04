@@ -2403,31 +2403,26 @@ function _delBF(btn){_delBillFile(btn.getAttribute("data-fid"),btn.getAttribute(
 async function loadBillAttachments(billId) {
   var el = document.getElementById('bill-attachments');
   if (!el) return;
-  // Safety timeout — always clear spinner after 8 seconds
-  var fallback = setTimeout(function() {
-    if (el && el.querySelector('.spin')) {
-      el.innerHTML = '<div style="font-size:12px;color:var(--g400);padding:8px 0">No attachments yet</div>';
-    }
-  }, 8000);
+  // Don't replace existing content with spinner — keep showing current state
+  var r, files = [];
   try {
-    var r = await api('getBillFiles', {billId:billId});
-    clearTimeout(fallback);
-    el = document.getElementById('bill-attachments'); // re-fetch in case modal changed
-    if (!el) return;
-    if (!r||!r.success||!(r.files&&r.files.length)) {
-      el.innerHTML='<div style="font-size:12px;color:var(--g400);padding:8px 0">No attachments yet</div>';
-      return;
-    }
+    r = await api('getBillFiles', {billId:billId});
+    files = (r && r.success && r.files) ? r.files : [];
   } catch(err) {
-    clearTimeout(fallback);
-    if (el) el.innerHTML='<div style="font-size:12px;color:var(--g400);padding:8px 0">No attachments yet</div>';
+    files = [];
+  }
+  el = document.getElementById('bill-attachments');
+  if (!el) return;
+  if (!files.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--g400);padding:6px 0">No attachments yet</div>';
     return;
   }
-  el.innerHTML = r.files.map(function(f){
-    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--g100)">' +
-      '<a href="'+f.fileUrl+'" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">📄 '+f.fileName+'</a>' +
-      '<span style="font-size:10px;color:var(--g400)">'+f.fileSize+'</span>' +
-      '<button class="btn btn-ghost btn-xs" style="color:var(--red-500)" data-fid="'+f.fileId+'" data-bid="'+billId+'" onclick="_delBF(this)">×</button>' +
+  el.innerHTML = files.map(function(f){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)">' +
+      '<span style="font-size:16px">'+_fileIcon(f.fileType)+'</span>' +
+      '<a href="'+(f.fileUrl||f.fileURL||'#')+'" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">'+f.fileName+'</a>' +
+      (f.uploadedBy?'<span style="font-size:10px;color:var(--g400)">'+f.uploadedBy+'</span>':'') +
+      '<button class="btn btn-ghost btn-xs" style="color:var(--red-500)" data-fid="'+f.fileId+'" data-bid="'+billId+'" onclick="_delBF(this)">✕</button>' +
     '</div>';
   }).join('');
 }
