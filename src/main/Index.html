@@ -2339,6 +2339,17 @@ async function viewBill(billId) {
   if (_viewBillId !== billId) return; // modal was closed/changed while loading
   _renderBillModal(b, files);
 }
+
+async function _reRenderBillModal(b) {
+  var billId = b.billId;
+  var files = [];
+  try {
+    var fr = await api('getBillFiles', { billId: billId });
+    files = (fr && fr.success && fr.files) ? fr.files : [];
+  } catch(e) {}
+  if (_viewBillId === billId) _renderBillModal(b, files);
+}
+
 function _renderBillFiles(files, billId, canAttach) {
   var html = '';
   if (files && files.length) {
@@ -2426,32 +2437,6 @@ function _renderBillModal(b, preloadedFiles) {
 
 }
 function _delBF(btn){_delBillFile(btn.getAttribute("data-fid"),btn.getAttribute("data-bid"));}
-async function loadBillAttachments(billId) {
-  var el = document.getElementById('bill-attachments');
-  if (!el) return;
-  // Don't replace existing content with spinner — keep showing current state
-  var r, files = [];
-  try {
-    r = await api('getBillFiles', {billId:billId});
-    files = (r && r.success && r.files) ? r.files : [];
-  } catch(err) {
-    files = [];
-  }
-  el = document.getElementById('bill-attachments');
-  if (!el) return;
-  if (!files.length) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--g400);padding:6px 0">No attachments yet</div>';
-    return;
-  }
-  el.innerHTML = files.map(function(f){
-    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)">' +
-      '<span style="font-size:16px">'+_fileIcon(f.fileType)+'</span>' +
-      '<a href="'+(f.fileUrl||f.fileURL||'#')+'" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">'+f.fileName+'</a>' +
-      (f.uploadedBy?'<span style="font-size:10px;color:var(--g400)">'+f.uploadedBy+'</span>':'') +
-      '<button class="btn btn-ghost btn-xs" style="color:var(--red-500)" data-fid="'+f.fileId+'" data-bid="'+billId+'" onclick="_delBF(this)">✕</button>' +
-    '</div>';
-  }).join('');
-}
 async function attachToBill(input, billId) {
   var file = input.files&&input.files[0];
   if (!file) return;
@@ -2505,7 +2490,7 @@ async function doApproveBill() {
     App.data.bills = App.data.bills.map(function(b){ return b.billId===_viewBillId?Object.assign({},b,{status:'Approved'}):b; });
     var b = App.data.bills.find(function(x){ return x.billId===_viewBillId; });
     showBills();
-    if (b) _renderBillModal(b);
+    if (b) _reRenderBillModal(b);
   } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
 }
 async function openEditBillModal() {
@@ -2650,7 +2635,7 @@ async function saveEditBill() {
     if (fresh&&fresh.success) App.data.bills = fresh.bills||[];
     _viewBillId = _editBillId; // keep viewBillId set so Edit button works again
     var b = App.data.bills.find(function(x){ return x.billId===_editBillId; });
-    if (b) { _renderBillModal(b); }
+    if (b) { _reRenderBillModal(b); }
     else showBills();
   } else {
     if (btn) { btn.disabled=false; btn.textContent='Save Changes'; }
