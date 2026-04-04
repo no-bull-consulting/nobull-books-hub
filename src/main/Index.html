@@ -2305,8 +2305,8 @@ function showBills(params) {
           '<td>'+(b.supplierName||'—')+'</td>' +
           '<td>'+fmtDate(b.issueDate)+'</td>' +
           '<td>'+fmtDate(b.dueDate)+'</td>' +
-          '<td>'+amt(b.total)+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:600">'+b.currency+'</span>':'')+'</td>' +
-          '<td>'+amt(b.amountDue)+'</td>' +
+          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var sym=cc?({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A\$'}[cc]||(cc+' ')):null; return (sym?'<span class="mono '+(b.total>=0?'amt-pos':'amt-neg')+'">'+sym+(Math.abs(b.total)||0).toFixed(2)+'</span>':amt(b.total))+(cc?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:600">'+cc+'</span>':''); })()+'</td>' +
+          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var syms={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}; return cc?'<span class="mono '+(b.amountDue>0?'amt-pos':'')+'">'+(syms[cc]||cc+' ')+(Math.abs(b.amountDue)||0).toFixed(2)+'</span>':amt(b.amountDue); })()+'</td>' +
           '<td>'+badge(b.status)+'</td>' +
           '<td style="white-space:nowrap">' +
             (canWrite()&&isPend?'<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();viewBill(\''+b.billId+'\')">View</button>':'') +
