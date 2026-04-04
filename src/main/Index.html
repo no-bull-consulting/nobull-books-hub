@@ -2910,31 +2910,82 @@ async function saveNewBankAccount() {
 }
 
 function showBanking() {
-  var accts = App.data.bankAccounts||[], selId = App.data.selectedAccount;
-  var acct  = accts.find(function(a){return a.accountId===selId;})||accts[0];
-  if (!accts.length) { showContent('<div class="empty" style="padding-top:60px"><h3>No bank accounts</h3><p>Add a bank account in Chart of Accounts.</p></div>'); return; }
-  var sel = accts.length>1 ? '<div class="card" style="margin-bottom:16px;padding:12px 16px;display:flex;align-items:center;gap:12px"><label class="form-label" style="margin:0;white-space:nowrap">Account</label><select class="form-select" style="max-width:300px" onchange="App.data.selectedAccount=this.value;showBanking()">'+accts.map(function(a){return '<option value="'+a.accountId+'"'+(a.accountId===selId?' selected':'')+'>'+ a.accountName+' ('+a.bankName+') — '+fmt(a.currentBalance)+'</option>';}).join('')+'</select></div>' : '';
-  var stats = acct ?
-    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">' +
-      '<div class="stat-card"><div class="stat-label">Account</div><div style="font-size:15px;font-weight:700">'+acct.accountName+'</div><div class="stat-meta">'+acct.bankName+' · COA '+(acct.nominalCode||'')+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Balance</div><div class="stat-value">'+fmt(acct.currentBalance)+'</div></div>' +
-      '<div class="stat-card clickable" onclick="showReconciliation()"><div class="stat-label">Unreconciled</div><div class="stat-value" id="unrecCount" style="color:var(--amber-500)">—</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Last Reconciled</div><div class="stat-value" style="font-size:16px" id="lastRec">—</div></div>' +
-    '</div>' : '';
-  var actions =
+  var accts = App.data.bankAccounts || [];
+  if (!accts.length) {
+    showContent(
+      '<div class="empty" style="padding-top:60px"><h3>No bank accounts</h3>' +
+      '<p>Add a bank account first.</p>' +
+      '<button class="btn btn-primary" onclick="openAddBankAccountModal()">+ Add Bank Account</button></div>'
+    );
+    return;
+  }
+  var selId = App.data.selectedAccount || accts[0].accountId;
+  App.data.selectedAccount = selId;
+  var acct = accts.find(function(a){ return a.accountId === selId; }) || accts[0];
+
+  var cards = accts.map(function(a) {
+    var bal = parseFloat(a.currentBalance) || 0;
+    var isSel = a.accountId === selId;
+    return '<div class="stat-card clickable" onclick="selectBankAccount(\''+a.accountId+'\')" ' +
+      'style="border:2px solid '+(isSel?'var(--blue-600)':'var(--g200)')+';cursor:pointer;padding:16px">' +
+      '<div style="font-weight:700;font-size:14px;margin-bottom:2px">'+a.accountName+'</div>' +
+      '<div style="font-size:11px;color:var(--g500);margin-bottom:8px">'+a.bankName+
+        (a.sortCode?' · '+a.sortCode:'')+(a.accountNumber?' · '+a.accountNumber:'')+'</div>' +
+      '<div style="font-size:20px;font-weight:800;color:'+(bal>=0?'var(--g800)':'var(--red-500)')+'">'+fmt(bal)+'</div>' +
+      '<div style="margin-top:8px;min-height:20px"><span id="unrec-'+a.accountId+'"></span></div>' +
+    '</div>';
+  }).join('');
+
+  showContent(
+    '<div class="page-hdr"><div><div class="page-title">Banking</div>' +
+      '<div class="page-sub">Manage accounts, transactions and reconciliation</div></div>' +
+      '<button class="btn btn-ghost btn-sm" onclick="openAddBankAccountModal()">+ Add Account</button>' +
+    '</div>' +
+    '<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:18px">' + cards + '</div>' +
     '<div class="page-actions" style="margin-bottom:16px">' +
-      '<button class="btn btn-secondary btn-sm" onclick="openAddBankAccountModal()">+ Add Account</button>' +
-      (acct ? '<button class="btn btn-ghost btn-sm" onclick="openEditBankAccountModal()">⚙️ Edit Account</button>' : '') +
       '<button class="btn btn-secondary btn-sm" onclick="openSpendMoneyModal()">💸 Spend</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openReceiveMoneyModal()">💰 Receive</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="openTransferMoneyModal()">🔄 Transfer</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">📤 Import</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">📤 Import Statement</button>' +
       '<button class="btn btn-primary btn-sm" onclick="showReconciliation()">⚖️ Reconcile</button>' +
-    '</div>';
-  var txs = '<div class="tbl-wrap"><div class="tbl-bar"><span class="tbl-title">Transactions</span><button class="btn btn-secondary btn-sm" onclick="loadTx()">🔄 Refresh</button></div><div id="tx-body"><div class="loader"><div class="spin"></div></div></div></div>';
-  showContent(sel + stats + actions + txs);
-  loadTx(); loadRecInfo();
+      '<button class="btn btn-ghost btn-sm" onclick="openEditBankAccountModal()">&#9881; Edit Account</button>' +
+    '</div>' +
+    '<div class="tbl-wrap">' +
+      '<div class="tbl-bar"><span class="tbl-title">Transactions &#8212; '+acct.accountName+'</span>' +
+        '<button class="btn btn-secondary btn-sm" onclick="loadTx()">&#8635; Refresh</button></div>' +
+      '<div id="tx-body"><div class="loader"><div class="spin"></div></div></div>' +
+    '</div>'
+  );
+  loadTx();
+  loadAllUnreconciled();
 }
+
+function selectBankAccount(id) {
+  App.data.selectedAccount = id;
+  showBanking();
+}
+
+async function loadAllUnreconciled() {
+  var accts = App.data.bankAccounts || [];
+  for (var i = 0; i < accts.length; i++) {
+    (function(a) {
+      api('getReconciliationSummary', { accountId: a.accountId }).then(function(r) {
+        var el = document.getElementById('unrec-' + a.accountId);
+        if (!el) return;
+        if (r && r.success && r.summary) {
+          var n = r.summary.unreconciledCount || 0;
+          var s = r.summary.statementLineCount || 0;
+          el.innerHTML = n > 0
+            ? '<span style="background:var(--amber-100);color:var(--amber-700);padding:2px 6px;border-radius:4px;font-weight:600;font-size:11px">'+n+' to reconcile</span>'
+              + (s > 0 ? ' <span style="color:var(--g400);font-size:10px">+'+s+' stmt</span>' : '')
+            : '<span style="color:var(--green-600);font-size:11px">&#10003; All reconciled</span>';
+        }
+      });
+    })(accts[i]);
+  }
+}
+
+
 async function loadTx() {
   var id = App.data.selectedAccount; if (!id) return;
   var el = document.getElementById('tx-body'); if (!el) return;
@@ -3429,25 +3480,76 @@ function renderCOA(r, isFilter) {
   showContent(html);
 }
 async function showReconciliation() {
-  var id = App.data.selectedAccount; if (!id) { showBanking(); return; }
+  // If Code3.html's _renderReconPage is available, use that (full two-panel UI)
+  // Otherwise fall back to simple list
+  var accts = App.data.bankAccounts || [];
+  if (!accts.length) { showBanking(); return; }
+
+  // Show account selector page first
   showLoader();
-  var r = await api('getReconciliationSummary',{accountId:id});
-  if (!r||!r.success) { showContent('<div class="empty"><h3>Could not load</h3><button class="btn btn-primary" onclick="showReconciliation()">Retry</button></div>'); return; }
-  var s = r.summary, unr = s.unreconciled||[];
+
+  // Load unreconciled counts for all accounts
+  var summaries = {};
+  var promises = accts.map(function(a) {
+    return api('getReconciliationSummary', { accountId: a.accountId }).then(function(r) {
+      if (r && r.success) summaries[a.accountId] = r.summary;
+    });
+  });
+  await Promise.all(promises);
+
+  var rows = accts.map(function(a) {
+    var s   = summaries[a.accountId] || {};
+    var n   = s.unreconciledCount || 0;
+    var stm = s.statementLineCount || 0;
+    var badge = n > 0
+      ? '<span style="background:var(--amber-100);color:var(--amber-700);padding:3px 8px;border-radius:4px;font-weight:600">'+n+' to reconcile</span>'
+        + (stm > 0 ? ' <span style="font-size:11px;color:var(--g400)">+'+stm+' statement lines</span>' : '')
+      : '<span style="color:var(--green-600);font-weight:600">&#10003; All reconciled</span>';
+    return '<tr style="cursor:pointer" onclick="selectAndReconcile(\''+a.accountId+'\')">' +
+      '<td><strong>'+a.accountName+'</strong>' +
+        '<div style="font-size:11px;color:var(--g500)">'+a.bankName+
+          (a.sortCode?' · '+a.sortCode:'')+(a.accountNumber?' · '+a.accountNumber:'')+'</div></td>' +
+      '<td class="mono">'+fmt(parseFloat(a.currentBalance)||0)+'</td>' +
+      '<td>'+badge+'</td>' +
+      '<td><button class="btn btn-primary btn-sm">Reconcile &#8594;</button></td>' +
+    '</tr>';
+  }).join('');
+
   showContent(
-    '<div class="page-hdr"><div><div class="page-title">Reconciliation</div><div class="page-sub">'+(s.accountName||'')+'</div></div><div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="showBanking()">← Banking</button></div></div>' +
-    '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">' +
-      '<div class="stat-card"><div class="stat-label">Bank Balance</div><div class="stat-value">'+fmt(s.bankBalance)+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Unreconciled</div><div class="stat-value" style="color:var(--amber-500)">'+s.unreconciledCount+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Unreconciled Debits</div><div class="stat-value amt-neg">'+fmt(s.unreconciledDebits)+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Unreconciled Credits</div><div class="stat-value amt-pos">'+fmt(s.unreconciledCredits)+'</div></div>' +
+    '<div class="page-hdr"><div><div class="page-title">Reconciliation</div>' +
+      '<div class="page-sub">Select an account to reconcile</div></div>' +
+      '<button class="btn btn-secondary btn-sm" onclick="showBanking()">&#8592; Banking</button>' +
     '</div>' +
-    (!unr.length ? '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div><h3>All reconciled!</h3></div>' :
-      '<div class="tbl-wrap"><table class="dt"><thead><tr><th>Date</th><th>Description</th><th>Reference</th><th>Amount</th><th></th></tr></thead><tbody>'+
-      unr.map(function(t){var a=parseFloat(t.amount)||0;return '<tr><td>'+fmtDate(t.date)+'</td><td>'+(t.description||'')+'</td><td class="mono" style="font-size:11px">'+(t.reference||'')+'</td><td>'+amt(a,a>=0)+'</td><td><button class="btn btn-primary btn-xs" onclick="openQuickReconcileModal(\''+t.transactionId+'\')">Reconcile</button></td></tr>';}).join('')+
-      '</tbody></table></div>')
+    '<div class="tbl-wrap">' +
+      '<table class="dt"><thead><tr>' +
+        '<th>Account</th><th>Balance</th><th>Status</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>' +
+    '</div>'
   );
 }
+
+async function selectAndReconcile(accountId) {
+  App.data.selectedAccount = accountId;
+  _reconState.accountId = accountId;
+  showLoader();
+  var r = await api('getBankTransactions', { accountId: accountId });
+  if (!r || !r.success) {
+    toast('Could not load transactions', 'error');
+    showReconciliation();
+    return;
+  }
+  var all = r.transactions || [];
+  _reconState.transactions = all;
+  _reconState.unreconciled = all.filter(function(t) {
+    return (t.type === 'Statement' || t.category === 'Statement') && t.status !== 'Reconciled';
+  });
+  _reconState.bookEntries = all.filter(function(t) {
+    return t.type !== 'Statement' && t.category !== 'Statement' && t.status !== 'Reconciled';
+  });
+  _renderReconPage();
+}
+
+
 var _coaTypes = ['Asset','Liability','Equity','Revenue','Expense'];
 var _coaCategories = {
   'Asset':     ['Current Assets','Fixed Assets','Bank Accounts','Other Assets'],
