@@ -1739,6 +1739,7 @@ function fmt(n) {
   return '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 var _CURR_SYMBOLS={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
 function _fmtCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+Math.abs(n).toFixed(2)+(n<0?'-':'');}
+function _fmtBillCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+(Math.abs(n)||0).toFixed(2);}
 }
 function fmtDate(d) {
   if (!d) return '—';
@@ -2319,10 +2320,19 @@ function showBills(params) {
 }
 async function viewBill(billId) {
   _viewBillId = billId;
+  // Try cache first for instant display, then refresh from server
   var b = (App.data.bills||[]).find(function(x){ return x.billId===billId; });
   if (!b) { toast('Bill not found','error'); return; }
   _renderBillModal(b);
-  setTimeout(function(){ /* no attachments for bills yet */ }, 100);
+  // Always refresh bills data in background to pick up any edits
+  api('getAllBills').then(function(fresh) {
+    if (fresh && fresh.success) {
+      App.data.bills = fresh.bills || [];
+      var updated = App.data.bills.find(function(x){ return x.billId===billId; });
+      // Only re-render if modal is still open for this bill
+      if (updated && _viewBillId === billId) _renderBillModal(updated);
+    }
+  });
 }
 function _renderBillModal(b) {
   var billId  = b.billId;
@@ -2369,9 +2379,10 @@ function _renderBillModal(b) {
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Status</div><div style="margin-top:3px">'+badge(status)+'</div></div>'+
     '</div>'+
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Total</div><div class="stat-value" style="font-size:18px">'+fmt(b.total)+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+fmt(b.amountDue)+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+fmt(amtPaid)+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Total '+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 6px;border-radius:10px;margin-left:4px">'+b.currency+'</span>':'')+'</div>' +
+        '<div class="stat-value" style="font-size:18px">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(b.total,b.currency):fmt(b.total))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(b.amountDue,b.currency):fmt(b.amountDue))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(amtPaid,b.currency):fmt(amtPaid))+'</div></div>'+
     '</div>'+
     (b.notes?'<div class="alert alert-info" style="margin-bottom:12px"><p><strong>Notes:</strong> '+b.notes+'</p></div>':'')+
     (actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+actions+'</div>':'') +
@@ -2577,7 +2588,7 @@ async function saveEditBill() {
     var fresh = await api('getAllBills');
     if (fresh&&fresh.success) App.data.bills = fresh.bills||[];
     var b = App.data.bills.find(function(x){ return x.billId===_editBillId; });
-    if (b) { closeModal('bill-view'); viewBill(_editBillId); }
+    if (b) { _renderBillModal(b); }
     else showBills();
   } else {
     if (btn) { btn.disabled=false; btn.textContent='Save Changes'; }
