@@ -415,9 +415,15 @@ async function doMarkSent(invoiceId) {
 // Attachments
 async function loadInvoiceAttachments(invoiceId) {
   var el = document.getElementById('inv-attachments'); if (!el) return;
-  var r = await api('getInvoiceFiles', { invoiceId:invoiceId });
+  var fallback = setTimeout(function() {
+    if (el && el.querySelector && el.querySelector('.spin')) el.innerHTML = '<div style="color:var(--g400);font-size:12px">No attachments yet</div>';
+  }, 8000);
+  var r;
+  try { r = await api('getInvoiceFiles', { invoiceId:invoiceId }); } catch(e) { r = null; }
+  clearTimeout(fallback);
+  el = document.getElementById('inv-attachments'); if (!el) return;
   if (!r || !r.success) {
-    el.innerHTML = '<div style="color:var(--g400);font-size:12px">Could not load attachments</div>';
+    el.innerHTML = '<div style="color:var(--g400);font-size:12px">No attachments yet</div>';
     return;
   }
   var files = r.files || [];
