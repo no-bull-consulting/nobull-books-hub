@@ -128,21 +128,63 @@ function getBillLines(billId, params) {
 function editBill(billId, updates, params) {
   try {
     _auth('bills.write', params);
-    var sheet = getDb(params || {}).getSheetByName(SHEETS.BILLS);
+    var ss    = getDb(params || {});
+    var sheet = ss.getSheetByName(SHEETS.BILLS);
     if (!sheet) return { success: false, message: 'Bills sheet not found' };
     var data = sheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] && data[i][0].toString() === billId) {
         var row = i + 1;
-        if (updates.notes       !== undefined) sheet.getRange(row, 15).setValue(updates.notes);
-        if (updates.dueDate     !== undefined) sheet.getRange(row, 6).setValue(safeSerializeDate(new Date(updates.dueDate)));
-        if (updates.issueDate   !== undefined) sheet.getRange(row, 5).setValue(safeSerializeDate(new Date(updates.issueDate)));
+        if (updates.notes      !== undefined) sheet.getRange(row, 15).setValue(updates.notes);
+        if (updates.dueDate    !== undefined) sheet.getRange(row, 6).setValue(safeSerializeDate(new Date(updates.dueDate)));
+        if (updates.issueDate  !== undefined) sheet.getRange(row, 5).setValue(safeSerializeDate(new Date(updates.issueDate)));
+        if (updates.supplierId !== undefined) sheet.getRange(row, 3).setValue(updates.supplierId);
+        if (updates.currency   !== undefined) sheet.getRange(row, 17).setValue(updates.currency);
+        if (updates.exchangeRate !== undefined) sheet.getRange(row, 18).setValue(parseFloat(updates.exchangeRate)||1);
+
+        // Recalculate totals from lines if provided
+        if (updates.lines && updates.lines.length) {
+          var lineSheet = ss.getSheetByName(SHEETS.BILL_LINES);
+          if (lineSheet) {
+            // Delete existing lines for this bill
+            var lineData = lineSheet.getDataRange().getValues();
+            for (var k = lineData.length - 1; k >= 1; k--) {
+              if (lineData[k][1] && lineData[k][1].toString() === billId) {
+                lineSheet.deleteRow(k + 1);
+              }
+            }
+            // Write new lines
+            var sub = 0, vatAmt = 0;
+            updates.lines.forEach(function(l, li) {
+              var qty   = parseFloat(l.qty) || 1;
+              var price = parseFloat(l.unitPrice) || 0;
+              var vat   = parseFloat(l.vatRate) || 0;
+              var lSub  = qty * price;
+              var lVat  = lSub * vat / 100;
+              var lTot  = lSub + lVat;
+              sub    += lSub;
+              vatAmt += lVat;
+              lineSheet.appendRow([
+                generateId('BL'), billId,
+                l.description || '', qty, price, vat, lTot,
+                l.accountCode || '5000'
+              ]);
+            });
+            var total = sub + vatAmt;
+            sheet.getRange(row, 7).setValue(sub);       // Subtotal
+            sheet.getRange(row, 8).setValue(vatAmt);    // VAT
+            sheet.getRange(row, 9).setValue(vat);       // VATRate (last line's rate)
+            sheet.getRange(row, 10).setValue(total);    // Total
+            sheet.getRange(row, 12).setValue(total);    // AmountDue (reset)
+          }
+        }
         logAudit('UPDATE', 'Bill', billId, updates, params);
         return { success: true };
       }
     }
     return { success: false, message: 'Bill not found: ' + billId };
   } catch(e) {
+    Logger.log('editBill error: ' + e.toString());
     return { success: false, message: e.toString() };
   }
 }
@@ -174,9 +216,15 @@ function deleteBill(billId, params) {
     var data = sheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] && data[i][0].toString() === billId) {
-        var amountDue = parseFloat(data[i][11]) || 0;
-        if (amountDue > 0 && data[i][12] !== 'Void') {
-          return { success: false, message: 'Cannot delete bill with outstanding balance. Void it first.' };
+        var status    = data[i][12] ? data[i][12].toString() : '';
+        var amountPaid = parseFloat(data[i][10]) || 0;
+        // Only block delete if money has already been paid against this bill
+        if (amountPaid > 0) {
+          return { success: false, message: 'Cannot delete a bill with payments recorded. Void it instead.' };
+        }
+        // Block delete of Approved/Paid bills — must void first
+        if (status === 'Approved' || status === 'Paid') {
+          return { success: false, message: 'Cannot delete an '+status+' bill. Void it first.' };
         }
         sheet.deleteRow(i + 1);
         logAudit('DELETE', 'Bill', billId, {}, params);

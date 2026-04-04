@@ -2507,7 +2507,7 @@ async function openEditBillModal() {
     '<button class="btn btn-primary" id="ebl-save" onclick="saveEditBill()">Save Changes</button>',
     'modal-lg'
   );
-  renderEditBillLines();
+  setTimeout(function() { renderEditBillLines(); }, 150);
 }
 
 function _onEditBillCurrencyChange() {
@@ -2533,18 +2533,21 @@ function _billVatSel(i, val) {
 function renderEditBillLines() {
   var tb = document.getElementById('ebl-lines'); if (!tb) return;
   tb.innerHTML = _editBillLines.map(function(l,i){
-    var tot=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0)*(1+(parseFloat(l.vatRate)||0)/100);
+    var qty = parseFloat(l.qty) || 1;
+    var price = parseFloat(l.unitPrice) || 0;
+    var vat   = parseFloat(l.vatRate)   || 0;
+    var tot   = qty * price * (1 + vat/100);
     return '<tr>'+
       '<td style="padding:3px"><input class="form-input" style="padding:5px 7px;font-size:12px" value="'+(l.description||'')+'" placeholder="Description" oninput="_editBillLines['+i+'].description=this.value"></td>'+
-      '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0.01" step="0.01" value="'+(l.qty||1)+'" oninput="_editBillLines['+i+'].qty=this.value;renderEditBillLines()"></td>'+
-      '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" oninput="_editBillLines['+i+'].unitPrice=this.value;renderEditBillLines()"></td>'+
+      '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0.01" step="any" value="'+qty+'" oninput="_editBillLines['+i+'].qty=parseFloat(this.value)||1;renderEditBillLines()"></td>'+
+      '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0" step="any" value="'+price+'" oninput="_editBillLines['+i+'].unitPrice=parseFloat(this.value)||0;renderEditBillLines()"></td>'+
       '<td style="padding:3px">'+_billVatSel(i,l.vatRate)+'</td>'+
       '<td style="padding:3px;text-align:right"><span class="mono" style="font-size:12px">'+fmt(tot)+'</span></td>'+
       '<td style="padding:3px;text-align:center"><button onclick="removeEditBillLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:1px 4px">×</button></td>'+
     '</tr>';
   }).join('');
   var sub=0,vat=0;
-  _editBillLines.forEach(function(l){ var n=(parseFloat(l.qty)||0)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
+  _editBillLines.forEach(function(l){ var n=(parseFloat(l.qty)||1)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
   var curr2 = (document.getElementById('ebl-currency')||{}).value || ((App.settings&&App.settings.baseCurrency)||'GBP');
   var fmtE = function(n){ return _fmtCurr(n, curr2); };
   var s=document.getElementById('ebl-sub'),v=document.getElementById('ebl-vat'),t=document.getElementById('ebl-total');
