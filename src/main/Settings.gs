@@ -301,7 +301,9 @@ function getAllBills(params) {
         reconciled:    row[BILL_COLS.RECONCILED - 1] === true || row[BILL_COLS.RECONCILED - 1] === 'TRUE',
         voidDate:      safeSerializeDate(row[BILL_COLS.VOID_DATE - 1]),
         voidReason:    row[BILL_COLS.VOID_REASON - 1]  ? row[BILL_COLS.VOID_REASON - 1].toString()  : '',
-        voidedBy:      row[BILL_COLS.VOIDED_BY - 1]    ? row[BILL_COLS.VOIDED_BY - 1].toString()    : ''
+        voidedBy:      row[BILL_COLS.VOIDED_BY - 1]    ? row[BILL_COLS.VOIDED_BY - 1].toString()    : '',
+        currency:      row[BILL_COLS.CURRENCY - 1]      ? row[BILL_COLS.CURRENCY - 1].toString()      : '',
+        exchangeRate:  parseFloat(row[BILL_COLS.EXCHANGE_RATE - 1]) || 1
       });
     }
     return { success: true, bills: bills };

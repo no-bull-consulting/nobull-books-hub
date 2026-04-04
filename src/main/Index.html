@@ -2549,7 +2549,9 @@ function renderEditBillLines() {
   var sub=0,vat=0;
   _editBillLines.forEach(function(l){ var n=(parseFloat(l.qty)||1)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
   var curr2 = (document.getElementById('ebl-currency')||{}).value || ((App.settings&&App.settings.baseCurrency)||'GBP');
-  var fmtE = function(n){ return _fmtCurr(n, curr2); };
+  var _csyms = {'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+  var _csym  = _csyms[curr2] || (curr2 + ' ');
+  var fmtE = function(n){ return _csym + (Math.abs(n)||0).toFixed(2); };
   var s=document.getElementById('ebl-sub'),v=document.getElementById('ebl-vat'),t=document.getElementById('ebl-total');
   if(s) s.textContent=fmtE(sub); if(v) v.textContent=fmtE(vat); if(t) t.textContent=fmtE(sub+vat);
 }

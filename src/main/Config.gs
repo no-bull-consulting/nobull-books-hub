@@ -126,7 +126,9 @@ var BILL_COLS = {
   RECONCILED:    16,
   VOID_DATE:     17,
   VOID_REASON:   18,
-  VOIDED_BY:     19
+  VOIDED_BY:     19,
+  CURRENCY:      20,
+  EXCHANGE_RATE: 21
 };
 
 // ============================================

@@ -46,7 +46,8 @@ function checkAndInitSheet(params) {
       'Bills': [
         'BillId','BillNumber','SupplierId','SupplierName','IssueDate','DueDate',
         'Subtotal','VATRate','VAT','Total','AmountPaid','AmountDue',
-        'Status','PaymentDate','Notes','Reconciled','VoidDate','VoidReason','VoidedBy'
+        'Status','PaymentDate','Notes','Reconciled','VoidDate','VoidReason','VoidedBy',
+        'Currency','ExchangeRate'
       ],
       'BillLines': [
         'LineId','BillId','Description','Quantity','UnitPrice','VATRate','LineTotal'

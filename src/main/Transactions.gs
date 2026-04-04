@@ -8,7 +8,7 @@
 // BILLS
 // ─────────────────────────────────────────────────────────────────────────────
 
-function createBill(supplierId, lines, issueDate, dueDate, notes, params) {
+function createBill(supplierId, lines, issueDate, dueDate, notes, params, currency, exchangeRate) {
   try {
     _auth('bills.write', params);
     var ss          = getDb(params || {});
@@ -49,6 +49,9 @@ function createBill(supplierId, lines, issueDate, dueDate, notes, params) {
     var today  = issueDate ? new Date(issueDate) : new Date();
     var due    = dueDate   ? new Date(dueDate)   : new Date(today.getTime() + (parseInt(settings.paymentTerms) || 30) * 86400000);
 
+    var curr   = currency     || (params && params.currency)     || 'GBP';
+    var fxRate = exchangeRate || (params && params.exchangeRate) || 1;
+
     billSheet.appendRow([
       billId,
       billNumber,
@@ -68,7 +71,9 @@ function createBill(supplierId, lines, issueDate, dueDate, notes, params) {
       false,    // Reconciled
       '',       // VoidDate
       '',       // VoidReason
-      ''        // VoidedBy
+      '',       // VoidedBy
+      curr,     // Currency
+      fxRate    // ExchangeRate
     ]);
 
     // Write bill lines
@@ -136,11 +141,17 @@ function editBill(billId, updates, params) {
       if (data[i][0] && data[i][0].toString() === billId) {
         var row = i + 1;
         if (updates.notes      !== undefined) sheet.getRange(row, 15).setValue(updates.notes);
-        if (updates.dueDate    !== undefined) sheet.getRange(row, 6).setValue(safeSerializeDate(new Date(updates.dueDate)));
-        if (updates.issueDate  !== undefined) sheet.getRange(row, 5).setValue(safeSerializeDate(new Date(updates.issueDate)));
-        if (updates.supplierId !== undefined) sheet.getRange(row, 3).setValue(updates.supplierId);
-        if (updates.currency   !== undefined) sheet.getRange(row, 17).setValue(updates.currency);
-        if (updates.exchangeRate !== undefined) sheet.getRange(row, 18).setValue(parseFloat(updates.exchangeRate)||1);
+        if (updates.issueDate  !== undefined) {
+          var issDate = new Date(updates.issueDate);
+          if (!isNaN(issDate.getTime())) sheet.getRange(row, 5).setValue(issDate);
+        }
+        if (updates.dueDate    !== undefined) {
+          var dueDate = new Date(updates.dueDate);
+          if (!isNaN(dueDate.getTime())) sheet.getRange(row, 6).setValue(dueDate);
+        }
+        if (updates.supplierId !== undefined && updates.supplierId) sheet.getRange(row, 3).setValue(updates.supplierId);
+        if (updates.currency   !== undefined && updates.currency)   sheet.getRange(row, BILL_COLS.CURRENCY).setValue(updates.currency);
+        if (updates.exchangeRate !== undefined) sheet.getRange(row, BILL_COLS.EXCHANGE_RATE).setValue(parseFloat(updates.exchangeRate)||1);
 
         // Recalculate totals from lines if provided
         if (updates.lines && updates.lines.length) {
