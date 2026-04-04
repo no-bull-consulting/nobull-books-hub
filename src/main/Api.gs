@@ -180,7 +180,7 @@ function _route(action, params, ctx) {
     case 'createReconAdjustment':       _auth('banking.write', params); return createReconAdjustment(params);
     case 'spendMoney':                  _auth('banking.reconcile', params); return spendMoney(params);
     case 'receiveMoney':                _auth('banking.reconcile', params); return receiveMoney(params);
-    case 'transferMoney':               _auth('banking.reconcile', params); return transferMoney(params);
+    case 'transferMoney':               _auth('banking.reconcile', params); return transferMoney(params, params);
     case 'importBankStatement':         _auth('banking.reconcile', params); return importBankStatement(params.accountId, params.csvData, params);
     case 'getUnallocatedInvoices':      return getUnallocatedInvoices(params.clientId, params);
     case 'getUnallocatedBills':         return getUnallocatedBills(params.supplierId, params);
