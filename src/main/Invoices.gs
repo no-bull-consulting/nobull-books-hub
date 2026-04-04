@@ -300,7 +300,8 @@ function createInvoice(clientId, lines, dueDate, notes, currency, exchangeRate, 
       total,
       'Invoice to ' + client.clientName,
       invoiceId,
-      null
+      null,
+      params
     );
     
     return { success: true, invoiceId: invoiceId, invoiceNumber: invoiceNumber };
@@ -608,7 +609,8 @@ function _recordPayment(invoiceId, amount, paymentDate, notes, params) {
           parseFloat(amount),
           'Payment received for ' + data[i][INV_COLS.NUMBER-1] + (notes ? ' - ' + notes : ''),
           invoiceId,
-          null
+          null,
+          params
         );
         
         addInvoiceHistory(invoiceId, 'Payment', 'amount', currentPaid, newPaid, notes);
