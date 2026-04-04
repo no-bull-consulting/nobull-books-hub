@@ -2380,9 +2380,9 @@ function _renderBillModal(b) {
     '</div>'+
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Total '+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 6px;border-radius:10px;margin-left:4px">'+b.currency+'</span>':'')+'</div>' +
-        '<div class="stat-value" style="font-size:18px">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(b.total,b.currency):fmt(b.total))+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(b.amountDue,b.currency):fmt(b.amountDue))+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?_fmtBillCurr(amtPaid,b.currency):fmt(amtPaid))+'</div></div>'+
+        '<div class="stat-value" style="font-size:18px">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.total)||0).toFixed(2)):fmt(b.total))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.amountDue)||0).toFixed(2)):fmt(b.amountDue))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(amtPaid)||0).toFixed(2)):fmt(amtPaid))+'</div></div>'+
     '</div>'+
     (b.notes?'<div class="alert alert-info" style="margin-bottom:12px"><p><strong>Notes:</strong> '+b.notes+'</p></div>':'')+
     (actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+actions+'</div>':'') +
@@ -2587,6 +2587,7 @@ async function saveEditBill() {
     toast('Bill updated','success');
     var fresh = await api('getAllBills');
     if (fresh&&fresh.success) App.data.bills = fresh.bills||[];
+    _viewBillId = _editBillId; // keep viewBillId set so Edit button works again
     var b = App.data.bills.find(function(x){ return x.billId===_editBillId; });
     if (b) { _renderBillModal(b); }
     else showBills();

@@ -150,6 +150,7 @@ function editBill(billId, updates, params) {
           if (!isNaN(dueDate.getTime())) sheet.getRange(row, 6).setValue(dueDate);
         }
         if (updates.supplierId !== undefined && updates.supplierId) sheet.getRange(row, 3).setValue(updates.supplierId);
+        Logger.log('editBill currency: ' + updates.currency + ' col: ' + BILL_COLS.CURRENCY);
         if (updates.currency   !== undefined && updates.currency)   sheet.getRange(row, BILL_COLS.CURRENCY).setValue(updates.currency);
         if (updates.exchangeRate !== undefined) sheet.getRange(row, BILL_COLS.EXCHANGE_RATE).setValue(parseFloat(updates.exchangeRate)||1);
 
