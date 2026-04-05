@@ -898,11 +898,15 @@ function _saCard(label, value, color) {
   return '<div class="stat-card"><div class="stat-label">'+label+'</div><div class="stat-value" style="font-size:20px;color:'+color+'">'+value+'</div></div>';
 }
 async function getHMRCAuthURL() {
-  var r = await api('getHMRCAuthUrl');
-  if (r&&r.success&&(r.url||r.authUrl)) {
-    window.open(r.url||r.authUrl,'_blank','width=600,height=700');
-    toast('HMRC auth page opened — sign in and copy the code from the redirect URL','info',6000);
-  } else toast('Error: '+(r?r.message:'Could not get auth URL')+' — check HMRC credentials in Settings','error');
+  var r = await api('getHMRCManualAuthUrl');
+  if (r && r.success && r.url) {
+    window.open(r.url, '_blank', 'width=600,height=700');
+    toast('HMRC sign-in page opened — sign in and copy the code from the redirect URL', 'info', 6000);
+  } else {
+    var msg = r ? (r.message || JSON.stringify(r)) : 'No response from server';
+    toast('Error: ' + msg, 'error', 8000);
+    Logger && Logger.log && Logger.log('getHMRCAuthURL error: ' + msg);
+  }
 }
 async function exchangeCode() {
   var code = (document.getElementById('hmrc-code')||{}).value||'';
