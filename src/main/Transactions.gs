@@ -788,11 +788,15 @@ function checkBadDebtVATEligibility(invoiceId, params) {
 
 function calculateVATReturn(fromDate, toDate, params) {
   try {
-    var ss = getDb(params || {});
+    // Ensure params has _sheetId — fall back to active spreadsheet
+    params = params || {};
+    Logger.log('calculateVATReturn: _sheetId=' + params._sheetId + ' fromDate=' + fromDate + ' toDate=' + toDate);
+    var ss = getDb(params);
     if (!ss) {
-      Logger.log('calculateVATReturn: getDb returned null, params=' + JSON.stringify(params));
-      return { success: false, message: 'Could not access spreadsheet — check sheet ID. sheetId=' + (params && params._sheetId) };
+      // Last resort: try active spreadsheet
+      try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch(e2) {}
     }
+    if (!ss) return { success: false, message: 'Could not access spreadsheet. _sheetId=' + params._sheetId };
     var invSheet = ss.getSheetByName(SHEETS.INVOICES);
     var bilSheet = ss.getSheetByName(SHEETS.BILLS);
     var settings = getSettings(params);

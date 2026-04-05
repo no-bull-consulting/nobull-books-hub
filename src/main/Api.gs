@@ -207,7 +207,7 @@ function _route(action, params, ctx) {
     case 'getExchangeRates':     return getExchangeRates(params);
 
     // ── VAT / MTD ─────────────────────────────────────────────────────────────
-    case 'calculateVATReturn':  _auth('mtd.read', params); return calculateVATReturn(params.fromDate, params);
+    case 'calculateVATReturn':  return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
     case 'saveVATReturn':       _auth('reports.tax', params); return saveVATReturn(params);
     case 'getVATReturns':       _auth('reports.tax', params); return getVATReturns(params);
     case 'getVATObligations':   _auth('reports.tax', params); return getVATObligations(params.vrn, params.fromDate, params.toDate, params);
