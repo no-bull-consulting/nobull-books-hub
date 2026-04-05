@@ -790,6 +790,7 @@ function calculateVATReturn(fromDate, toDate, params) {
   try {
     _auth('mtd.read', params);
     var ss       = getDb(params || {});
+    if (!ss) return { success: false, message: 'Could not access spreadsheet — check sheet ID.' };
     var invSheet = ss.getSheetByName(SHEETS.INVOICES);
     var bilSheet = ss.getSheetByName(SHEETS.BILLS);
     var settings = getSettings(params);
@@ -826,17 +827,23 @@ function calculateVATReturn(fromDate, toDate, params) {
     }
 
     var vatDue    = salesVAT - purchVAT;
-    return {
-      success: true,
-      box1: Math.round(salesVAT * 100) / 100,    // VAT on sales
-      box4: Math.round(purchVAT * 100) / 100,    // VAT on purchases
-      box5: Math.round(vatDue * 100) / 100,      // Net VAT payable
-      box6: Math.round(salesNet * 100) / 100,    // Total sales (ex VAT)
-      box7: Math.round(purchNet * 100) / 100,    // Total purchases (ex VAT)
-      box2: 0, box3: Math.round(salesVAT * 100) / 100,
+    var result = {
+      box1: Math.round(salesVAT * 100) / 100,
+      box2: 0,
+      box3: Math.round(salesVAT * 100) / 100,
+      box4: Math.round(purchVAT * 100) / 100,
+      box5: Math.round(vatDue * 100) / 100,
+      box6: Math.round(salesNet * 100) / 100,
+      box7: Math.round(purchNet * 100) / 100,
       box8: 0, box9: 0,
+      outputVAT:      Math.round(salesVAT * 100) / 100,
+      inputVAT:       Math.round(purchVAT * 100) / 100,
+      netVAT:         Math.round(vatDue * 100) / 100,
+      totalSales:     Math.round(salesNet * 100) / 100,
+      totalPurchases: Math.round(purchNet * 100) / 100,
       fromDate: fromDate, toDate: toDate
     };
+    return { success: true, data: result };
   } catch(e) {
     Logger.log('calculateVATReturn error: ' + e.toString());
     return { success: false, message: e.toString() };
