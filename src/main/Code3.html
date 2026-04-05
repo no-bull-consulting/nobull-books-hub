@@ -699,7 +699,10 @@ async function loadObligations() {
   var now    = new Date();
   var from   = (now.getFullYear()-1) + '-01-01';
   var to     = (now.getFullYear()+1) + '-12-31';
-  var r = await api('getVATObligations', { fromDate:from, toDate:to });
+  var s   = App.data.settings || {};
+  var vrn = (s.vatRegNumber||'').replace(/[^0-9]/g,'');
+  if (!vrn) { if (oblEl) oblEl.innerHTML = '<div class="alert alert-warning" style="margin:16px">Please set your VAT Registration Number in Settings first.</div>'; return; }
+  var r = await api('getVATObligations', { vrn:vrn, fromDate:from, toDate:to });
   if (!r || !r.success) {
     if (oblEl) oblEl.innerHTML = '<div class="alert alert-error" style="margin:16px">'+
       'Could not load obligations: '+(r?r.message||r.error:'unknown')+'</div>';

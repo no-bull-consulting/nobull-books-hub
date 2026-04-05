@@ -207,13 +207,16 @@ function _route(action, params, ctx) {
     case 'getExchangeRates':     return getExchangeRates(params);
 
     // ── VAT / MTD ─────────────────────────────────────────────────────────────
-    case 'calculateVATReturn':  return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
+    case 'calculateVATReturn':  Logger.log('ROUTE calculateVATReturn _sheetId=' + params._sheetId + ' keys=' + Object.keys(params).join(',')); return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
     case 'saveVATReturn':       _auth('reports.tax', params); return saveVATReturn(params);
     case 'getVATReturns':       _auth('reports.tax', params); return getVATReturns(params);
-    case 'getVATObligations':   _auth('reports.tax', params); return getVATObligations(params.vrn, params.fromDate, params.toDate, params);
-    case 'submitVATReturn':     _auth('mtd.submit', params);  return submitVATReturn(params.vrn, params.periodKey, params);
-    case 'getVATLiabilities':   _auth('reports.tax', params); return getVATLiabilities(params.vrn, params.fromDate, params.toDate, params);
-    case 'getVATPayments':      _auth('reports.tax', params); return getVATPayments(params.vrn, params.fromDate, params.toDate, params);
+    case 'getVATObligations': {
+      var _vrn = params.vrn || (function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })();
+      return getVATObligations(_vrn, params.fromDate, params.toDate, params);
+    }
+    case 'submitVATReturn':     { var _v1=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return submitVATReturn(_v1, params.periodKey, params); }
+    case 'getVATLiabilities':   { var _v2=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATLiabilities(_v2, params.fromDate, params.toDate, params); }
+    case 'getVATPayments':      { var _v3=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATPayments(_v3, params.fromDate, params.toDate, params); }
     case 'getHMRCAuthStatus':   return getHMRCAuthStatus(params);
     case 'getHMRCAuthUrl':      return getHMRCManualAuthUrl(params);
     case 'exchangeHMRCCode':    _auth('credentials.manage', params); return exchangeHMRCCode(params.code, params);
