@@ -9,12 +9,11 @@ function _renderReconPage() {
   var all   = _reconState.transactions;
 
   // Count all reconciled book entries in current session
-  var reconciledCount = all.filter(function(t) {
+  // Use session count as primary (avoids stale _reconState.transactions)
+  var sessionReconciled = (_reconState.reconciledThisSession || 0);
+  var reconciledCount = sessionReconciled || all.filter(function(t) {
     return t.status === 'Reconciled' && t.type !== 'Statement' && t.category !== 'Statement';
   }).length;
-  // Also count ones we reconciled this session (marked in _reconState)
-  var sessionReconciled = (_reconState.reconciledThisSession || 0);
-  if (sessionReconciled > reconciledCount) reconciledCount = sessionReconciled;
 
   var html =
     '<div class="page-hdr">' +
@@ -33,12 +32,15 @@ function _renderReconPage() {
       '<div class="stat-card"><div class="stat-label">Reconciled</div>' +
         '<div class="stat-value amt-pos">'+reconciledCount+'</div></div>' +
       '<div class="stat-card"><div class="stat-label">Last Reconciled</div>' +
-        '<div style="font-size:13px;font-weight:600;margin-top:4px">'+((_reconState.lastReconciledNow||acct.lastReconciled) ? fmtDate(_reconState.lastReconciledNow||acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
+        '<div style="font-size:13px;font-weight:600;margin-top:4px;color:var(--green-600)">'+((_reconState.lastReconciledNow||acct.lastReconciled) ? fmtDate(_reconState.lastReconciledNow||acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
     '</div>';
 
   if (!stmts.length && !books.length) {
+    var lastRecDate = _reconState.lastReconciledNow || acct.lastReconciled;
     html += '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div>' +
-      '<h3>All reconciled!</h3><p>Nothing left to match.</p>' +
+      '<h3>All reconciled!</h3>' +
+      '<p>Nothing left to match.</p>' +
+      (reconciledCount ? '<p style="color:var(--green-600);font-weight:600">&#10003; ' + reconciledCount + ' transaction' + (reconciledCount!==1?'s':'') + ' reconciled' + (lastRecDate ? ' · ' + fmtDate(lastRecDate) : '') + '</p>' : '') +
       '<button class="btn btn-secondary" onclick="showReconciliation()">&#8592; Back</button></div>';
     showContent(html);
     return;

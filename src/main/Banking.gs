@@ -550,12 +550,30 @@ function reconcileTransaction(transactionId, allocations, params) {
     var isStatementLine = tx.category === 'Statement' ||
       String(txData[txRowNum-1][12]||'').indexOf('Imported') >= 0;
 
+    // Parse allocations if passed as JSON string
+    if (typeof allocations === 'string') {
+      try { allocations = JSON.parse(allocations); } catch(e) { allocations = []; }
+    }
     // If no allocations, just mark as reconciled (bank charge, interest, etc)
     if (!allocations || !allocations.length) {
+      var now = new Date();
       txSheet.getRange(txRowNum, BANK_TX_COLS.STATUS).setValue('Reconciled');
-      txSheet.getRange(txRowNum, BANK_TX_COLS.RECONCILED_DATE).setValue(new Date());
+      txSheet.getRange(txRowNum, BANK_TX_COLS.RECONCILED_DATE).setValue(now);
       txSheet.getRange(txRowNum, BANK_TX_COLS.MATCH_TYPE).setValue('ManualOK');
-      return { success: true, message: 'Marked as reconciled.' };
+      // Update LastReconciled on bank account
+      if (tx.bankAccount) {
+        try {
+          var baSheet2 = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
+          var baData2  = baSheet2.getDataRange().getValues();
+          for (var b2 = 1; b2 < baData2.length; b2++) {
+            if (baData2[b2][0] === tx.bankAccount) {
+              baSheet2.getRange(b2 + 1, 9).setValue(now);
+              break;
+            }
+          }
+        } catch(e2) {}
+      }
+      return { success: true, message: 'Marked as reconciled.', reconciledDate: now.toISOString() };
     }
 
     for (var j = 0; j < allocations.length; j++) {
@@ -623,7 +641,7 @@ function reconcileTransaction(transactionId, allocations, params) {
     }
 
     Logger.log('Reconciled: ' + transactionId);
-    return { success: true, message: 'Reconciled successfully.' };
+    return { success: true, message: 'Reconciled successfully.', reconciledDate: new Date().toISOString() };
 
   } catch (e) {
     Logger.log('Error in reconcileTransaction: ' + e.toString());
