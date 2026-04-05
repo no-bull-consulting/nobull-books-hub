@@ -4198,8 +4198,8 @@ function _renderVATPage(auth, vrn) {
       '<button class="tab" id="vt-liab" onclick="switchToVATLiab(this)">Liabilities & Payments</button>' +
     '</div>' +
     '<div id="vat-calc-tab">' + _renderVATCalcTab(s) + '</div>' +
-    '<div id="vat-obl-tab"  style="display:none">' + _renderObligationsTab() + '</div>' +
-    '<div id="vat-hist-tab" style="display:none">' + _renderVATHistoryTab(returns) + '</div>' +
+    '<div id="vat-obl-tab"  style="display:none">' + (typeof _renderObligationsTab==='function'?_renderObligationsTab():'') + '</div>' +
+    '<div id="vat-hist-tab" style="display:none">' + (typeof _renderVATHistoryTab==='function'?_renderVATHistoryTab(returns):'') + '</div>' +
     '<div id="vat-liab-tab" style="display:none"></div>';
   showContent(html);
 }
