@@ -738,6 +738,88 @@ function openSubmitModal() {
     'modal-md'
   );
 }
+
+async function testHMRC() {
+  var r = await api('testHMRCConnection');
+  toast(r && r.success ? '✓ ' + r.message : '✗ ' + (r ? r.message : 'Connection failed'), r && r.success ? 'success' : 'error', 5000);
+}
+
+async function loadLiabilities() {
+  var liabEl = document.getElementById('vat-liab-tab');
+  if (!liabEl) return;
+  liabEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
+  var now  = new Date();
+  var from = (now.getFullYear()-1) + '-01-01';
+  var to   = now.getFullYear() + '-12-31';
+  var s    = App.data.settings || {};
+  var vrn  = (s.vatRegNumber||'').replace(/[^0-9]/g,'');
+  var lr = await api('getVATLiabilities', { vrn:vrn, fromDate:from, toDate:to });
+  var pr = await api('getVATPayments',    { vrn:vrn, fromDate:from, toDate:to });
+  var liabs = (lr && lr.success) ? lr.liabilities || [] : [];
+  var pays  = (pr && pr.success) ? pr.payments    || [] : [];
+  var html =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">' +
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Liabilities</span></div><div class="card-body">' +
+    (liabs.length
+      ? '<table class="dt"><thead><tr><th>Type</th><th>Period</th><th>Due</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+        liabs.map(function(l){ return '<tr><td>'+(l.taxPeriod&&l.taxPeriod.from?l.taxPeriod.from:'—')+'</td><td>'+(l.taxPeriod&&l.taxPeriod.to?l.taxPeriod.to:'—')+'</td><td>'+fmtDate(l.due||'')+'</td><td style="text-align:right" class="mono">'+fmt(l.amount||0)+'</td></tr>'; }).join('') +
+        '</tbody></table>'
+      : '<div class="tbl-empty"><p>No liabilities found</p></div>') +
+    '</div></div>' +
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Payments</span></div><div class="card-body">' +
+    (pays.length
+      ? '<table class="dt"><thead><tr><th>Date</th><th style="text-align:right">Amount</th></tr></thead><tbody>' +
+        pays.map(function(p){ return '<tr><td>'+fmtDate(p.received||'')+'</td><td style="text-align:right" class="mono">'+fmt(p.amount||0)+'</td></tr>'; }).join('') +
+        '</tbody></table>'
+      : '<div class="tbl-empty"><p>No payments found</p></div>') +
+    '</div></div></div>';
+  if (!lr.success && !pr.success) {
+    html = '<div class="alert alert-warning"><p>' + (lr.message||'Could not load liabilities — check HMRC connection') + '</p></div>';
+  }
+  liabEl.innerHTML = html;
+}
+
+function openHMRCConnectModal() {
+  openModal('hmrc-connect', 'Connect to HMRC MTD',
+    '<div class="alert alert-info" style="margin-bottom:14px">' +
+      '<p><strong>You need an HMRC Developer account</strong> with a VAT application.</p>' +
+      '<p style="margin-top:6px">Steps:' +
+      '<ol style="margin:8px 0 0 16px;font-size:13px">' +
+        '<li>Go to <a href="https://developer.service.hmrc.gov.uk" target="_blank" style="color:var(--blue-600)">developer.service.hmrc.gov.uk</a></li>' +
+        '<li>Create an application with scopes <code>read:vat</code> and <code>write:vat</code></li>' +
+        '<li>Set redirect URI to your app URL</li>' +
+        '<li>Paste Client ID and Secret into Settings → HMRC/MTD</li>' +
+      '</ol></p>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Step 2 — Get Auth URL & sign in</label>' +
+      '<button class="btn btn-primary" onclick="getHMRCAuthURL()" style="margin-bottom:10px">Open HMRC Sign-in</button>' +
+      '<p style="font-size:12px;color:var(--g500)">After signing in, copy the <code>code=</code> value from the redirect URL</p>' +
+    '</div>' +
+    '<div class="form-group"><label class="form-label">Step 3 — Paste authorisation code</label>' +
+      '<input type="text" class="form-input" id="hmrc-code" placeholder="Paste code from redirect URL here">' +
+    '</div>',
+    '<button class="btn btn-secondary" onclick="closeHMRCConnect()">Cancel</button>' +
+    '<button class="btn btn-primary" id="hmrc-exchange-btn" onclick="doExchangeCode()">Exchange Code</button>',
+    'modal-md'
+  );
+}
+
+async function doExchangeCode() {
+  var code = (document.getElementById('hmrc-code')||{}).value||'';
+  if (!code.trim()) { toast('Paste the authorisation code first', 'warning'); return; }
+  var btn = document.getElementById('hmrc-exchange-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Exchanging...'; }
+  var r = await api('exchangeHMRCCode', { code: code.trim() });
+  if (r && r.success) {
+    closeModal('hmrc-connect');
+    toast(r.message || 'Connected to HMRC MTD', 'success', 6000);
+    showVAT();
+  } else {
+    if (btn) { btn.disabled=false; btn.textContent='Exchange Code'; }
+    toast('Error: ' + (r ? r.message : 'unknown'), 'error', 8000);
+  }
+}
+
 function closeVatSubmit() { closeModal('vat-submit'); }
 function closeHMRCConnect() { closeModal('hmrc-connect'); }
 async function doSubmitVAT() {
