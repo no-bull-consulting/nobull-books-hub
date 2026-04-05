@@ -548,7 +548,7 @@ function nbNav(page, params) {
     purchaseOrders:showPOs, badDebts:showBadDebts,
     banking:showBanking, reconciliation:showReconciliation,
     chartOfAccounts:showCOA, reports:showReports, adminPanel:showAdminPanel, agedDebtors:showAgedDebtors, agedCreditors:showAgedCreditors,
-    vat:showVAT, voidLog:showVoidLog, sa103:showSA103, itsa:showITSA, yearEnd:showYearEnd, fixedAssets:showFixedAssets,
+    vat:showVAT, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
     resources:showResources, aiAssistant:showAIAssistant, maintenance:showMaintenance, security:showSecurity,
     settings:showSettings, users:showUsers
 };
