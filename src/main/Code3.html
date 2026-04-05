@@ -287,15 +287,43 @@ var _STATUS_LABELS = {
   'Void':     { label:'Void', color:'var(--g400)',     desc:'Reversed' },
   'Bad Debt': { label:'Bad Debt', color:'var(--red-500)', desc:'Written off' }
 };
+
+function _renderInvFiles(files, invoiceId, canAttach) {
+  var html = '<div id="inv-file-list">';
+  if (files && files.length) {
+    html += files.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)">' +
+        '<span style="font-size:16px">' + _fileIcon(f.fileType||'') + '</span>' +
+        '<a href="' + (f.fileUrl||f.fileURL||'#') + '" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">' + (f.fileName||'File') + '</a>' +
+        (f.uploadedBy ? '<span style="font-size:10px;color:var(--g400)">' + f.uploadedBy + '</span>' : '') +
+        '<button class="btn btn-ghost btn-xs" style="color:var(--red-400)" onclick="deleteAttachment('' + f.fileId + '','' + invoiceId + '')">&#10005;</button>' +
+      '</div>';
+    }).join('');
+  } else {
+    html += '<div style="color:var(--g400);font-size:12px;padding:6px 0">No attachments</div>';
+  }
+  html += '</div>';
+  if (canAttach) {
+    html += '<div style="margin-top:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">+ Attach File' +
+      '<input type="file" style="display:none" onchange="attachToInvoice(this,&quot;' + invoiceId + '&quot;)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></label>' +
+      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PDF, Office, Images · up to 5MB</span></div>';
+  }
+  return html;
+}
 async function viewInvoice(invoiceId) {
   _pdfInvoiceId = invoiceId;
   var inv = (App.data.invoices||[]).find(function(i){ return i.invoiceId === invoiceId; });
   if (!inv) { toast('Invoice not found', 'error'); return; }
-  _renderInvoiceModal(inv);
-  // Load attachments in background after modal opens
-  setTimeout(function(){ loadInvoiceAttachments(invoiceId); }, 100);
+  // Load files before rendering modal
+  var files = [];
+  try {
+    var fr = await api('getInvoiceFiles', { invoiceId: invoiceId });
+    files = (fr && fr.success && fr.files) ? fr.files : [];
+  } catch(e) { files = []; }
+  if (_pdfInvoiceId !== invoiceId) return;
+  _renderInvoiceModal(inv, files);
 }
-function _renderInvoiceModal(inv) {
+function _renderInvoiceModal(inv, preloadedFiles) {
   var invoiceId = inv.invoiceId;
   var cw        = canWrite();
   var status    = inv.status || 'Draft';
@@ -364,12 +392,8 @@ function _renderInvoiceModal(inv) {
     // Workflow actions
     (actions ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' + actions + '</div>' : '') +
     // Attachments section
-    '<div><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">📎 Internal Attachments</div>' +
-    '<div id="inv-attachments"><div class="loader" style="height:60px"><div class="spin"></div></div></div>' +
-    (cw && isActive ?
-      '<div style="margin-top:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">+ Attach File' +
-        '<input type="file" style="display:none" onchange="attachToInvoice(this,\''+invoiceId+'\')" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></label>' +
-      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PDF, Office, Images · up to 5MB</span></div>' : '') +
+    '<div><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">📎 Attachments</div>' +
+    '<div id="inv-attachments">' + _renderInvFiles(preloadedFiles||[], invoiceId, cw && isActive) + '</div>' +
     '</div>',
     '<button class="btn btn-secondary" onclick="closeViInv()">Close</button>',
     'modal-xl'
@@ -491,7 +515,16 @@ async function attachToInvoice(input, invoiceId) {
     });
     if (r && r.success) {
       toast(file.name + ' attached', 'success');
-      loadInvoiceAttachments(invoiceId);
+      var listEl = document.getElementById('inv-file-list');
+      if (listEl) {
+        if (listEl.textContent.trim() === 'No attachments') listEl.innerHTML = '';
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g100)';
+        div.innerHTML = '<span style="font-size:16px">' + _fileIcon(file.type) + '</span>' +
+          '<a href="' + (r.fileURL||r.fileUrl||'#') + '" target="_blank" style="font-size:12px;color:var(--blue-600);font-weight:500;flex:1">' + file.name + '</a>' +
+          '<button class="btn btn-ghost btn-xs" style="color:var(--red-400)" onclick="deleteAttachment('' + (r.fileId||'') + '','' + invoiceId + '')">&#10005;</button>';
+        listEl.appendChild(div);
+      }
     } else {
       toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
     }
@@ -503,7 +536,12 @@ async function deleteAttachment(fileId, invoiceId) {
   var r = await api('deleteInvoiceFile', { fileId:fileId });
   if (r && r.success) {
     toast('Attachment removed', 'success');
-    loadInvoiceAttachments(invoiceId);
+    var btn = document.querySelector('[onclick*="deleteAttachment(\'' + fileId + '\'"]');
+    if (btn) { var row = btn.closest('div'); if (row) row.remove(); }
+    var listEl = document.getElementById('inv-file-list');
+    if (listEl && !listEl.querySelector('a')) {
+      listEl.innerHTML = '<div style="color:var(--g400);font-size:12px;padding:6px 0">No attachments</div>';
+    }
   } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
 }
 async function downloadPDF(invoiceId) {

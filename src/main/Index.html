@@ -3648,6 +3648,18 @@ async function selectAndReconcile(accountId) {
   _reconState.reconciledThisSession = 0;
   _reconState.lastReconciledNow = null;
   showLoader();
+  // Refresh bank accounts to get latest lastReconciled date
+  api('getBankAccounts').then(function(ba) {
+    if (ba && ba.success && ba.accounts) {
+      App.data.bankAccounts = ba.accounts;
+      // Update acct in reconState so _renderReconPage sees fresh lastReconciled
+      var updated = ba.accounts.find(function(a){ return a.accountId===accountId; });
+      if (updated && updated.lastReconciled) {
+        var acct = (App.data.bankAccounts||[]).find(function(a){ return a.accountId===accountId; });
+        if (acct) acct.lastReconciled = updated.lastReconciled;
+      }
+    }
+  });
   var r = await api('getBankTransactions', { accountId: accountId });
   if (!r || !r.success) {
     toast('Could not load transactions', 'error');
