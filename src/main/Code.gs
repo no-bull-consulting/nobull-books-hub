@@ -12,8 +12,24 @@
 function doGet(e) {
   var sheetId = e.parameter.id;
 
-  // ── HMRC OAuth redirect ──────────────────────────────────────────────────
-  if (e.parameter.code && !sheetId) { return _hmrcRedirectPage(e.parameter.code); }
+  // ── HMRC OAuth redirect ─────────────────────────────────────────────────────
+  // HMRC redirects back here with ?code=XXX&state=YYY after OAuth sign-in.
+  // We detect this and auto-redirect to the app with the code pre-filled.
+  if (e.parameter.code && !sheetId) {
+    var code   = e.parameter.code;
+    var appUrl = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg&hmrc_code=' + encodeURIComponent(code);
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+      + '<meta http-equiv="refresh" content="0;url=' + appUrl + '">'
+      + '<title>Connecting to HMRC...</title>'
+      + '<style>body{font-family:-apple-system,sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center}</style>'
+      + '</head><body>'
+      + '<p>Connected! Returning to no~bull books...</p>'
+      + '<p><a href="' + appUrl + '" style="color:#60a5fa">Click here if not redirected</a></p>'
+      + '</body></html>';
+    return HtmlService.createHtmlOutput(html)
+      .setTitle('Connecting to HMRC...')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
 
   // ── Main app ────────────────────────────────────────────────────────────────
   if (sheetId) {
