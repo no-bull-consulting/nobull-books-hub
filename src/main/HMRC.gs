@@ -83,7 +83,7 @@ function getHMRCManualAuthUrl(params) {
     var baseUrl   = testMode
       ? 'https://test-api.service.hmrc.gov.uk/oauth/authorize'
       : 'https://api.service.hmrc.gov.uk/oauth/authorize';
-    var scriptUrl = ScriptApp.getService().getUrl();
+    var scriptUrl = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec';
     var state     = Utilities.base64Encode(new Date().getTime().toString());
 
     var url = baseUrl +
@@ -113,7 +113,7 @@ function exchangeHMRCCode(code, params) {
     var tokenUrl  = testMode
       ? 'https://test-api.service.hmrc.gov.uk/oauth/token'
       : 'https://api.service.hmrc.gov.uk/oauth/token';
-    var scriptUrl = ScriptApp.getService().getUrl();
+    var scriptUrl = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec';
 
     var payload = 'grant_type=authorization_code' +
       '&code=' + encodeURIComponent(code) +
