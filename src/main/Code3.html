@@ -899,8 +899,8 @@ function _saCard(label, value, color) {
 }
 async function getHMRCAuthURL() {
   var r = await api('getHMRCAuthUrl');
-  if (r&&r.success&&r.authUrl) {
-    window.open(r.authUrl,'_blank','width=600,height=700');
+  if (r&&r.success&&(r.url||r.authUrl)) {
+    window.open(r.url||r.authUrl,'_blank','width=600,height=700');
     toast('HMRC auth page opened — sign in and copy the code from the redirect URL','info',6000);
   } else toast('Error: '+(r?r.message:'Could not get auth URL')+' — check HMRC credentials in Settings','error');
 }
