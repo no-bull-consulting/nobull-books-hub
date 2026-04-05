@@ -2,13 +2,19 @@
 
 function _renderReconPage() {
   var id    = _reconState.accountId;
+  // Refresh bank account data to get latest lastReconciled
   var acct  = (App.data.bankAccounts||[]).find(function(a){ return a.accountId === id; }) || {};
-  var stmts = _reconState.unreconciled;   // imported statement lines
-  var books = _reconState.bookEntries;    // system book entries
+  var stmts = _reconState.unreconciled;
+  var books = _reconState.bookEntries;
+  var all   = _reconState.transactions;
 
-  var reconciledCount = _reconState.transactions.filter(function(t) {
+  // Count all reconciled book entries in current session
+  var reconciledCount = all.filter(function(t) {
     return t.status === 'Reconciled' && t.type !== 'Statement' && t.category !== 'Statement';
   }).length;
+  // Also count ones we reconciled this session (marked in _reconState)
+  var sessionReconciled = (_reconState.reconciledThisSession || 0);
+  if (sessionReconciled > reconciledCount) reconciledCount = sessionReconciled;
 
   var html =
     '<div class="page-hdr">' +
@@ -27,7 +33,7 @@ function _renderReconPage() {
       '<div class="stat-card"><div class="stat-label">Reconciled</div>' +
         '<div class="stat-value amt-pos">'+reconciledCount+'</div></div>' +
       '<div class="stat-card"><div class="stat-label">Last Reconciled</div>' +
-        '<div style="font-size:13px;font-weight:600;margin-top:4px">'+(acct.lastReconciled ? fmtDate(acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
+        '<div style="font-size:13px;font-weight:600;margin-top:4px">'+((_reconState.lastReconciledNow||acct.lastReconciled) ? fmtDate(_reconState.lastReconciledNow||acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
     '</div>';
 
   if (!stmts.length && !books.length) {
@@ -155,6 +161,10 @@ async function _doMatch(stmtId) {
     _reconState.bookEntries  = _reconState.bookEntries.filter(function(t){ return t.transactionId!==bookId; });
     _reconState.selectedTx   = null;
     _reconState.selectedBook = null;
+    _reconState.reconciledThisSession = (_reconState.reconciledThisSession||0) + 1;
+    _reconState.lastReconciledNow = new Date().toISOString();
+    var acct = (App.data.bankAccounts||[]).find(function(a){ return a.accountId===_reconState.accountId; });
+    if (acct) acct.lastReconciled = _reconState.lastReconciledNow;
     _renderReconPage();
   } else {
     toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
@@ -167,6 +177,10 @@ async function _doMarkStmt(stmtId) {
   if (r && r.success) {
     toast('Marked as reconciled', 'success');
     _reconState.unreconciled = _reconState.unreconciled.filter(function(t){ return t.transactionId!==stmtId; });
+    _reconState.reconciledThisSession = (_reconState.reconciledThisSession||0) + 1;
+    _reconState.lastReconciledNow = new Date().toISOString();
+    var acct = (App.data.bankAccounts||[]).find(function(a){ return a.accountId===_reconState.accountId; });
+    if (acct) acct.lastReconciled = _reconState.lastReconciledNow;
     _renderReconPage();
   } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
 }
@@ -177,6 +191,10 @@ async function _doMarkBook(bookId) {
   if (r && r.success) {
     toast('Marked as reconciled', 'success');
     _reconState.bookEntries = _reconState.bookEntries.filter(function(t){ return t.transactionId!==bookId; });
+    _reconState.reconciledThisSession = (_reconState.reconciledThisSession||0) + 1;
+    _reconState.lastReconciledNow = new Date().toISOString();
+    var acct = (App.data.bankAccounts||[]).find(function(a){ return a.accountId===_reconState.accountId; });
+    if (acct) acct.lastReconciled = _reconState.lastReconciledNow;
     _renderReconPage();
   } else toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
 }

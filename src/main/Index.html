@@ -3645,6 +3645,8 @@ async function showReconciliation() {
 async function selectAndReconcile(accountId) {
   App.data.selectedAccount = accountId;
   _reconState.accountId = accountId;
+  _reconState.reconciledThisSession = 0;
+  _reconState.lastReconciledNow = null;
   showLoader();
   var r = await api('getBankTransactions', { accountId: accountId });
   if (!r || !r.success) {
