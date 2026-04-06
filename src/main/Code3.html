@@ -647,10 +647,24 @@ async function saveVATDraft() {
   var d = _vatState.calculated;
   if (!d) { toast('Calculate first', 'warning'); return; }
   var r = await api('saveVATReturn', {
-    period:     d.periodStart + ' to ' + d.periodEnd,
-    startDate:  d.periodStart, endDate: d.periodEnd,
-    outputVAT:  d.box1||d.outputVAT||0, inputVAT: d.box4||d.inputVAT||0,
-    netVAT:     d.box5||d.netVAT||0, notes: 'Saved from calculator'
+    periodStart: d.periodStart,
+    periodEnd:   d.periodEnd,
+    periodKey:   _vatState.periodKey || '',
+    box1: d.box1||d.outputVAT||0,
+    box2: d.box2||0,
+    box3: d.box3||(d.outputVAT||0),
+    box4: d.box4||d.inputVAT||0,
+    box5: d.box5||d.netVAT||0,
+    box6: d.box6||d.totalSales||0,
+    box7: d.box7||d.totalPurchases||0,
+    box8: d.box8||0,
+    box9: d.box9||0,
+    outputVAT:      d.box1||d.outputVAT||0,
+    inputVAT:       d.box4||d.inputVAT||0,
+    netVAT:         d.box5||d.netVAT||0,
+    totalSales:     d.box6||d.totalSales||0,
+    totalPurchases: d.box7||d.totalPurchases||0,
+    status: 'Draft'
   });
   if (r && r.success) {
     _vatState.returnId = r.returnId;
@@ -659,7 +673,7 @@ async function saveVATDraft() {
     if (retsR && retsR.success) _vatState.savedReturns = retsR.returns || [];
   } else {
     toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
-}
+  }
 }
 function _renderObligationsTab() {
   if (!_vatState.obligations.length) {
@@ -693,20 +707,18 @@ function _buildObligationsTable(obs) {
     }).join('') +
     '</tbody></table></div>';
 }
-
 async function loadObligations() {
   var oblEl = document.getElementById('vat-obl-tab');
   if (oblEl) oblEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
   var now  = new Date();
-  var taxYearStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  var from = taxYearStart + '-04-06';
-  var to   = (taxYearStart + 1) + '-04-05';
+  var to   = now.toISOString().split('T')[0];
+  var from = new Date(now.getFullYear()-1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
   var vrn  = ((App.settings||{}).vatRegNumber||'').replace(/[^0-9]/g,'');
   if (!vrn) {
     if (oblEl) oblEl.innerHTML = '<div class="alert alert-warning" style="margin:16px">Please set your VAT Registration Number in Settings.</div>';
     return;
   }
-    var r = await api('getVATObligations', { vrn:vrn, fromDate:from, toDate:to });
+  var r = await api('getVATObligations', { vrn:vrn, fromDate:from, toDate:to });
   if (!r || !r.success) {
     if (oblEl) oblEl.innerHTML = '<div class="alert alert-error" style="margin:16px">Could not load obligations: '+(r?r.message||r.error:'unknown')+'</div>';
     return;
@@ -714,41 +726,6 @@ async function loadObligations() {
   _vatState.obligations = r.obligations || [];
   if (oblEl) oblEl.innerHTML = _buildObligationsTable(_vatState.obligations);
 }
-
-function usePeriodKeyFromBtn(btn) { 
-  usePeriodKey(btn.dataset.key, btn.dataset.start, btn.dataset.end); 
-}
-function usePeriodKey(key, start, end) {
-  _vatState.periodKey = key;
-  var vsEl = document.getElementById('vs'), veEl = document.getElementById('ve');
-  if (vsEl && start) vsEl.value = start.substring(0,10);
-  if (veEl && end)   veEl.value = end.substring(0,10);
-  var calcTab = document.getElementById('vt-calc');
-  if (calcTab) switchVATTab(calcTab, 'calc');
-  toast('Period ' + key + ' selected — calculate then submit', 'info', 3000);
-}
-
-function openSubmitModal() {
-  var d = _vatState.calculated;
-  if (!d) { toast('Calculate the return first', 'warning'); return; }
-  openModal('vat-submit', 'Submit VAT Return to HMRC',
-    '<div class="alert alert-warning" style="margin-bottom:14px">' +
-      '<p>You are about to submit for <strong>'+(d.periodStart)+' to '+(d.periodEnd)+'</strong></p>' +
-      '<p style="margin-top:6px">Period key: <strong class="mono">'+(_vatState.periodKey||'—')+'</strong></p>' +
-    '</div>' +
-    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Output VAT (Box 1)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box1||d.outputVAT||0)+'</div></div>' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Input VAT (Box 4)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box4||d.inputVAT||0)+'</div></div>' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Net VAT Due</div><div style="font-weight:700;font-size:16px;color:var(--red-500)">'+fmt(Math.abs(d.box5||d.netVAT||0))+'</div></div>' +
-    '</div>' +
-    '<div class="form-group"><label class="form-label">Type CONFIRM to proceed</label>' +
-      '<input type="text" class="form-input" id="submit-confirm" placeholder="Type CONFIRM"></div>',
-    '<button class="btn btn-secondary" onclick="closeModal(\'vat-submit\')">Cancel</button>' +
-    '<button class="btn btn-danger" id="vat-sub-btn" onclick="doSubmitVAT()">Submit to HMRC</button>',
-    'modal-md'
-  );
-}
-
 async function testHMRC() {
   var r = await api('testHMRCConnection');
   toast(r && r.success ? '✓ ' + r.message : '✗ ' + (r ? r.message : 'Connection failed'), r && r.success ? 'success' : 'error', 5000);
@@ -759,9 +736,8 @@ async function loadLiabilities() {
   if (!liabEl) return;
   liabEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
   var now  = new Date();
-  var taxYearStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  var from = taxYearStart + '-04-06';
-  var to   = (taxYearStart + 1) + '-04-05';
+  var to   = now.toISOString().split('T')[0];
+  var from = new Date(now.getFullYear()-1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
   var vrn  = ((App.settings||{}).vatRegNumber||'').replace(/[^0-9]/g,'');
   var lr = await api('getVATLiabilities', { vrn:vrn, fromDate:from, toDate:to });
   var pr = await api('getVATPayments',    { vrn:vrn, fromDate:from, toDate:to });
@@ -837,11 +813,10 @@ async function doSubmitVAT() {
   if (conf.toUpperCase() !== 'CONFIRM') { toast('Type CONFIRM to proceed', 'warning'); return; }
   var btn = document.getElementById('vat-sub-btn');
   if (btn) { btn.disabled=true; btn.textContent='Submitting...'; }
-  var d   = _vatState.calculated;
-  var vrn = ((App.settings||{}).vatRegNumber||'').replace(/[^0-9]/g,'');
+  var d = _vatState.calculated;
   var r = await api('submitVATReturn', {
-    vrn:       vrn,
     periodKey: _vatState.periodKey,
+    returnId:  _vatState.returnId,
     box1: d.box1||d.outputVAT||0, box2: d.box2||0,
     box3: d.box3||(d.outputVAT||0)+(d.box2||0),
     box4: d.box4||d.inputVAT||0,
