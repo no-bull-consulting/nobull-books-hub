@@ -696,49 +696,22 @@ function _buildObligationsTable(obs) {
 async function loadObligations() {
   var oblEl = document.getElementById('vat-obl-tab');
   if (oblEl) oblEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
-  var now    = new Date();
-  var from   = (now.getFullYear()-1) + '-01-01';
-  var to     = (now.getFullYear()+1) + '-12-31';
-  var r = await api('getVATObligations', { fromDate:from, toDate:to });
-  if (!r || !r.success) {
-    if (oblEl) oblEl.innerHTML = '<div class="alert alert-error" style="margin:16px">'+
-      'Could not load obligations: '+(r?r.message||r.error:'unknown')+'</div>';
+  var now  = new Date();
+  var to   = now.toISOString().split('T')[0];
+  var from = new Date(now.getFullYear()-1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+  var vrn  = ((App.settings||{}).vatRegNumber||'').replace(/[^0-9]/g,'');
+  if (!vrn) {
+    if (oblEl) oblEl.innerHTML = '<div class="alert alert-warning" style="margin:16px">Please set your VAT Registration Number in Settings.</div>';
     return;
-}
+  }
+    var r = await api('getVATObligations', { vrn:vrn, fromDate:from, toDate:to });
+  if (!r || !r.success) {
+    if (oblEl) oblEl.innerHTML = '<div class="alert alert-error" style="margin:16px">Could not load obligations: '+(r?r.message||r.error:'unknown')+'</div>';
+    return;
+  }
   _vatState.obligations = r.obligations || [];
   if (oblEl) oblEl.innerHTML = _buildObligationsTable(_vatState.obligations);
 }
-function usePeriodKeyFromBtn(btn) { usePeriodKey(btn.dataset.key, btn.dataset.start, btn.dataset.end); }
-function usePeriodKey(key, start, end) {
-  _vatState.periodKey = key;
-  var vsEl = document.getElementById('vs'), veEl = document.getElementById('ve');
-  if (vsEl && start) vsEl.value = start.substring(0,10);
-  if (veEl && end)   veEl.value = end.substring(0,10);
-  var calcTab = document.getElementById('vt-calc');
-  if (calcTab) switchVATTab(calcTab, 'calc');
-  toast('Period key '+key+' selected — calculate and then submit', 'info', 3000);
-}
-function openSubmitModal() {
-  var d = _vatState.calculated;
-  if (!d) { toast('Calculate the return first', 'warning'); return; }
-  openModal('vat-submit', 'Submit VAT Return to HMRC',
-    '<div class="alert alert-warning" style="margin-bottom:14px">' +
-      '<p>You are about to submit the VAT return for <strong>'+(d.periodStart)+' to '+(d.periodEnd)+'</strong> to HMRC.</p>' +
-      '<p style="margin-top:6px">Period key: <strong class="mono">'+(_vatState.periodKey||'—')+'</strong></p>' +
-    '</div>' +
-    '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Output VAT (Box 1)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box1||d.outputVAT||0)+'</div></div>' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Input VAT (Box 4)</div><div style="font-weight:700;font-size:16px">'+fmt(d.box4||d.inputVAT||0)+'</div></div>' +
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Net VAT Due</div><div style="font-weight:700;font-size:16px;color:var(--red-500)">'+fmt(Math.abs(d.box5||d.netVAT||0))+'</div></div>' +
-    '</div>' +
-    '<div class="form-group"><label class="form-label">Final check: type CONFIRM to proceed</label>' +
-      '<input type="text" class="form-input" id="submit-confirm" placeholder="Type CONFIRM"></div>',
-    '<button class="btn btn-secondary" onclick="closeVatSubmit()">Cancel</button>' +
-    '<button class="btn btn-danger" id="vat-sub-btn" onclick="doSubmitVAT()">Submit to HMRC</button>',
-    'modal-md'
-  );
-}
-
 async function testHMRC() {
   var r = await api('testHMRCConnection');
   toast(r && r.success ? '✓ ' + r.message : '✗ ' + (r ? r.message : 'Connection failed'), r && r.success ? 'success' : 'error', 5000);
@@ -749,10 +722,9 @@ async function loadLiabilities() {
   if (!liabEl) return;
   liabEl.innerHTML = '<div class="loader"><div class="spin"></div></div>';
   var now  = new Date();
-  var from = (now.getFullYear()-1) + '-01-01';
-  var to   = now.getFullYear() + '-12-31';
-  var s    = App.data.settings || {};
-  var vrn  = (s.vatRegNumber||'').replace(/[^0-9]/g,'');
+  var to   = now.toISOString().split('T')[0];
+  var from = new Date(now.getFullYear()-1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+  var vrn  = ((App.settings||{}).vatRegNumber||'').replace(/[^0-9]/g,'');
   var lr = await api('getVATLiabilities', { vrn:vrn, fromDate:from, toDate:to });
   var pr = await api('getVATPayments',    { vrn:vrn, fromDate:from, toDate:to });
   var liabs = (lr && lr.success) ? lr.liabilities || [] : [];

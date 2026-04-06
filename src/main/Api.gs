@@ -14,10 +14,9 @@ var API_VERSION = '2.0';
 function handleApiCall(action, paramsJson) {
   try {
     var params = JSON.parse(paramsJson || '{}');
-    var ctx    = _getCurrentUserContext(params);
-
+    Logger.log('handleApiCall: action=' + action + ' params=' + paramsJson);
+    var ctx = _getCurrentUserContext(params);
     if (action === 'askGemini') return handleGeminiRequest(params, ctx);
-
     var result = _route(action, params, ctx);
     return JSON.parse(JSON.stringify(result));
   } catch(e) {
@@ -207,10 +206,10 @@ function _route(action, params, ctx) {
     case 'getExchangeRates':     return getExchangeRates(params);
 
     // ── VAT / MTD ─────────────────────────────────────────────────────────────
-    case 'calculateVATReturn':  return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
+    case 'calculateVATReturn': return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
     case 'saveVATReturn':       _auth('reports.tax', params); return saveVATReturn(params);
     case 'getVATReturns':       _auth('reports.tax', params); return getVATReturns(params);
-    case 'getVATObligations':   _auth('reports.tax', params); return getVATObligations(params.vrn, params.fromDate, params.toDate, params);
+    case 'getVATObligations': return getVATObligations(params.vrn||((getSettings(params).vatRegNumber)||'').replace(/[^0-9]/g,''), params.fromDate, params.toDate, params);
     case 'submitVATReturn':     _auth('mtd.submit', params);  return submitVATReturn(params.vrn, params.periodKey, params);
     case 'getVATLiabilities':   _auth('reports.tax', params); return getVATLiabilities(params.vrn, params.fromDate, params.toDate, params);
     case 'getVATPayments':      _auth('reports.tax', params); return getVATPayments(params.vrn, params.fromDate, params.toDate, params);
