@@ -1,43 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>no~bull books — Straightforward accounting for UK sole traders</title>
-  <meta name="google-site-verification" content="8ITl-1NalJG_2LIi3VeArbdWzxQhrC2hqe3H54FzEVw">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      background:#0f172a;min-height:100vh;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;padding:24px}
-    .card{background:#fff;border-radius:16px;padding:48px 40px;max-width:480px;
-      width:100%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4)}
-    .logo{font-family:Georgia,serif;font-size:24px;color:#0f172a;margin-bottom:4px}
-    .logo span{color:#2563eb}
-    p{font-size:15px;color:#64748b;line-height:1.7;margin:16px 0 28px}
-    .btn{display:inline-block;background:#2563eb;color:#fff;
-      text-decoration:none;padding:14px 32px;border-radius:8px;
-      font-weight:600;font-size:15px;width:100%;text-align:center}
-    .btn:hover{background:#1d4ed8}
-    .sub{font-size:12px;color:#94a3b8;margin-top:14px}
-    footer{margin-top:32px;font-size:12px;color:#64748b;text-align:center}
-    footer a{color:#93c5fd;text-decoration:none}
-    footer a:hover{text-decoration:underline}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="no~bull consulting — powerful business tools for UK sole traders and small businesses. Your data, your Google Sheet, no lock-in.">
+<title>no~bull consulting — business tools without the enterprise price tag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+/* HOME PAGE SPECIFIC */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  background: var(--navy);
+  position: relative; overflow: hidden; padding: 0 32px;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(13,115,119,0.25) 0%, transparent 70%);
+}
+.hero::after {
+  content: ''; position: absolute; top: -200px; right: -100px;
+  width: 600px; height: 600px; border-radius: 50%;
+  border: 1px solid rgba(13,115,119,0.15);
+}
+.hero-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; padding: 120px 0 80px; }
+.hero-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 24px; }
+.hero h1 {
+  font-family: var(--font-display); font-size: clamp(40px, 6vw, 76px);
+  color: var(--white); line-height: 1.08; margin-bottom: 28px; max-width: 720px;
+}
+.hero h1 em { color: var(--teal-light); font-style: italic; }
+.hero-sub { font-size: 19px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 540px; margin-bottom: 48px; }
+.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 72px; }
+.hero-stats { display: grid; grid-template-columns: repeat(3, auto); gap: 40px; }
+.stat-val { font-family: var(--font-display); font-size: 36px; color: var(--white); }
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+.hero-scroll { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+/* TRUST BAR */
+.trust-bar { background: var(--grey-100); padding: 20px 32px; border-bottom: 1px solid var(--grey-300); }
+.trust-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; }
+.trust-item { font-size: 13px; color: var(--grey-500); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.trust-item svg { color: var(--teal); }
+
+/* FEATURES */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 64px; }
+.feature-card { padding: 36px; border-radius: var(--r); border: 1px solid var(--grey-300); transition: all 0.3s; position: relative; overflow: hidden; }
+.feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
+.feature-card:hover { border-color: var(--teal); box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+.feature-card:hover::before { transform: scaleX(1); }
+.feature-icon { width: 48px; height: 48px; background: var(--teal-pale); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 22px; }
+.feature-card h3 { font-size: 17px; color: var(--navy); margin-bottom: 10px; font-weight: 600; }
+.feature-card p { font-size: 14px; color: var(--grey-500); line-height: 1.7; }
+
+/* PRODUCT HIGHLIGHT */
+.product-section { background: var(--navy); position: relative; overflow: hidden; }
+.product-section::before { content: ''; position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(13,115,119,0.3) 0%, transparent 70%); }
+.product-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; z-index: 1; }
+.product-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 20px; }
+.product-inner h2 { font-family: var(--font-display); font-size: clamp(28px, 3.5vw, 44px); color: var(--white); line-height: 1.15; margin-bottom: 24px; }
+.product-inner p { font-size: 16px; color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 32px; }
+.product-checks { margin-bottom: 36px; }
+.check-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.check-icon { width: 20px; height: 20px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 11px; color: white; }
+.check-text { font-size: 15px; color: rgba(255,255,255,0.8); }
+.product-visual { background: rgba(255,255,255,0.04); border: 1px solid rgba(13,115,119,0.3); border-radius: 16px; padding: 32px; }
+.mockup-bar { height: 48px; background: rgba(13,115,119,0.2); border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; padding: 0 16px; gap: 8px; }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-row { height: 36px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-bottom: 10px; }
+.mockup-row.wide { width: 100%; }
+.mockup-row.med { width: 75%; }
+.mockup-row.short { width: 50%; }
+.mockup-stat { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 20px; }
+.mockup-stat-item { background: rgba(13,115,119,0.15); border-radius: 8px; padding: 16px; text-align: center; }
+.mockup-stat-val { font-size: 18px; color: var(--teal-light); font-weight: 700; }
+.mockup-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+/* PHILOSOPHY */
+.philosophy-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--grey-300); border-radius: var(--r); overflow: hidden; }
+.phil-item { background: var(--white); padding: 40px 36px; }
+.phil-num { font-family: var(--font-display); font-size: 48px; color: var(--grey-100); line-height: 1; margin-bottom: 16px; }
+.phil-item h3 { font-size: 17px; color: var(--navy); margin-bottom: 10px; }
+.phil-item p { font-size: 14px; color: var(--grey-500); line-height: 1.7; }
+
+/* PRICING */
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 48px; }
+.price-card { border-radius: var(--r); border: 1px solid var(--grey-300); padding: 36px; position: relative; }
+.price-card.featured { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(13,115,119,0.08); }
+.featured-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--teal); color: white; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.price-plan { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-500); margin-bottom: 16px; }
+.price-amount { font-family: var(--font-display); font-size: 48px; color: var(--navy); line-height: 1; margin-bottom: 4px; }
+.price-amount sup { font-size: 24px; vertical-align: top; margin-top: 8px; font-family: var(--font-body); }
+.price-per { font-size: 13px; color: var(--grey-500); margin-bottom: 28px; }
+.price-features { list-style: none; margin: 0 0 28px; }
+.price-features li { font-size: 14px; color: var(--grey-700); padding: 8px 0; border-bottom: 1px solid var(--grey-100); display: flex; align-items: center; gap: 10px; }
+.price-features li::before { content: '✓'; color: var(--teal); font-weight: 700; }
+
+/* CTA SECTION */
+.cta-section { background: linear-gradient(135deg, var(--teal) 0%, var(--navy) 100%); }
+.cta-inner { text-align: center; }
+.cta-inner h2 { font-family: var(--font-display); font-size: clamp(28px,4vw,48px); color: var(--white); margin-bottom: 16px; }
+.cta-inner p { font-size: 18px; color: rgba(255,255,255,0.75); margin-bottom: 40px; }
+
+@media(max-width:900px){
+  .features-grid,.philosophy-grid,.pricing-grid{grid-template-columns:1fr;}
+  .product-inner{grid-template-columns:1fr;}
+  .product-visual{display:none;}
+  .hero-stats{grid-template-columns:repeat(3,1fr);}
+}
+</style>
 </head>
 <body>
-  <div class="card">
-    <div style="font-size:52px;margin-bottom:16px">🐂</div>
-    <div class="logo">no~bull <span>books</span></div>
-    <p>Straightforward accounting for UK sole traders &amp; small businesses.<br>
-      Your data lives in your own Google Sheet.</p>
-    <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn">Get started free →</a>
-    <p class="sub">14-day free trial · No credit card required</p>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><span class="bull">🐂</span> no~bull <span>consulting</span></a>
+    <div class="nav-links">
+      <a href="/philosophy.html">Philosophy</a>
+      <a href="/books.html">no~bull books</a>
+      <a href="/services.html">Services</a>
+      <a href="/contact.html">Contact</a>
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="nav-cta" target="_blank">Launch app →</a>
+    </div>
   </div>
-  <footer>
-    &copy; 2026 no~bull consulting &nbsp;·&nbsp;
-    <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
-    <a href="mailto:edward@nobull.consulting">Contact</a>
-  </footer>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">UK Business Software · Built different</div>
+    <h1>Powerful tools.<br><em>No enterprise</em><br>price tag.</h1>
+    <p class="hero-sub">Professional-grade accounting and business software for UK sole traders and small businesses — built on Google Sheets, owned by you.</p>
+    <div class="hero-actions">
+      <a href="/books.html" class="btn btn-primary btn-lg">Explore no~bull books →</a>
+      <a href="/philosophy.html" class="btn btn-outline btn-lg" style="color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.3);">Our philosophy</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-val">£0</div><div class="stat-label">Data lock-in fee</div></div>
+      <div><div class="stat-val">MTD</div><div class="stat-label">HMRC Ready</div></div>
+      <div><div class="stat-val">100%</div><div class="stat-label">Your data</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.27l-4.77 2.44.91-5.32L2.27 6.62l5.34-.78z"/></svg> HMRC MTD Integrated</div>
+    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l-4-4 1.41-1.41L9 9.17l7.59-7.59L18 3z"/></svg> Your data in your Google Sheet</div>
+    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm-1 11.41L5.59 10 7 8.59l2 2 4-4L14.41 8z"/></svg> No vendor lock-in</div>
+    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v2H4zm0 4h12v2H4zm0 4h8v2H4z"/></svg> UK VAT & invoicing</div>
+    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 016 6c0 4.5-6 10-6 10S4 12.5 4 8a6 6 0 016-6z"/></svg> Built in Spain, for UK business</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" style="background:var(--off-white)">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto 16px">
+      <span class="badge badge-teal">What we build</span>
+      <h2 style="font-family:var(--font-display);font-size:clamp(28px,4vw,44px);color:var(--navy);margin-top:16px;line-height:1.15">Software that respects your business</h2>
+      <p style="font-size:17px;color:var(--grey-500);margin-top:16px;line-height:1.7">No complex onboarding. No hidden fees. No data hostage situations. Just tools that work.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>You own your data</h3>
+        <p>Every transaction, invoice, and report lives in your own Google Sheet. Export, share, or migrate — no permission needed from us.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🇬🇧</div>
+        <h3>Built for UK compliance</h3>
+        <p>HMRC MTD VAT submission, UK VAT treatment, Making Tax Digital — compliant from day one, not bolted on as an afterthought.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💷</div>
+        <h3>Honest pricing</h3>
+        <p>No per-seat fees. No feature gating. No enterprise pricing for basic functionality. One price, all features, for the life of your subscription.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Google ecosystem native</h3>
+        <p>Built on Google Apps Script and Sheets — platforms you already use. No new accounts, no new passwords, no new systems to learn.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI assistant built in</h3>
+        <p>Ask questions about your finances in plain English. Get instant answers about your cash flow, VAT position, and business health.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>Multi-currency ready</h3>
+        <p>Invoice in EUR, GBP, USD or any currency. Perfect for UK businesses working with European clients and suppliers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT HIGHLIGHT -->
+<section class="section product-section">
+  <div class="container">
+    <div class="product-inner">
+      <div>
+        <div class="product-eyebrow">Our flagship product</div>
+        <h2>no~bull books — accounting that doesn't lie to you</h2>
+        <p>Full-featured accounting for UK sole traders. Invoicing, bills, bank reconciliation, VAT returns, MTD submission — everything you need, nothing you don't.</p>
+        <div class="product-checks">
+          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">HMRC Making Tax Digital VAT submission</div></div>
+          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Professional invoicing with payment tracking</div></div>
+          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Bank reconciliation and statement import</div></div>
+          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">P&L, Balance Sheet, Cash Flow reports</div></div>
+          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">14-day free trial, no credit card required</div></div>
+        </div>
+        <a href="/books.html" class="btn btn-white">Learn more about no~bull books →</a>
+      </div>
+      <div class="product-visual">
+        <div class="mockup-bar">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#ffbd2e"></div>
+          <div class="mockup-dot" style="background:#28ca41"></div>
+          <div style="margin-left:8px;font-size:12px;color:rgba(255,255,255,0.4)">no~bull books</div>
+        </div>
+        <div class="mockup-row wide"></div>
+        <div class="mockup-row med"></div>
+        <div class="mockup-row short"></div>
+        <div class="mockup-stat">
+          <div class="mockup-stat-item"><div class="mockup-stat-val">£8,500</div><div class="mockup-stat-lbl">Revenue</div></div>
+          <div class="mockup-stat-item"><div class="mockup-stat-val">£840</div><div class="mockup-stat-lbl">VAT Due</div></div>
+          <div class="mockup-stat-item"><div class="mockup-stat-val">3</div><div class="mockup-stat-lbl">Invoices</div></div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="mockup-row wide" style="height:28px"></div>
+          <div class="mockup-row wide" style="height:28px;margin-top:8px"></div>
+          <div class="mockup-row wide" style="height:28px;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section class="section">
+  <div class="container">
+    <div style="text-align:center;max-width:560px;margin:0 auto 48px">
+      <span class="badge badge-teal">How we think</span>
+      <h2 style="font-family:var(--font-display);font-size:clamp(26px,3.5vw,40px);color:var(--navy);margin-top:16px">Three principles. No exceptions.</h2>
+    </div>
+    <div class="philosophy-grid">
+      <div class="phil-item">
+        <div class="phil-num">01</div>
+        <h3>Transparent, not locked-in</h3>
+        <p>Your data lives in your Google Sheet, always. Cancel anytime and everything you've ever entered goes with you. We make money when you find us genuinely useful.</p>
+      </div>
+      <div class="phil-item">
+        <div class="phil-num">02</div>
+        <h3>Specific, not generic</h3>
+        <p>Built specifically for UK businesses — UK VAT rates, HMRC compliance, GBP-first. Not an American product with a Union Jack sticker on it.</p>
+      </div>
+      <div class="phil-item">
+        <div class="phil-num">03</div>
+        <h3>Simple, not complex</h3>
+        <p>No 47-step onboarding. No certification required to raise an invoice. Software should take ten minutes to learn, not ten days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" style="background:var(--off-white)">
+  <div class="container">
+    <div style="text-align:center;max-width:560px;margin:0 auto 16px">
+      <span class="badge badge-teal">Pricing</span>
+      <h2 style="font-family:var(--font-display);font-size:clamp(26px,3.5vw,40px);color:var(--navy);margin-top:16px">Honest prices. All features. Always.</h2>
+      <p style="font-size:16px;color:var(--grey-500);margin-top:12px">Start with a 14-day free trial. No credit card required.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-plan">Sole Trader</div>
+        <div class="price-amount"><sup>£</sup>12</div>
+        <div class="price-per">per month + VAT</div>
+        <ul class="price-features">
+          <li>Full invoicing & billing</li>
+          <li>Bank reconciliation</li>
+          <li>VAT returns & MTD</li>
+          <li>Financial reports</li>
+          <li>1 user</li>
+          <li>Email support</li>
+        </ul>
+        <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-outline" style="width:100%;justify-content:center">Start free trial</a>
+      </div>
+      <div class="price-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="price-plan">Small Business</div>
+        <div class="price-amount"><sup>£</sup>24</div>
+        <div class="price-per">per month + VAT</div>
+        <ul class="price-features">
+          <li>Everything in Sole Trader</li>
+          <li>Multi-currency invoicing</li>
+          <li>AI financial assistant</li>
+          <li>Purchase orders</li>
+          <li>Up to 3 users</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-primary" style="width:100%;justify-content:center">Start free trial</a>
+      </div>
+      <div class="price-card">
+        <div class="price-plan">Accountant</div>
+        <div class="price-amount"><sup>£</sup>49</div>
+        <div class="price-per">per month + VAT</div>
+        <ul class="price-features">
+          <li>Everything in Small Business</li>
+          <li>Multiple client instances</li>
+          <li>Client management dashboard</li>
+          <li>White-label option</li>
+          <li>Unlimited users</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="mailto:edward@nobull.consulting" class="btn btn-outline" style="width:100%;justify-content:center">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta-section">
+  <div class="container cta-inner">
+    <h2>Ready to try no~bull?</h2>
+    <p>14-day free trial. No credit card. No strings. Cancel anytime.</p>
+    <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-white btn-lg">Start your free trial →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">🐂 no~bull <span>consulting</span></div>
+        <p>Powerful business tools for UK sole traders and small businesses. Your data, your Google Sheet, your rules.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Products</h4>
+        <a href="/books.html">no~bull books</a>
+        <a href="/books.html#features">Features</a>
+        <a href="/books.html#pricing">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="/philosophy.html">Philosophy</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 no~bull consulting · Trading name of Edward Jenkins · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></span>
+      <span>Not a substitute for professional accounting advice · <a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></span>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

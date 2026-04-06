@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMRC MTD Compatibility Statement — no~bull books</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><span class="bull">🐂</span> no~bull <span>consulting</span></a>
+    <div class="nav-links">
+      <a href="/books.html">no~bull books</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="nav-cta" target="_blank">Launch app →</a>
+    </div>
+  </div>
+</nav>
+
+<div class="legal-content">
+  <h1>HMRC Making Tax Digital<br>Compatibility Statement</h1>
+  <p class="meta">Software: no~bull books v1.0 · Provider: Edward Jenkins t/a no~bull consulting · Date: 6 April 2026 · MTD Scheme: VAT · API: HMRC MTD VAT API v1.0</p>
+
+  <h2>1. Software Overview</h2>
+  <p>no~bull books is a cloud-based accounting application built on Google Apps Script, designed for UK sole traders and small businesses. It integrates with HMRC's Making Tax Digital (MTD) for VAT API to enable compliant digital VAT record-keeping and electronic submission of VAT returns.</p>
+
+  <h2>2. MTD VAT API Functionality</h2>
+  <table>
+    <tr><th>API Endpoint</th><th>Status</th></tr>
+    <tr><td>GET /organisations/vat/{vrn}/obligations</td><td>✓ Implemented & tested</td></tr>
+    <tr><td>POST /organisations/vat/{vrn}/returns</td><td>✓ Implemented & tested</td></tr>
+    <tr><td>GET /organisations/vat/{vrn}/liabilities</td><td>✓ Implemented & tested</td></tr>
+    <tr><td>GET /organisations/vat/{vrn}/payments</td><td>✓ Implemented & tested</td></tr>
+    <tr><td>OAuth 2.0 authorisation flow</td><td>✓ Implemented & tested</td></tr>
+  </table>
+
+  <h2>3. Digital Record Keeping</h2>
+  <p>no~bull books maintains digital records as required by MTD for VAT, including all nine VAT return boxes, business name and VAT registration number, and VAT accounting period dates. All records are stored digitally from point of creation in the user's own Google Sheets spreadsheet.</p>
+
+  <h2>4. Fraud Prevention Headers</h2>
+  <p>no~bull books submits the following fraud prevention headers with all MTD API calls, using the <strong>WEB_APP_VIA_SERVER</strong> connection method:</p>
+  <ul>
+    <li><code>Gov-Client-Connection-Method: WEB_APP_VIA_SERVER</code></li>
+    <li><code>Gov-Vendor-Version: no-bull-books=1.0.0</code></li>
+    <li><code>Gov-Client-Timezone</code> — collected from user's browser</li>
+    <li><code>Gov-Client-Browser-JS-User-Agent</code> — collected from user's browser</li>
+    <li><code>Gov-Client-Device-ID</code> — persistent UUID stored in browser localStorage</li>
+    <li><code>Gov-Client-User-IDs</code> — Google account identifier</li>
+    <li><code>Gov-Client-Screens</code> — screen dimensions from user's browser</li>
+    <li><code>Gov-Client-Window-Size</code> — window dimensions from user's browser</li>
+  </ul>
+  <p><em>Note: As a Google Apps Script application, the server-side public IP address is not directly accessible. We have disclosed this limitation to HMRC and are committed to implementing additional headers as guidance for cloud-hosted applications evolves.</em></p>
+
+  <h2>5. Sandbox Testing Summary</h2>
+  <table>
+    <tr><th>Test Scenario</th><th>Result</th></tr>
+    <tr><td>OAuth 2.0 authorisation flow</td><td>✓ Pass</td></tr>
+    <tr><td>Retrieve VAT obligations</td><td>✓ Pass</td></tr>
+    <tr><td>Calculate VAT return (boxes 1-9)</td><td>✓ Pass</td></tr>
+    <tr><td>Save VAT return as draft</td><td>✓ Pass</td></tr>
+    <tr><td>Submit VAT return to HMRC</td><td>✓ Pass</td></tr>
+    <tr><td>Retrieve VAT liabilities</td><td>✓ Pass</td></tr>
+    <tr><td>Retrieve VAT payments</td><td>✓ Pass</td></tr>
+    <tr><td>Handle expired token</td><td>✓ Pass</td></tr>
+    <tr><td>Handle invalid date range</td><td>✓ Pass</td></tr>
+  </table>
+
+  <h2>6. Declaration</h2>
+  <p>We confirm that no~bull books has been designed and tested to meet the requirements of HMRC's Making Tax Digital for VAT programme. We are committed to maintaining compatibility as HMRC's API and requirements evolve.</p>
+  <table>
+    <tr><th>Signed</th><th></th></tr>
+    <tr><td>Name</td><td>Edward Jenkins</td></tr>
+    <tr><td>Role</td><td>Sole proprietor, no~bull consulting</td></tr>
+    <tr><td>Date</td><td>6 April 2026</td></tr>
+    <tr><td>Email</td><td><a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></td></tr>
+  </table>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-bottom" style="border-top:none;padding-top:0">
+      <span>© 2026 no~bull consulting · Trading name of Edward Jenkins</span>
+      <span><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/books.html">no~bull books</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
