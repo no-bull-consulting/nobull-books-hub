@@ -179,6 +179,78 @@ function testHMRCConnection(params) {
 // VAT MTD — OBLIGATIONS, SUBMISSION, LIABILITIES, PAYMENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FRAUD PREVENTION HEADERS (required by law for all MTD API calls)
+// WEB_APP_VIA_SERVER connection method
+// https://developer.service.hmrc.gov.uk/guides/fraud-prevention/
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * _getFraudHeaders(params)
+ * Returns the required HMRC fraud prevention headers.
+ * Client-side data (IP, user agent, device ID) is passed in via params
+ * from the frontend using _collectFraudData() in Index.html.
+ */
+function _getFraudHeaders(params) {
+  params = params || {};
+  var now = new Date();
+
+  // Vendor info
+  var vendorVersion  = 'no-bull-books=1.0.0';
+  var vendorForwardedIPs = params._serverIP ? params._serverIP : '';
+
+  // Client info (collected by browser, passed via params)
+  var clientIP       = params._clientIP       || '';
+  var clientPort     = params._clientPort      || '';
+  var clientUserAgent = params._clientUA       || '';
+  var clientDeviceId = params._clientDeviceId  || _getOrCreateDeviceId(params);
+  var clientTimezone = params._clientTimezone  || 'Europe/London';
+  var clientLocalIPs = params._clientLocalIPs  || '';
+  var clientScreens  = params._clientScreens   || '';
+  var clientWindowSize = params._clientWindowSize || '';
+
+  var headers = {
+    'Gov-Client-Connection-Method': 'WEB_APP_VIA_SERVER',
+    'Gov-Vendor-Version':           vendorVersion,
+    'Gov-Client-Timezone':          clientTimezone,
+    'Gov-Client-Browser-JS-User-Agent': clientUserAgent,
+    'Gov-Client-Device-ID':         clientDeviceId,
+    'Gov-Client-User-IDs':          'google=' + (params._userEmail || ''),
+    'Gov-Vendor-License-IDs':       'no-bull-books-id=' + (params._sheetId || '').substring(0, 8),
+  };
+
+  // Optional but strongly recommended
+  if (clientIP)        headers['Gov-Client-Public-IP']        = clientIP;
+  if (clientPort)      headers['Gov-Client-Public-Port']      = clientPort;
+  if (clientLocalIPs)  headers['Gov-Client-Local-IPs']        = clientLocalIPs;
+  if (clientScreens)   headers['Gov-Client-Screens']          = clientScreens;
+  if (clientWindowSize) headers['Gov-Client-Window-Size']     = clientWindowSize;
+  if (vendorForwardedIPs) headers['Gov-Vendor-Forwarded-IP']  = vendorForwardedIPs;
+
+  return headers;
+}
+
+/**
+ * _getOrCreateDeviceId(params)
+ * Generates and stores a persistent device ID for the client instance.
+ * Stored in Script Properties keyed by sheetId.
+ */
+function _getOrCreateDeviceId(params) {
+  var key  = 'device_id_' + (params && params._sheetId ? params._sheetId.substring(0, 8) : 'default');
+  var props = PropertiesService.getScriptProperties();
+  var existing = props.getProperty(key);
+  if (existing) return existing;
+  // Generate a UUID v4
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0;
+    var v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+  props.setProperty(key, uuid);
+  return uuid;
+}
+
 function getVATObligations(vrn, fromDate, toDate, params) {
   try {
     var t        = _getHMRCToken();
@@ -193,11 +265,12 @@ function getVATObligations(vrn, fromDate, toDate, params) {
       : 'https://api.service.hmrc.gov.uk';
 
     var url = baseUrl + '/organisations/vat/' + vrn + '/obligations?from=' + fromDate + '&to=' + toDate;
+    var fraudHeaders = _getFraudHeaders(params);
     var response = UrlFetchApp.fetch(url, {
-      headers: {
+      headers: Object.assign({
         Authorization: 'Bearer ' + t.accessToken,
         Accept: 'application/vnd.hmrc.1.0+json'
-      },
+      }, fraudHeaders),
       muteHttpExceptions: true
     });
 
@@ -238,13 +311,14 @@ function submitVATReturn(vrn, periodKey, params) {
       finalised: true
     };
 
+    var fraudHeaders2 = _getFraudHeaders(params);
     var response = UrlFetchApp.fetch(baseUrl + '/organisations/vat/' + vrn + '/returns', {
       method: 'post',
       contentType: 'application/json',
-      headers: {
+      headers: Object.assign({
         Authorization: 'Bearer ' + t.accessToken,
         Accept: 'application/vnd.hmrc.1.0+json'
-      },
+      }, fraudHeaders2),
       payload: JSON.stringify(body),
       muteHttpExceptions: true
     });
@@ -282,8 +356,9 @@ function getVATLiabilities(vrn, fromDate, toDate, params) {
       : 'https://api.service.hmrc.gov.uk';
 
     var url = baseUrl + '/organisations/vat/' + vrn + '/liabilities?from=' + fromDate + '&to=' + toDate;
+    var fraudHeaders3 = _getFraudHeaders(params);
     var response = UrlFetchApp.fetch(url, {
-      headers: { Authorization: 'Bearer ' + t.accessToken, Accept: 'application/vnd.hmrc.1.0+json' },
+      headers: Object.assign({ Authorization: 'Bearer ' + t.accessToken, Accept: 'application/vnd.hmrc.1.0+json' }, fraudHeaders3),
       muteHttpExceptions: true
     });
 
@@ -312,8 +387,9 @@ function getVATPayments(vrn, fromDate, toDate, params) {
       : 'https://api.service.hmrc.gov.uk';
 
     var url = baseUrl + '/organisations/vat/' + vrn + '/payments?from=' + fromDate + '&to=' + toDate;
+    var fraudHeaders4 = _getFraudHeaders(params);
     var response = UrlFetchApp.fetch(url, {
-      headers: { Authorization: 'Bearer ' + t.accessToken, Accept: 'application/vnd.hmrc.1.0+json' },
+      headers: Object.assign({ Authorization: 'Bearer ' + t.accessToken, Accept: 'application/vnd.hmrc.1.0+json' }, fraudHeaders4),
       muteHttpExceptions: true
     });
 

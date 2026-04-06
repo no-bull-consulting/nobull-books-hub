@@ -228,7 +228,13 @@
 <script>
 
 const CLIENT_CONTEXT = {
-    sheetId: "<?!= clientSheetId ?>",
+    sheetId: (function() {
+      // Try GAS template value first, fall back to URL param
+      var tplVal = "<?!= clientSheetId ?>";
+      if (tplVal && tplVal.indexOf('<?') === -1) return tplVal;
+      var m = window.location.search.match(/[?&]id=([^&]+)/);
+      return m ? decodeURIComponent(m[1]) : '';
+    })(),
     scriptUrl: "<?!= scriptUrl ?>"
   };
 
@@ -258,6 +264,49 @@ async function boot() {
  * THE REPAIRED API GATEWAY
  * This ensures every single request includes the 'Passport' (_sheetId)
  */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HMRC FRAUD PREVENTION — Client-side data collection
+// Required by law for all MTD API calls
+// ─────────────────────────────────────────────────────────────────────────────
+
+function _getOrCreateClientDeviceId() {
+  try {
+    var id = localStorage.getItem('nbbooks_device_id');
+    if (!id) {
+      id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0;
+        var v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+      localStorage.setItem('nbbooks_device_id', id);
+    }
+    return id;
+  } catch(e) { return 'unknown'; }
+}
+
+function _collectFraudData() {
+  try {
+    return {
+      _clientUA:         navigator.userAgent || '',
+      _clientTimezone:   Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/London',
+      _clientDeviceId:   _getOrCreateClientDeviceId(),
+      _clientScreens:    'width=' + screen.width + '&height=' + screen.height + '&scaling-factor=' + (window.devicePixelRatio||1) + '&colour-depth=' + screen.colorDepth,
+      _clientWindowSize: 'width=' + window.innerWidth + '&height=' + window.innerHeight,
+      _userEmail:        (App && App.data && App.data.currentUser) ? App.data.currentUser : ''
+    };
+  } catch(e) { return {}; }
+}
+
+// HMRC API calls that need fraud prevention headers
+var _HMRC_ACTIONS = {
+  'getVATObligations': true, 'submitVATReturn': true,
+  'getVATLiabilities': true, 'getVATPayments': true,
+  'saveVATReturn': true, 'getVATReturns': true,
+  'calculateVATReturn': true, 'getHMRCAuthStatus': true,
+  'testHMRCConnection': true
+};
+
 async function api(action, params = {}) {
   // 1. ATTACH THE ID (The most important line!)
   // If params is a simple value (like a string), we turn it into an object
@@ -265,7 +314,12 @@ async function api(action, params = {}) {
     params = { value: params };
   }
   
-  params._sheetId = CLIENT_CONTEXT.sheetId; 
+  params._sheetId = CLIENT_CONTEXT.sheetId;
+  // Attach fraud prevention data for HMRC API calls (required by law)
+  if (_HMRC_ACTIONS[action]) {
+    var _fd = _collectFraudData();
+    Object.assign(params, _fd);
+  }
 
   // 2. SEND TO SERVER
   return new Promise((resolve, reject) => {
@@ -347,6 +401,21 @@ async function boot() {
     showInitWizard();
   } else {
     nbNav('dashboard');
+    // Auto-handle HMRC OAuth redirect
+    var _hmrcCode = new URLSearchParams(window.location.search).get('hmrc_code');
+    if (_hmrcCode) {
+      setTimeout(function() {
+        openHMRCConnectModal && openHMRCConnectModal();
+        setTimeout(function() {
+          var el = document.getElementById('hmrc-code');
+          if (el) {
+            el.value = _hmrcCode;
+            el.style.background = 'var(--green-50)';
+            toast('HMRC authorisation code detected — click Exchange Code to complete connection', 'success', 6000);
+          }
+        }, 300);
+      }, 1000);
+    }
   }
 }
 
@@ -4155,14 +4224,23 @@ var _vatState = {
   savedReturns: []    // local saved returns
 };
 
+
+function _vatBox(n, desc, amount, refund, integer) {
+  var display = integer ? Math.round(Math.abs(amount)).toLocaleString() : fmt(Math.abs(amount));
+  var color   = refund ? 'color:var(--green-600)' : '';
+  return '<tr><td class="mono" style="font-weight:700;color:var(--g500)">'+n+'</td>' +
+    '<td style="font-size:13px">'+desc+'</td>' +
+    '<td style="text-align:right;font-weight:700;'+color+'">'+display+'</td></tr>';
+}
+
 function _renderVATHistoryTab(returns) {
   if (!returns || !returns.length) {
     return '<div class="empty" style="margin-top:20px"><h3>No submitted returns</h3>' +
       '<p>Submitted VAT returns will appear here</p></div>';
   }
   return '<div class="tbl-wrap" style="margin-top:4px"><table class="dt"><thead><tr>' +
-    '<th>Period Key</th><th>Start</th><th>End</th><th>Submitted</th>' +
-    '<th style="text-align:right">Output VAT</th><th style="text-align:right">Input VAT</th><th style="text-align:right">Net VAT</th><th>Status</th>' +
+    '<th>Period</th><th>Start</th><th>End</th><th>Submitted</th>' +
+    '<th style="text-align:right">Net VAT</th><th>Status</th>' +
     '</tr></thead><tbody>' +
     returns.map(function(r) {
       return '<tr>' +
@@ -4170,10 +4248,35 @@ function _renderVATHistoryTab(returns) {
         '<td>'+fmtDate(r.periodStart||r.start||'')+'</td>' +
         '<td>'+fmtDate(r.periodEnd||r.end||'')+'</td>' +
         '<td>'+fmtDate(r.submittedDate||r.submitted||'')+'</td>' +
-        '<td style="text-align:right" class="mono">'+fmt(r.box1||r.outputVAT||0)+'</td>' +
-        '<td style="text-align:right" class="mono">'+fmt(r.box4||r.inputVAT||0)+'</td>' +
-        '<td style="text-align:right" class="mono">'+fmt(r.box5||r.netVAT||0)+'</td>' +
-        '<td>'+badge(r.status||'Draft')+'</td>' +
+        '<td style="text-align:right" class="mono">'+fmt(r.netVAT||r.box5||0)+'</td>' +
+        '<td>'+badge(r.status||'Submitted')+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function _renderObligationsTab() {
+  if (!_vatState.obligations || !_vatState.obligations.length) {
+    return '<div class="empty" style="margin-top:20px">' +
+      '<h3>No obligations loaded</h3><p>Click Load Obligations to fetch from HMRC</p>' +
+      '<button class="btn btn-primary" onclick="loadObligations()">Load Obligations</button></div>';
+  }
+  return _buildObligationsTable(_vatState.obligations);
+}
+
+function _buildObligationsTable(obs) {
+  return '<div class="tbl-wrap" style="margin-top:4px"><table class="dt"><thead><tr>' +
+    '<th>Start</th><th>End</th><th>Due</th><th>Period Key</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    obs.map(function(ob) {
+      var isOpen = ob.status === 'O' || ob.status === 'Open';
+      return '<tr>' +
+        '<td>'+fmtDate(ob.start||ob.periodFrom||'')+'</td>' +
+        '<td>'+fmtDate(ob.end||ob.periodTo||'')+'</td>' +
+        '<td>'+fmtDate(ob.due||ob.dueDate||'')+'</td>' +
+        '<td class="mono" style="font-weight:700">'+(ob.periodKey||'—')+'</td>' +
+        '<td>'+badge(isOpen?'Open':'Fulfilled')+'</td>' +
+        '<td>'+(isOpen?'<button class="btn btn-primary btn-xs" data-key="'+ob.periodKey+'" data-start="'+(ob.start||ob.periodFrom||'')+'" data-end="'+(ob.end||ob.periodTo||'')+'" onclick="usePeriodKeyFromBtn(this)">Use period</button>':'')+'</td>' +
       '</tr>';
     }).join('') +
     '</tbody></table></div>';
@@ -4273,7 +4376,7 @@ async function calcVAT() {
   if (!r || !r.success) {
     if (body) body.innerHTML = '<div class="alert alert-error" style="margin:16px">Could not calculate: '+(r?r.message||r.error:'')+'</div>';
     return;
-}
+  }
   var d = r.data || r;
   _vatState.calculated = d;
   _vatState.calculated.periodStart = start;
