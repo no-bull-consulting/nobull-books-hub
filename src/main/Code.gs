@@ -115,21 +115,11 @@ function _hmrcRedirectPage(code) {
   var dep  = 'AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j';
   var sid  = '1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg';
   var url  = base + dep + '/exec?id=' + sid + '&hmrc_code=' + encodeURIComponent(code);
-  var lines = [];
-  lines.push('<!DOCTYPE html><html><head><title>Connecting...</title>');
-  lines.push('<meta http-equiv="refresh" content="1;url=' + url + '">');
-  lines.push('</head><body>');
-  lines.push('<p style="font-family:sans-serif;padding:40px;color:#14213D">');
-  lines.push('Connected to HMRC! Returning to no~bull books...');
-  lines.push('</p>');
-  lines.push('<p style="font-family:sans-serif;padding:0 40px">');
-  lines.push('<a href="' + url + '">Click here if not redirected</a>');
-  lines.push('</p></body></html>');
-  return HtmlService.createHtmlOutput(lines.join(''))
-    .setTitle('Connecting to HMRC')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return HtmlService.createHtmlOutput(
+    'Connected! Returning to no~bull books... ' +
+    'Click here if not redirected: ' + url
+  ).setTitle('Connecting').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
-
 
 function getDb(params) {
   if (params && params._sheetId) {
