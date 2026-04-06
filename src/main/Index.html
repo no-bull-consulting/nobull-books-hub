@@ -228,7 +228,13 @@
 <script>
 
 const CLIENT_CONTEXT = {
-    sheetId: "<?!= clientSheetId ?>",
+    sheetId: (function() {
+      // Try GAS template value first, fall back to URL param
+      var tplVal = "<?!= clientSheetId ?>";
+      if (tplVal && tplVal.indexOf('<?') === -1) return tplVal;
+      var m = window.location.search.match(/[?&]id=([^&]+)/);
+      return m ? decodeURIComponent(m[1]) : '';
+    })(),
     scriptUrl: "<?!= scriptUrl ?>"
   };
 
@@ -347,6 +353,21 @@ async function boot() {
     showInitWizard();
   } else {
     nbNav('dashboard');
+    // Auto-handle HMRC OAuth redirect
+    var _hmrcCode = new URLSearchParams(window.location.search).get('hmrc_code');
+    if (_hmrcCode) {
+      setTimeout(function() {
+        openHMRCConnectModal && openHMRCConnectModal();
+        setTimeout(function() {
+          var el = document.getElementById('hmrc-code');
+          if (el) {
+            el.value = _hmrcCode;
+            el.style.background = 'var(--green-50)';
+            toast('HMRC authorisation code detected — click Exchange Code to complete connection', 'success', 6000);
+          }
+        }, 300);
+      }, 1000);
+    }
   }
 }
 
@@ -4154,6 +4175,65 @@ var _vatState = {
   obligations:[],     // HMRC obligations
   savedReturns: []    // local saved returns
 };
+
+
+function _vatBox(n, desc, amount, refund, integer) {
+  var display = integer ? Math.round(Math.abs(amount)).toLocaleString() : fmt(Math.abs(amount));
+  var color   = refund ? 'color:var(--green-600)' : '';
+  return '<tr><td class="mono" style="font-weight:700;color:var(--g500)">'+n+'</td>' +
+    '<td style="font-size:13px">'+desc+'</td>' +
+    '<td style="text-align:right;font-weight:700;'+color+'">'+display+'</td></tr>';
+}
+
+function _renderVATHistoryTab(returns) {
+  if (!returns || !returns.length) {
+    return '<div class="empty" style="margin-top:20px"><h3>No submitted returns</h3>' +
+      '<p>Submitted VAT returns will appear here</p></div>';
+  }
+  return '<div class="tbl-wrap" style="margin-top:4px"><table class="dt"><thead><tr>' +
+    '<th>Period</th><th>Start</th><th>End</th><th>Submitted</th>' +
+    '<th style="text-align:right">Net VAT</th><th>Status</th>' +
+    '</tr></thead><tbody>' +
+    returns.map(function(r) {
+      return '<tr>' +
+        '<td class="mono">'+(r.periodKey||'—')+'</td>' +
+        '<td>'+fmtDate(r.periodStart||r.start||'')+'</td>' +
+        '<td>'+fmtDate(r.periodEnd||r.end||'')+'</td>' +
+        '<td>'+fmtDate(r.submittedDate||r.submitted||'')+'</td>' +
+        '<td style="text-align:right" class="mono">'+fmt(r.netVAT||r.box5||0)+'</td>' +
+        '<td>'+badge(r.status||'Submitted')+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function _renderObligationsTab() {
+  if (!_vatState.obligations || !_vatState.obligations.length) {
+    return '<div class="empty" style="margin-top:20px">' +
+      '<h3>No obligations loaded</h3><p>Click Load Obligations to fetch from HMRC</p>' +
+      '<button class="btn btn-primary" onclick="loadObligations()">Load Obligations</button></div>';
+  }
+  return _buildObligationsTable(_vatState.obligations);
+}
+
+function _buildObligationsTable(obs) {
+  return '<div class="tbl-wrap" style="margin-top:4px"><table class="dt"><thead><tr>' +
+    '<th>Start</th><th>End</th><th>Due</th><th>Period Key</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    obs.map(function(ob) {
+      var isOpen = ob.status === 'O' || ob.status === 'Open';
+      return '<tr>' +
+        '<td>'+fmtDate(ob.start||ob.periodFrom||'')+'</td>' +
+        '<td>'+fmtDate(ob.end||ob.periodTo||'')+'</td>' +
+        '<td>'+fmtDate(ob.due||ob.dueDate||'')+'</td>' +
+        '<td class="mono" style="font-weight:700">'+(ob.periodKey||'—')+'</td>' +
+        '<td>'+badge(isOpen?'Open':'Fulfilled')+'</td>' +
+        '<td>'+(isOpen?'<button class="btn btn-primary btn-xs" data-key="'+ob.periodKey+'" data-start="'+(ob.start||ob.periodFrom||'')+'" data-end="'+(ob.end||ob.periodTo||'')+'" onclick="usePeriodKeyFromBtn(this)">Use period</button>':'')+'</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
 async function showVAT() {
   showLoader();
   var s = App.data.settings || {};
@@ -4245,11 +4325,11 @@ async function calcVAT() {
   if (card) card.style.display = '';
   if (body) body.innerHTML = '<div class="loader"><div class="spin"></div></div>';
   var r = await api('calculateVATReturn', { periodStart:start, periodEnd:end });
-  if (!r || !r.success || !r.data) {
+  if (!r || !r.success) {
     if (body) body.innerHTML = '<div class="alert alert-error" style="margin:16px">Could not calculate: '+(r?r.message||r.error:'')+'</div>';
     return;
-}
-  var d = r.data;
+  }
+  var d = r.data || r;
   _vatState.calculated = d;
   _vatState.calculated.periodStart = start;
   _vatState.calculated.periodEnd   = end;
