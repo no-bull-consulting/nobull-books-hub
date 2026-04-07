@@ -265,68 +265,27 @@ function _sendUserInvitation(email, role, invitedBy, settings, params) {
 
     var subject = 'You have been invited to no~bull books — ' + companyName;
 
-    var body =
-      'Hi,
-
-' +
-      'You have been invited to access no~bull books for ' + companyName + '.
-
-' +
-      'Your details:
-' +
-      '  Email:    ' + email + '
-' +
-      '  Role:     ' + role + '
-' +
-      '  Added by: ' + invitedBy + '
-
-' +
-      'HOW TO ACCESS
-' +
-      '─────────────
-' +
-      'no~bull books uses your Google account for secure login.
-
-' +
-      '1. Click the link below to open no~bull books:
-' +
-      '   ' + appUrl + '
-
-' +
-      '2. Sign in with your Google account (' + email + ').
-' +
-      '   If your email is not a Gmail address, you can create a free
-' +
-      '   Google account linked to it at:
-' +
-      '   https://accounts.google.com/signup/v2/createaccount?flowName=GlifWebSignIn&flowEntry=SignUp
-' +
-      '   (Choose "Use my current email address instead" on the signup page)
-
-' +
-      '3. Once signed in, you will have ' + role + ' access to the books.
-
-' +
-      'WHAT IS NO~BULL BOOKS?
-' +
-      '──────────────────────
-' +
-      'no~bull books is a straightforward accounting application for UK businesses.
-' +
-      'Your data is stored securely in Google Sheets — owned by your company,
-' +
-      'not locked into any third-party service.
-
-' +
-      'If you have any questions, please contact ' + invitedBy + '.
-
-' +
-      'Best regards,
-' +
-      'no~bull books
-' +
-      'nobull.consulting
-';
+    var nl   = '\n';
+    var body = 'Hi,' + nl + nl +
+      'You have been invited to access no~bull books for ' + companyName + '.' + nl + nl +
+      'Your details:' + nl +
+      '  Email:    ' + email + nl +
+      '  Role:     ' + role + nl +
+      '  Added by: ' + invitedBy + nl + nl +
+      'HOW TO ACCESS' + nl +
+      'no~bull books uses your Google account for secure login.' + nl + nl +
+      '1. Click the link below to open no~bull books:' + nl +
+      '   ' + appUrl + nl + nl +
+      '2. Sign in with your Google account (' + email + ').' + nl +
+      '   If your email is not a Gmail address, you can create a free' + nl +
+      '   Google account linked to it at:' + nl +
+      '   https://accounts.google.com/signup/v2/createaccount' + nl +
+      '   (Choose "Use my current email address instead" on the signup page)' + nl + nl +
+      '3. Once signed in, you will have ' + role + ' access to the books.' + nl + nl +
+      'If you have any questions, please contact ' + invitedBy + '.' + nl + nl +
+      'Best regards,' + nl +
+      'no~bull books' + nl +
+      'nobull.consulting' + nl;
 
     var htmlBody =
       '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto">' +
