@@ -248,6 +248,129 @@ function getAllUsers(params) {
  * action: 'add' | 'update' | 'deactivate'
  * Requires users.manage (Owner only per ROLE_PERMISSIONS).
  */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER INVITATION EMAIL
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * _sendUserInvitation(email, role, invitedBy, settings, params)
+ * Sends a friendly welcome email to a newly added user.
+ */
+function _sendUserInvitation(email, role, invitedBy, settings, params) {
+  try {
+    var companyName = (settings && settings.companyName) ? settings.companyName : 'your company';
+    var sheetId     = params && params._sheetId ? params._sheetId : '';
+    var appUrl      = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=' + sheetId;
+
+    var subject = 'You have been invited to no~bull books — ' + companyName;
+
+    var body =
+      'Hi,
+
+' +
+      'You have been invited to access no~bull books for ' + companyName + '.
+
+' +
+      'Your details:
+' +
+      '  Email:    ' + email + '
+' +
+      '  Role:     ' + role + '
+' +
+      '  Added by: ' + invitedBy + '
+
+' +
+      'HOW TO ACCESS
+' +
+      '─────────────
+' +
+      'no~bull books uses your Google account for secure login.
+
+' +
+      '1. Click the link below to open no~bull books:
+' +
+      '   ' + appUrl + '
+
+' +
+      '2. Sign in with your Google account (' + email + ').
+' +
+      '   If your email is not a Gmail address, you can create a free
+' +
+      '   Google account linked to it at:
+' +
+      '   https://accounts.google.com/signup/v2/createaccount?flowName=GlifWebSignIn&flowEntry=SignUp
+' +
+      '   (Choose "Use my current email address instead" on the signup page)
+
+' +
+      '3. Once signed in, you will have ' + role + ' access to the books.
+
+' +
+      'WHAT IS NO~BULL BOOKS?
+' +
+      '──────────────────────
+' +
+      'no~bull books is a straightforward accounting application for UK businesses.
+' +
+      'Your data is stored securely in Google Sheets — owned by your company,
+' +
+      'not locked into any third-party service.
+
+' +
+      'If you have any questions, please contact ' + invitedBy + '.
+
+' +
+      'Best regards,
+' +
+      'no~bull books
+' +
+      'nobull.consulting
+';
+
+    var htmlBody =
+      '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto">' +
+      '<div style="background:#14213D;padding:24px 32px;border-radius:8px 8px 0 0">' +
+        '<p style="color:#fff;font-size:20px;margin:0">🐂 <strong>no~bull</strong> <span style="color:#14A8AE">books</span></p>' +
+      '</div>' +
+      '<div style="background:#fff;border:1px solid #e2e8f0;border-top:none;padding:32px;border-radius:0 0 8px 8px">' +
+        '<h2 style="color:#14213D;margin:0 0 8px">You have been invited!</h2>' +
+        '<p style="color:#64748b;margin:0 0 24px">You now have access to <strong>' + companyName + '</strong> on no~bull books.</p>' +
+        '<table style="width:100%;border-collapse:collapse;margin-bottom:24px">' +
+          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D;width:120px">Email</td>' +
+              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + email + '</td></tr>' +
+          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D">Role</td>' +
+              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + role + '</td></tr>' +
+          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D">Invited by</td>' +
+              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + invitedBy + '</td></tr>' +
+        '</table>' +
+        '<a href="' + appUrl + '" style="display:inline-block;background:#0D7377;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;margin-bottom:28px">Open no~bull books →</a>' +
+        '<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">' +
+        '<h3 style="color:#14213D;margin:0 0 12px;font-size:15px">How to sign in</h3>' +
+        '<p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 12px">' +
+          'no~bull books uses your <strong>Google account</strong> for secure login. Simply click the button above and sign in with <strong>' + email + '</strong>.' +
+        '</p>' +
+        '<p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 24px">' +
+          'If your email is not a Gmail address, you can create a free Google account linked to it. On the Google sign-in page, click <em>"Create account"</em> and choose <em>"Use my current email address instead"</em>.' +
+        '</p>' +
+        '<p style="color:#94a3b8;font-size:12px;margin:0">This invitation was sent by ' + invitedBy + ' · <a href="https://nobull.consulting" style="color:#0D7377">nobull.consulting</a></p>' +
+      '</div>' +
+      '</div>';
+
+    MailApp.sendEmail({
+      to:       email,
+      subject:  subject,
+      body:     body,
+      htmlBody: htmlBody
+    });
+
+    Logger.log('Invitation sent to: ' + email);
+  } catch(e) {
+    Logger.log('_sendUserInvitation error: ' + e.toString());
+    // Non-fatal — user is still added even if email fails
+  }
+}
+
 function manageUser(action, email, role, notes, params) {
   try {
     _auth('users.manage', params);
@@ -285,9 +408,13 @@ function manageUser(action, email, role, notes, params) {
       if (validRoles.indexOf(role) === -1) throw new Error('Invalid role: ' + role);
       sheet.appendRow([email, role, ctx.email, new Date(), true, notes || '']);
       logAudit('ADD_USER', 'User', email, { role: role, addedBy: ctx.email });
+      // Send invitation email to new user
+      var settings = getSettings(params || {});
+      _sendUserInvitation(email, role, ctx.email, settings, params);
+      // Alert the owner
       _sendAlert('User account added',
         'New user added to no~bull books.\nEmail: ' + email + '\nRole: ' + role + '\nAdded by: ' + ctx.email);
-      return { success: true, message: 'User ' + email + ' added as ' + role };
+      return { success: true, message: 'User ' + email + ' added as ' + role + '. Invitation email sent.' };
     }
 
     if (existingRow < 0) return { success: false, message: 'User not found: ' + email };
