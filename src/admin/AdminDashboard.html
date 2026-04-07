@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>no~bull Admin Console</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#1e293b;font-size:14px}
+.header{background:#14213D;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.header h1{font-size:17px;margin:0;font-weight:600}.header span{color:#14A8AE}
+.header-right{margin-left:auto;display:flex;gap:16px;align-items:center}
+.header-right a{color:rgba(255,255,255,0.7);font-size:12px;text-decoration:none}
+.header-right a:hover{color:#fff}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px 0}
+.stat{background:#fff;border-radius:8px;padding:16px 20px;border:1px solid #e2e8f0;border-left:3px solid #0D7377}
+.stat-val{font-size:28px;font-weight:700;color:#14213D;line-height:1}
+.stat-lbl{font-size:11px;color:#64748b;margin-top:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
+.section{padding:20px 24px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-hdr h2{font-size:14px;font-weight:700;color:#14213D;text-transform:uppercase;letter-spacing:0.06em}
+.card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse}
+th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e2e8f0}
+td{padding:12px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafcff}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.04em}
+.badge-active{background:#dcfce7;color:#166534}
+.badge-trial{background:#dbeafe;color:#1e40af}
+.badge-suspended{background:#fee2e2;color:#991b1b}
+.badge-cancelled{background:#f1f5f9;color:#475569}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all 0.15s}
+.btn-primary{background:#0D7377;color:#fff}.btn-primary:hover{background:#14A8AE}
+.btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.btn-secondary:hover{background:#e2e8f0}
+.btn-danger{background:#fee2e2;color:#991b1b}.btn-danger:hover{background:#fecaca}
+.btn-sm{padding:4px 10px;font-size:11px}
+.actions{display:flex;gap:6px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:0;width:540px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.modal-hdr{background:#14213D;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.modal-hdr h3{font-size:15px;margin:0;color:#fff}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:20px;padding:0;line-height:1}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
+.form-input,.form-select{width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;color:#1e293b}
+.form-input:focus,.form-select:focus{outline:none;border-color:#0D7377;box-shadow:0 0 0 3px rgba(13,115,119,.1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.info-item{background:#f8fafc;border-radius:6px;padding:10px 12px}
+.info-item label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:3px}
+.info-item span{font-size:13px;color:#1e293b;font-weight:500}
+.divider{border:none;border-top:1px solid #f1f5f9;margin:16px 0}
+.toast{position:fixed;bottom:24px;right:24px;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:20px">🐂</span>
+  <h1>no~bull <span>Admin Console</span></h1>
+  <div class="header-right">
+    <span id="clock" style="font-size:11px;opacity:0.6"></span>
+    <a href="#" onclick="loadData()">↻ Refresh</a>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Clients</div></div>
+  <div class="stat" style="border-left-color:#166534"><div class="stat-val" id="s-active" style="color:#166534">—</div><div class="stat-lbl">Active</div></div>
+  <div class="stat" style="border-left-color:#1e40af"><div class="stat-val" id="s-trial" style="color:#1e40af">—</div><div class="stat-lbl">Trial</div></div>
+  <div class="stat" style="border-left-color:#991b1b"><div class="stat-val" id="s-suspended" style="color:#991b1b">—</div><div class="stat-lbl">Suspended</div></div>
+  <div class="stat" style="border-left-color:#d97706"><div class="stat-val" id="s-mrr" style="color:#d97706">—</div><div class="stat-lbl">Est. MRR</div></div>
+</div>
+
+<div class="section">
+  <div class="section-hdr">
+    <h2>Client Instances</h2>
+    <button class="btn btn-primary btn-sm" onclick="openAddClient()">+ Add Client</button>
+  </div>
+  <div class="card">
+    <table id="client-table">
+      <thead><tr>
+        <th>Company</th><th>Email</th><th>Plan</th><th>Status</th>
+        <th>Last Seen</th><th>Version</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="client-tbody"><tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="modal-title">Edit Client</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="instance-info"></div>
+      <hr class="divider">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="edit-status">
+            <option>Active</option><option>Trial</option>
+            <option>Suspended</option><option>Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plan</label>
+          <select class="form-select" id="edit-plan">
+            <option>Trial</option><option>Solo</option>
+            <option>Small Business</option><option>Accountant</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="edit-notes" placeholder="Internal notes...">
+      </div>
+      <input type="hidden" id="edit-registry-id">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="suspendClient()" style="margin-right:auto" id="suspend-btn">Suspend</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var _clients = [];
+
+function showToast(msg, ok) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok === false ? '#991b1b' : '#14213D';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function badge(status) {
+  var cls = {Active:'active',Trial:'trial',Suspended:'suspended',Cancelled:'cancelled'}[status]||'cancelled';
+  return '<span class="badge badge-' + cls + '">' + (status||'—') + '</span>';
+}
+
+function loadData() {
+  google.script.run
+    .withSuccessHandler(function(r) {
+      _clients = (r && r.clients) || [];
+      renderStats(_clients);
+      renderTable(_clients);
+    })
+    .withFailureHandler(function(e){ showToast('Load error: ' + e, false); })
+    .handleAdminCall('getAllRegistryClients', {});
+}
+
+function renderStats(clients) {
+  document.getElementById('s-total').textContent     = clients.length;
+  document.getElementById('s-active').textContent    = clients.filter(function(c){return c.status==='Active';}).length;
+  document.getElementById('s-trial').textContent     = clients.filter(function(c){return c.status==='Trial';}).length;
+  document.getElementById('s-suspended').textContent = clients.filter(function(c){return c.status==='Suspended';}).length;
+  var mrr = clients.filter(function(c){return c.status==='Active';}).reduce(function(s,c){
+    return s + ({'Solo':12,'Small Business':24,'Accountant':49}[c.plan]||0);
+  }, 0);
+  document.getElementById('s-mrr').textContent = mrr ? '£'+mrr : '—';
+}
+
+function renderTable(clients) {
+  var tbody = document.getElementById('client-tbody');
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">No clients registered</td></tr>';
+    return;
+  }
+  tbody.innerHTML = clients.map(function(c, i) {
+    return '<tr>' +
+      '<td><strong>' + (c.companyName||'—') + '</strong>' +
+        (c.vatNumber ? '<br><span style="font-size:11px;color:#94a3b8">VAT: ' + c.vatNumber + '</span>' : '') +
+      '</td>' +
+      '<td>' + (c.contactEmail||'—') + '</td>' +
+      '<td>' + (c.plan||'—') + '</td>' +
+      '<td>' + badge(c.status) + '</td>' +
+      '<td>' + (c.lastSeen ? c.lastSeen.substring(0,10) : '—') + '</td>' +
+      '<td><span style="font-size:11px;color:#94a3b8">' + (c.version||'—') + '</span></td>' +
+      '<td><div class="actions">' +
+        '<button class="btn btn-secondary btn-sm" onclick="openEdit(' + i + ')">Edit</button>' +
+        (c.appLink ? '<a href="' + c.appLink + '" target="_blank" class="btn btn-primary btn-sm">Open →</a>' : '') +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function openEdit(idx) {
+  var c = _clients[idx];
+  document.getElementById('modal-title').textContent = 'Edit — ' + (c.companyName||'Client');
+  document.getElementById('edit-registry-id').value = c.registryId || '';
+  document.getElementById('edit-status').value = c.status || 'Active';
+  document.getElementById('edit-plan').value   = c.plan   || 'Trial';
+  document.getElementById('edit-notes').value  = c.notes  || '';
+  document.getElementById('suspend-btn').style.display = c.status === 'Suspended' ? 'none' : '';
+
+  // Instance info panel
+  var info = '<div class="info-grid">' +
+    _infoItem('Registry ID', c.registryId||'—') +
+    _infoItem('Sheet ID', c.sheetId ? c.sheetId.substring(0,12)+'...' : '—') +
+    _infoItem('Created', c.createdDate||'—') +
+    _infoItem('Last seen by', c.lastSeenBy||'—') +
+    _infoItem('Invoices', c.invoiceCount||'0') +
+    _infoItem('Clients', c.clientCount||'0') +
+    _infoItem('Bills', c.billCount||'0') +
+    _infoItem('Country', c.country||'UK') +
+  '</div>';
+  document.getElementById('instance-info').innerHTML = info;
+
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function _infoItem(label, val) {
+  return '<div class="info-item"><label>' + label + '</label><span>' + val + '</span></div>';
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+function saveEdit() {
+  var id     = document.getElementById('edit-registry-id').value;
+  var status = document.getElementById('edit-status').value;
+  var plan   = document.getElementById('edit-plan').value;
+  var notes  = document.getElementById('edit-notes').value;
+
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r && r.success) {
+        showToast('Saved ✓', true);
+        closeModal();
+        loadData();
+      } else {
+        showToast('Error: ' + (r ? r.message : 'unknown'), false);
+      }
+    })
+    .withFailureHandler(function(e){ showToast('Error: ' + e, false); })
+    .handleAdminCall('updateRegistryClient', { registryId: id, status: status, plan: plan, notes: notes });
+}
+
+function suspendClient() {
+  if (!confirm('Suspend this client? They will lose access to the app.')) return;
+  var id = document.getElementById('edit-registry-id').value;
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r && r.success) {
+        showToast('Client suspended', true);
+        closeModal();
+        loadData();
+      } else {
+        showToast('Error: ' + (r ? r.message : 'unknown'), false);
+      }
+    })
+    .handleAdminCall('updateRegistryClient', { registryId: id, status: 'Suspended' });
+}
+
+function openAddClient() {
+  showToast('Use registerClient() in the GAS editor to add clients', true);
+}
+
+// Clock
+setInterval(function(){
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB');
+}, 1000);
+
+// Load on start
+loadData();
+</script>
+</body>
+</html>

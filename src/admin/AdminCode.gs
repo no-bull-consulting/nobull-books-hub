@@ -43,7 +43,7 @@ function doGet(e) {
   }
 
   // Admin dashboard UI
-  return HtmlService.createHtmlOutput(_adminDashboardHtml())
+  return HtmlService.createHtmlOutputFromFile('AdminDashboard')
     .setTitle('no~bull Admin Console')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -105,63 +105,30 @@ function _adminRoute(action, params) {
 // ADMIN DASHBOARD HTML
 // ─────────────────────────────────────────────────────────────────────────────
 
-function _adminDashboardHtml() {
-  var clients = [];
-  try {
-    var r = getAllRegistryClients({});
-    clients = r.clients || [];
-  } catch(e) { Logger.log('Dashboard load error: ' + e); }
 
-  var active    = clients.filter(function(c){ return c.status === 'Active'; }).length;
-  var trial     = clients.filter(function(c){ return c.status === 'Trial'; }).length;
-  var suspended = clients.filter(function(c){ return c.status === 'Suspended'; }).length;
-
-  var rows = clients.map(function(c) {
-    return '<tr>' +
-      '<td>' + (c.companyName||'—') + '</td>' +
-      '<td>' + (c.contactEmail||'—') + '</td>' +
-      '<td>' + (c.plan||'—') + '</td>' +
-      '<td><span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:' +
-        (c.status==='Active'?'#dcfce7;color:#166534':c.status==='Trial'?'#dbeafe;color:#1e40af':'#fee2e2;color:#991b1b') +
-        '">' + (c.status||'—') + '</span></td>' +
-      '<td>' + (c.lastSeen ? c.lastSeen.substring(0,10) : '—') + '</td>' +
-      '<td><a href="' + (c.appLink||'#') + '" target="_blank" style="color:#0D7377">Open</a></td>' +
-    '</tr>';
-  }).join('');
-
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
-    '<title>no~bull Admin Console</title>' +
-    '<style>' +
-    'body{font-family:-apple-system,sans-serif;background:#f8fafc;margin:0;padding:0}' +
-    '.header{background:#14213D;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:12px}' +
-    '.header h1{font-size:18px;margin:0}.header span{color:#14A8AE}' +
-    '.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px}' +
-    '.stat{background:#fff;border-radius:8px;padding:20px;border:1px solid #e2e8f0}' +
-    '.stat-val{font-size:32px;font-weight:700;color:#14213D}.stat-lbl{font-size:12px;color:#64748b;margin-top:4px}' +
-    '.section{padding:0 32px 32px}' +
-    'table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}' +
-    'th{background:#14213D;color:#fff;padding:10px 14px;text-align:left;font-size:12px}' +
-    'td{padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:13px}' +
-    'tr:hover td{background:#f8fafc}' +
-    '</style></head><body>' +
-    '<div class="header"><h1>🐂 no~bull <span>Admin Console</span></h1><span style="margin-left:auto;font-size:12px;opacity:0.6">v' + ADMIN_VERSION + '</span></div>' +
-    '<div class="stats">' +
-      '<div class="stat"><div class="stat-val">' + clients.length + '</div><div class="stat-lbl">Total clients</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:#166534">' + active + '</div><div class="stat-lbl">Active</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:#1e40af">' + trial + '</div><div class="stat-lbl">Trial</div></div>' +
-      '<div class="stat"><div class="stat-val" style="color:#991b1b">' + suspended + '</div><div class="stat-lbl">Suspended</div></div>' +
-    '</div>' +
-    '<div class="section">' +
-      '<table><thead><tr><th>Company</th><th>Email</th><th>Plan</th><th>Status</th><th>Last Seen</th><th></th></tr></thead>' +
-      '<tbody>' + (rows || '<tr><td colspan="6" style="text-align:center;color:#94a3b8">No clients registered</td></tr>') + '</tbody>' +
-      '</table>' +
-    '</div>' +
-    '</body></html>';
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SETUP HELPERS — run once from editor
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FRONTEND BRIDGE — called via google.script.run from AdminDashboard.html
+// ─────────────────────────────────────────────────────────────────────────────
+
+function handleAdminCall(action, params) {
+  try {
+    // Verify caller is owner
+    var email = Session.getActiveUser().getEmail();
+    if (email.toLowerCase() !== 'edward@nobull.consulting') {
+      return { success: false, error: 'Unauthorised' };
+    }
+    return _adminRoute(action, params || {});
+  } catch(e) {
+    Logger.log('handleAdminCall error: ' + e.toString());
+    return { success: false, error: e.toString() };
+  }
+}
 
 function _setupAdminSecret() {
   var secret = Utilities.base64Encode(
