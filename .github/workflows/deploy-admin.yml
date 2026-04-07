@@ -1,0 +1,31 @@
+name: Deploy Admin Console
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/admin/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install clasp
+        run: npm install -g @google/clasp
+
+      - name: Authenticate clasp
+        run: |
+          echo '${{ secrets.CLASP_TOKEN }}' > ~/.clasprc.json
+
+      - name: Push Admin Console to GAS
+        run: |
+          cd src/admin
+          clasp push --force
