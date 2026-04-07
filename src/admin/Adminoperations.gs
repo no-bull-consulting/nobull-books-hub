@@ -7,10 +7,14 @@
 // HEALTH MONITORING
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Sheet names must exactly match SHEETS constants in Config.gs
 var REQUIRED_SHEETS = [
-  'Settings','Clients','Suppliers','Invoices','Bills','BillLines','InvoiceLines',
-  'Transactions','BankAccounts','BankTransactions','COA','Users','AuditLog',
-  'VATReturns','InvoiceFiles','BillFiles','CreditNotes','PurchaseOrders'
+  'Settings','Clients','Suppliers','Invoices','InvoiceLines',
+  'Bills','BillLines','Transactions',
+  'BankAccounts','BankTransactions',
+  'ChartOfAccounts','Users','AuditLog',
+  'VATReturns','InvoiceFiles','BillFiles',
+  'CreditNotes','PurchaseOrders'
 ];
 
 function checkClientHealth(params) {
@@ -240,10 +244,27 @@ function runClientMaintenance(params) {
     var actions = [];
 
     // Check and create missing sheets
+    var AUDIT_HEADERS = ['AuditId','Timestamp','Action','Entity','EntityId','User','Detail'];
     REQUIRED_SHEETS.forEach(function(name) {
       if (!ss.getSheetByName(name)) {
-        ss.insertSheet(name);
+        var newSheet = ss.insertSheet(name);
+        if (name === 'AuditLog') {
+          newSheet.getRange(1, 1, 1, AUDIT_HEADERS.length).setValues([AUDIT_HEADERS]);
+        }
         actions.push('Created missing sheet: ' + name);
+      } else if (name === 'AuditLog') {
+        // Fix existing AuditLog with no headers
+        var auditTab = ss.getSheetByName('AuditLog');
+        var firstCell = auditTab.getLastRow() >= 1 ? auditTab.getRange(1,1).getValue().toString().trim() : '';
+        if (!firstCell || firstCell !== 'AuditId') {
+          if (auditTab.getLastRow() === 0) {
+            auditTab.getRange(1, 1, 1, AUDIT_HEADERS.length).setValues([AUDIT_HEADERS]);
+          } else {
+            auditTab.insertRowBefore(1);
+            auditTab.getRange(1, 1, 1, AUDIT_HEADERS.length).setValues([AUDIT_HEADERS]);
+          }
+          actions.push('Added headers to AuditLog');
+        }
       }
     });
 

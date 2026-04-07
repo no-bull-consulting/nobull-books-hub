@@ -14,9 +14,10 @@ var API_VERSION = '2.0';
 function handleApiCall(action, paramsJson) {
   try {
     var params = JSON.parse(paramsJson || '{}');
-    Logger.log('handleApiCall: action=' + action + ' params=' + paramsJson);
-    var ctx = _getCurrentUserContext(params);
+    var ctx    = _getCurrentUserContext(params);
+
     if (action === 'askGemini') return handleGeminiRequest(params, ctx);
+
     var result = _route(action, params, ctx);
     return JSON.parse(JSON.stringify(result));
   } catch(e) {
@@ -177,8 +178,8 @@ function _route(action, params, ctx) {
     case 'getReconciliationSummary':    return getReconciliationSummary(params.accountId, params);
     case 'reconcileTransaction':        _auth('banking.reconcile', params); return reconcileTransaction(params.transactionId, params.allocations, params);
     case 'createReconAdjustment':       _auth('banking.write', params); return createReconAdjustment(params);
-    case 'spendMoney':                  _auth('banking.reconcile', params); return spendMoney(params);
-    case 'receiveMoney':                _auth('banking.reconcile', params); return receiveMoney(params);
+    case 'spendMoney':                  _auth('banking.reconcile', params); return spendMoney(params, params);
+    case 'receiveMoney':                _auth('banking.reconcile', params); return receiveMoney(params, params);
     case 'transferMoney':               _auth('banking.reconcile', params); return transferMoney(params, params);
     case 'importBankStatement':         _auth('banking.reconcile', params); return importBankStatement(params.accountId, params.csvData, params);
     case 'getUnallocatedInvoices':      return getUnallocatedInvoices(params.clientId, params);
@@ -206,13 +207,16 @@ function _route(action, params, ctx) {
     case 'getExchangeRates':     return getExchangeRates(params);
 
     // ── VAT / MTD ─────────────────────────────────────────────────────────────
-    case 'calculateVATReturn': return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
+    case 'calculateVATReturn':  Logger.log('ROUTE calculateVATReturn _sheetId=' + params._sheetId + ' keys=' + Object.keys(params).join(',')); return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
     case 'saveVATReturn':       _auth('reports.tax', params); return saveVATReturn(params);
     case 'getVATReturns':       _auth('reports.tax', params); return getVATReturns(params);
-    case 'getVATObligations': return getVATObligations(params.vrn||((getSettings(params).vatRegNumber)||'').replace(/[^0-9]/g,''), params.fromDate, params.toDate, params);
-    case 'submitVATReturn':     _auth('mtd.submit', params);  return submitVATReturn(params.vrn, params.periodKey, params);
-    case 'getVATLiabilities':   _auth('reports.tax', params); return getVATLiabilities(params.vrn, params.fromDate, params.toDate, params);
-    case 'getVATPayments':      _auth('reports.tax', params); return getVATPayments(params.vrn, params.fromDate, params.toDate, params);
+    case 'getVATObligations': {
+      var _vrn = params.vrn || (function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })();
+      return getVATObligations(_vrn, params.fromDate, params.toDate, params);
+    }
+    case 'submitVATReturn':     { var _v1=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return submitVATReturn(_v1, params.periodKey, params); }
+    case 'getVATLiabilities':   { var _v2=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATLiabilities(_v2, params.fromDate, params.toDate, params); }
+    case 'getVATPayments':      { var _v3=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATPayments(_v3, params.fromDate, params.toDate, params); }
     case 'getHMRCAuthStatus':   return getHMRCAuthStatus(params);
     case 'getHMRCAuthUrl':      return getHMRCManualAuthUrl(params);
     case 'exchangeHMRCCode':    _auth('credentials.manage', params); return exchangeHMRCCode(params.code, params);
@@ -234,6 +238,9 @@ function _route(action, params, ctx) {
     // ── FINANCIAL YEAR ────────────────────────────────────────────────────────
     case 'getFinancialYears':       return getFinancialYears(params);
     case 'runPreCloseChecks':       _auth('settings.write', params); return runPreCloseChecks(params.yearEndDate, params);
+    case 'calculateCT600':         return calculateCT600(params);
+    case 'saveCT600Draft':          return saveCT600Draft(params);
+    case 'getCT600Returns':         return getCT600Returns(params);
     case 'getYearEndSummary':       _auth('settings.write', params); return getYearEndSummary(params.yearStart, params.yearEnd, params);
     case 'closeFinancialYear':      _auth('settings.write', params); return closeFinancialYear(params);
     case 'reopenFinancialYear':     _auth('settings.write', params); return reopenFinancialYear(params.yearId, params.reason, params);

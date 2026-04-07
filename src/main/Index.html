@@ -142,6 +142,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           SA103 / Self Assessment
         </button>
+        <button class="nav-dd-item" onclick="navClose('ct600')" data-page="ct600">
+          <span class="nav-icon">🏢</span><span>Corporation Tax CT600</span>
+        </button>
         <button class="nav-dd-item" onclick="navClose('yearEnd')" data-page="yearEnd">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Year End Close
@@ -606,7 +609,7 @@ function nbNav(page, params) {
     purchaseOrders:'Purchase Orders', badDebts:'Bad Debts',
     banking:'Bank Accounts', reconciliation:'Reconciliation',
     chartOfAccounts:'Chart of Accounts', reports:'Reports',
-    vat:'VAT / MTD', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
+    vat:'VAT / MTD', ct600:'Corporation Tax CT600', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
     resources:'Resources', aiAssistant:'AI Assistant', maintenance:'Maintenance', security:'Security & Audit',
     settings:'Settings', users:'Users'
 };
@@ -617,7 +620,7 @@ function nbNav(page, params) {
     purchaseOrders:showPOs, badDebts:showBadDebts,
     banking:showBanking, reconciliation:showReconciliation,
     chartOfAccounts:showCOA, reports:showReports, adminPanel:showAdminPanel, agedDebtors:showAgedDebtors, agedCreditors:showAgedCreditors,
-    vat:showVAT, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
+    vat:showVAT, ct600:showCT600, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
     resources:showResources, aiAssistant:showAIAssistant, maintenance:showMaintenance, security:showSecurity,
     settings:showSettings, users:showUsers
 };
@@ -4280,6 +4283,244 @@ function _buildObligationsTable(obs) {
       '</tr>';
     }).join('') +
     '</tbody></table></div>';
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORPORATION TAX CT600
+// ─────────────────────────────────────────────────────────────────────────────
+
+var _ct600State = { calculated: null, returns: [] };
+
+async function showCT600() {
+  showLoader();
+  var s       = App.data.settings || {};
+  var retsR   = await api('getCT600Returns');
+  _ct600State.returns = (retsR && retsR.success) ? retsR.returns || [] : [];
+
+  var now        = new Date();
+  var fyEnd      = s.financialYearEnd || '31 March';
+  var yearEnd    = _ct600FYEnd(now, fyEnd);
+  var yearStart  = new Date(yearEnd);
+  yearStart.setFullYear(yearStart.getFullYear() - 1);
+  yearStart.setDate(yearStart.getDate() + 1);
+
+  var pyEnd   = new Date(yearEnd);
+  pyEnd.setFullYear(pyEnd.getFullYear() - 1);
+  var pyStart = new Date(pyEnd);
+  pyStart.setFullYear(pyStart.getFullYear() - 1);
+  pyStart.setDate(pyStart.getDate() + 1);
+
+  var html =
+    '<div class="page-hdr">' +
+      '<div><div class="page-title">Corporation Tax — CT600</div>' +
+      '<div class="page-sub">Draft computation for accountant review · Not a direct HMRC submission</div></div>' +
+      '<div class="page-actions">' +
+        '<button class="btn btn-secondary btn-sm" onclick="showCT600()">🔄 Refresh</button>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">' +
+
+    // Calculate card
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Calculate CT600</span></div><div class="card-body">' +
+      '<div class="form-grid-2">' +
+        '<div class="form-group"><label class="form-label">Period Start *</label>' +
+          '<input type="date" class="form-input" id="ct-start" value="' + yearStart.toISOString().split('T')[0] + '"></div>' +
+        '<div class="form-group"><label class="form-label">Period End *</label>' +
+          '<input type="date" class="form-input" id="ct-end" value="' + yearEnd.toISOString().split('T')[0] + '"></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label" style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer">' +
+          '<input type="checkbox" id="ct-prior" checked style="width:16px;height:16px"> Include prior year comparison' +
+        '</label>' +
+      '</div>' +
+      '<button class="btn btn-primary" onclick="calcCT600()">Calculate</button>' +
+    '</div></div>' +
+
+    // Company details card
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Company Details</span></div><div class="card-body">' +
+      '<div class="form-group"><label class="form-label">Company Name</label>' +
+        '<input type="text" class="form-input" id="ct-company" value="' + (s.companyName||'') + '"></div>' +
+      '<div class="form-grid-2">' +
+        '<div class="form-group"><label class="form-label">Company Number</label>' +
+          '<input type="text" class="form-input" id="ct-regnum" value="' + (s.companyNumber||'') + '" placeholder="e.g. 12345678"></div>' +
+        '<div class="form-group"><label class="form-label">UTR</label>' +
+          '<input type="text" class="form-input" id="ct-utr" value="' + (s.utr||'') + '" placeholder="10 digit UTR"></div>' +
+      '</div>' +
+    '</div></div>' +
+    '</div>' +
+
+    // Result
+    '<div id="ct600-result"></div>' +
+
+    // History
+    '<div style="margin-top:20px"><div class="card-hdr" style="background:#fff;border-radius:var(--r8) var(--r8) 0 0;border:1px solid var(--g200);border-bottom:none;padding:12px 16px">' +
+      '<span class="card-ttl">Saved Drafts</span></div>' +
+      _renderCT600History(_ct600State.returns) +
+    '</div>';
+
+  showContent(html);
+}
+
+function _ct600FYEnd(now, fyEndSetting) {
+  // Parse financial year end setting like "31 March" or "31 December"
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var parts  = (fyEndSetting||'31 March').split(' ');
+  var day    = parseInt(parts[0]) || 31;
+  var month  = months.indexOf(parts[1]);
+  if (month < 0) month = 2; // default March
+  var year   = now.getFullYear();
+  var fyEnd  = new Date(year, month, day);
+  if (fyEnd > now) fyEnd.setFullYear(year - 1);
+  return fyEnd;
+}
+
+function _renderCT600History(returns) {
+  if (!returns || !returns.length) {
+    return '<div class="tbl-wrap"><table class="dt"><thead><tr><th>Period</th><th>Turnover</th><th>Taxable Profit</th><th>Tax Due</th><th>Rate</th><th>Status</th><th></th></tr></thead>' +
+      '<tbody><tr><td colspan="7" class="tbl-empty">No CT600 drafts saved yet</td></tr></tbody></table></div>';
+  }
+  return '<div class="tbl-wrap"><table class="dt"><thead><tr>' +
+    '<th>Period</th><th style="text-align:right">Turnover</th><th style="text-align:right">Taxable Profit</th>' +
+    '<th style="text-align:right">Tax Due</th><th>Rate</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    returns.map(function(r) {
+      return '<tr>' +
+        '<td>' + fmtDate(r.periodStart) + ' – ' + fmtDate(r.periodEnd) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box30_turnover) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box155_chargeable) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box440_taxPayable) + '</td>' +
+        '<td style="font-size:12px;color:var(--g500)">' + (r.rateApplied||'—') + '</td>' +
+        '<td>' + badge(r.status) + '</td>' +
+        '<td><button class="btn btn-ghost btn-sm" onclick="viewCT600Draft(this)" data-id="' + r.returnId + '">View</button></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+async function calcCT600() {
+  var start   = document.getElementById('ct-start').value;
+  var end     = document.getElementById('ct-end').value;
+  var prior   = document.getElementById('ct-prior').checked;
+  var company = document.getElementById('ct-company').value;
+  var regnum  = document.getElementById('ct-regnum').value;
+  var utr     = document.getElementById('ct-utr').value;
+
+  if (!start || !end) { toast('Select the accounting period', 'warning'); return; }
+
+  var res = document.getElementById('ct600-result');
+  if (res) res.innerHTML = '<div class="loader"><div class="spin"></div><span>Calculating...</span></div>';
+
+  var r = await api('calculateCT600', {
+    periodStart:      start,
+    periodEnd:        end,
+    includePriorYear: prior,
+    companyName:      company,
+    companyNumber:    regnum,
+    utr:              utr
+  });
+
+  if (!r || !r.success) {
+    if (res) res.innerHTML = '<div class="alert alert-error">Could not calculate: ' + (r?r.message:'unknown') + '</div>';
+    return;
+  }
+
+  _ct600State.calculated = r.ct600;
+  if (res) res.innerHTML = _renderCT600Result(r.ct600);
+}
+
+function _renderCT600Result(d) {
+  var py   = d.priorYear;
+  var cols = py ? 'grid-template-columns:1fr 1fr' : 'grid-template-columns:1fr';
+
+  function row(label, curr, prior, money, highlight) {
+    var style = highlight ? 'font-weight:700;background:var(--blue-50)' : '';
+    var curr2 = money ? fmt(curr) : curr;
+    var prior2 = prior !== undefined ? (money ? fmt(prior) : prior) : '';
+    return '<tr style="' + style + '"><td style="font-size:13px">' + label + '</td>' +
+      '<td style="text-align:right;' + (money?'font-family:monospace':'') + '">' + curr2 + '</td>' +
+      (py ? '<td style="text-align:right;color:var(--g400);' + (money?'font-family:monospace':'') + '">' + prior2 + '</td>' : '') +
+      '</tr>';
+  }
+
+  return '<div class="card" style="margin-top:4px">' +
+    '<div class="card-hdr" style="background:var(--navy)">' +
+      '<span class="card-ttl" style="color:#fff">CT600 Draft — ' + d.periodStart + ' to ' + d.periodEnd + '</span>' +
+      '<span style="color:rgba(255,255,255,0.6);font-size:12px">Draft only · For accountant review</span>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<table class="dt" style="margin-bottom:20px">' +
+        '<thead><tr>' +
+          '<th>Description</th>' +
+          '<th style="text-align:right">Current Year</th>' +
+          (py ? '<th style="text-align:right;color:var(--g400)">Prior Year</th>' : '') +
+        '</tr></thead><tbody>' +
+
+        // Profit & Loss summary
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">Trading Account</td></tr>' +
+        row('Box 30 — Turnover', d.box30_turnover, py&&py.box30_turnover, true) +
+        row('Less: Total expenses', d.totalExpenses, py&&py.totalExpenses, true) +
+        row('Net profit per accounts', d.box35_tradingProfit, py&&py.box35_tradingProfit, true, true) +
+
+        // Adjustments
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">Tax Adjustments</td></tr>' +
+        row('Add back: Depreciation (not allowable)', d.addBackDepreciation, py&&py.addBackDepreciation, true) +
+        row('Less: Capital allowances (AIA)', d.lessCapitalAllowances, py&&py.lessCapitalAllowances, true) +
+        row('Box 45 — Adjusted trading profit', d.box45_adjProfit, py&&py.box45_adjProfit, true, true) +
+
+        // CT Computation
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">CT Computation</td></tr>' +
+        row('Box 155 — Profits chargeable to CT', d.box155_chargeable, py&&py.box155_chargeable, true, true) +
+        row('Box 185 — CT at applicable rate', d.box185_ctMainRate, py&&py.box185_ctMainRate, true) +
+        row('Box 188 — Less: Marginal relief', d.box188_marginalRelief, py&&py.box188_marginalRelief, true) +
+        row('Box 190 — CT chargeable', d.box190_ctChargeable, py&&py.box190_ctChargeable, true, true) +
+        row('Rate applied', d.rateApplied, py&&py.rateApplied, false) +
+        row('Effective rate', d.effectiveRate + '%', py&&py.effectiveRate+'%', false) +
+
+        // Tax due
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--navy);color:#fff;font-weight:700;font-size:13px;padding:10px 14px">' +
+          'Box 440 — Corporation Tax Payable</td></tr>' +
+        '<tr style="background:var(--blue-50)"><td style="font-size:16px;font-weight:700;color:var(--navy)">Tax due</td>' +
+          '<td style="text-align:right;font-size:20px;font-weight:700;color:var(--red-500);font-family:monospace">' + fmt(d.box440_taxPayable) + '</td>' +
+          (py ? '<td style="text-align:right;color:var(--g400);font-family:monospace">' + fmt(py.box440_taxPayable) + '</td>' : '') +
+        '</tr>' +
+
+        '</tbody></table>' +
+
+      '<div class="alert alert-warning" style="margin-bottom:16px">' +
+        '<p><strong>⚠ Draft only.</strong> This calculation is for planning purposes. Capital allowances use Annual Investment Allowance (100% of qualifying spend). ' +
+        'Please review with your accountant before filing. Disallowable expenses, R&D credits, group relief, and other adjustments are not included.</p>' +
+      '</div>' +
+
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn btn-primary" onclick="saveCT600()">💾 Save Draft</button>' +
+        '<button class="btn btn-secondary" onclick="exportCT600PDF()">📄 Export PDF</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+async function saveCT600() {
+  var d = _ct600State.calculated;
+  if (!d) { toast('Calculate first', 'warning'); return; }
+  var r = await api('saveCT600Draft', d);
+  if (r && r.success) {
+    toast('CT600 draft saved — ' + r.returnId, 'success');
+    var retsR = await api('getCT600Returns');
+    if (retsR && retsR.success) _ct600State.returns = retsR.returns || [];
+    // Update history table
+    var hist = document.querySelector('[data-ct-history]');
+    if (hist) hist.innerHTML = _renderCT600History(_ct600State.returns);
+  } else {
+    toast('Error: ' + (r ? r.message : 'unknown'), 'error');
+  }
+}
+
+async function exportCT600PDF() {
+  toast('PDF export coming soon', 'info');
+}
+
+function viewCT600Draft(returnId) {
+  toast('View draft coming soon', 'info');
 }
 
 async function showVAT() {
