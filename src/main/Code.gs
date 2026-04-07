@@ -1,9 +1,9 @@
 /**
- * NO~BULL BOOKS — CENTRAL HUB ROUTER
+ * NO~BULL BOOKS -- CENTRAL HUB ROUTER
  *
  * URL modes:
- *   ?id=SHEET_ID  → main accounting app for existing client
- *   (no params)   → landing page pointing to the setup microservice
+ *   ?id=SHEET_ID  -> main accounting app for existing client
+ *   (no params)   -> landing page pointing to the setup microservice
  *
  * The setup flow (creating client spreadsheets) is handled by a
  * SEPARATE deployment: SetupService.gs (executeAs: USER_ACCESSING).
@@ -12,10 +12,10 @@
 function doGet(e) {
   var sheetId = e.parameter.id;
 
-  // ── HMRC OAuth redirect ──────────────────────────────────────────────────
+  // -- HMRC OAuth redirect --------------------------------------------------
   if (e.parameter.code && !sheetId) { return _hmrcRedirectPage(e.parameter.code); }
 
-  // ── Main app ────────────────────────────────────────────────────────────────
+  // -- Main app ----------------------------------------------------------------
   if (sheetId) {
     var tmpl = HtmlService.createTemplateFromFile('Index');
     tmpl.clientSheetId = sheetId;
@@ -28,7 +28,7 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
-  // ── Auto-initialise sheet if first visit ────────────────────────────────────
+  // -- Auto-initialise sheet if first visit ------------------------------------
   // If the sheet exists but hasn't been initialised (no Settings tab), init it now.
   // This ensures the app works even if the setup service redirect was interrupted.
   if (e.parameter.id) {
@@ -47,7 +47,7 @@ function doGet(e) {
     }
   }
 
-  // ── Registry ping from SetupService ────────────────────────────────────────
+  // -- Registry ping from SetupService ----------------------------------------
   // Called by SetupService after creating a new client sheet
   if (e.parameter.action === 'pingRegistry') {
     try {
@@ -63,14 +63,14 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // ── Landing page ────────────────────────────────────────────────────────────
+  // -- Landing page ------------------------------------------------------------
   var setupUrl = PropertiesService.getScriptProperties()
     .getProperty('SETUP_SERVICE_URL') || '#';
 
   return HtmlService.createHtmlOutput(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<link rel="icon" href="data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🐂</text></svg>">' +
+    '<link rel="icon" href="data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'></text></svg>">' +
     '<title>no~bull books</title>' +
     '<style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
@@ -90,12 +90,12 @@ function doGet(e) {
     '.sub{font-size:12px;color:#94a3b8;margin-top:14px}' +
     '</style></head><body>' +
     '<div class="card">' +
-      '<div style="font-size:52px;margin-bottom:16px">🐂</div>' +
+      '<div style="font-size:52px;margin-bottom:16px"></div>' +
       '<div class="logo">no~bull <span>books</span></div>' +
       '<p>Straightforward accounting for UK sole traders &amp; small businesses.<br>' +
         'Your data lives in your own Google Sheet.</p>' +
-      '<button class="btn-primary" onclick="window.top.location.href=\'' + setupUrl + '\'">Get started free →</button>' +
-      '<p class="sub">14-day free trial · No credit card required</p>' +
+      '<button class="btn-primary" onclick="window.top.location.href=\'' + setupUrl + '\'">Get started free -></button>' +
+      '<p class="sub">14-day free trial * No credit card required</p>' +
     '</div>' +
     '</body></html>'
   )
@@ -107,7 +107,7 @@ function doGet(e) {
 /**
  * getDb(params)
  * Returns the correct spreadsheet for the current request.
- * Always use this — never SpreadsheetApp.openById() directly in other files.
+ * Always use this -- never SpreadsheetApp.openById() directly in other files.
  */
 
 function _hmrcRedirectPage(code) {
