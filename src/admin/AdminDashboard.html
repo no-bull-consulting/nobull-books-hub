@@ -7,117 +7,243 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#1e293b;font-size:14px}
-.header{background:#14213D;color:#fff;padding:16px 32px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.header h1{font-size:17px;margin:0;font-weight:600}.header span{color:#14A8AE}
-.header-right{margin-left:auto;display:flex;gap:16px;align-items:center}
-.header-right a{color:rgba(255,255,255,0.7);font-size:12px;text-decoration:none}
+.header{background:#14213D;color:#fff;padding:0 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3);height:56px}
+.header h1{font-size:16px;margin:0;font-weight:600}.header span{color:#14A8AE}
+.header-right{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:12px}
+.header-right a{color:rgba(255,255,255,0.7);text-decoration:none;cursor:pointer}
 .header-right a:hover{color:#fff}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px 24px 0}
-.stat{background:#fff;border-radius:8px;padding:16px 20px;border:1px solid #e2e8f0;border-left:3px solid #0D7377}
-.stat-val{font-size:28px;font-weight:700;color:#14213D;line-height:1}
-.stat-lbl{font-size:11px;color:#64748b;margin-top:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
-.section{padding:20px 24px}
-.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.section-hdr h2{font-size:14px;font-weight:700;color:#14213D;text-transform:uppercase;letter-spacing:0.06em}
-.card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.tabs{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 24px;gap:0}
+.tab{padding:12px 20px;cursor:pointer;font-size:13px;font-weight:500;color:#64748b;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s}
+.tab:hover{color:#14213D}
+.tab.active{color:#0D7377;border-bottom-color:#0D7377;font-weight:600}
+.tab-content{display:none;padding:20px 24px}
+.tab-content.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.stat{background:#fff;border-radius:8px;padding:14px 16px;border:1px solid #e2e8f0;border-left:3px solid #0D7377}
+.stat-val{font-size:24px;font-weight:700;color:#14213D;line-height:1}
+.stat-lbl{font-size:10px;color:#64748b;margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden}
+.card-hdr{padding:14px 18px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.card-hdr h3{font-size:13px;font-weight:700;color:#14213D;text-transform:uppercase;letter-spacing:0.06em}
+.card-body{padding:18px}
 table{width:100%;border-collapse:collapse}
-th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e2e8f0}
-td{padding:12px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+th{background:#f8fafc;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f8fafc;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafcff}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.04em}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.04em}
 .badge-active{background:#dcfce7;color:#166534}
 .badge-trial{background:#dbeafe;color:#1e40af}
 .badge-suspended{background:#fee2e2;color:#991b1b}
-.badge-cancelled{background:#f1f5f9;color:#475569}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all 0.15s}
+.badge-cancelled,.badge-skipped{background:#f1f5f9;color:#475569}
+.badge-healthy{background:#dcfce7;color:#166534}
+.badge-warning{background:#fef3c7;color:#92400e}
+.badge-error{background:#fee2e2;color:#991b1b}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;text-decoration:none;transition:all 0.15s;font-family:inherit}
 .btn-primary{background:#0D7377;color:#fff}.btn-primary:hover{background:#14A8AE}
 .btn-secondary{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.btn-secondary:hover{background:#e2e8f0}
-.btn-danger{background:#fee2e2;color:#991b1b}.btn-danger:hover{background:#fecaca}
-.btn-sm{padding:4px 10px;font-size:11px}
-.actions{display:flex;gap:6px}
-
-/* MODAL */
+.btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}.btn-danger:hover{background:#fecaca}
+.btn-warning{background:#fef3c7;color:#92400e;border:1px solid #fde68a}.btn-warning:hover{background:#fde68a}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-xs{padding:2px 7px;font-size:10px}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:700;color:#374151;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;color:#1e293b}
+.form-textarea{min-height:100px;resize:vertical}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:#0D7377;box-shadow:0 0 0 3px rgba(13,115,119,.1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.info-item{background:#f8fafc;border-radius:6px;padding:9px 11px}
+.info-item label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:2px}
+.info-item span{font-size:12px;color:#1e293b;font-weight:500}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:12px;padding:0;width:540px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
-.modal-hdr{background:#14213D;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
-.modal-hdr h3{font-size:15px;margin:0;color:#fff}
+.modal{background:#fff;border-radius:12px;width:620px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-hdr{background:#14213D;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-hdr h3{font-size:14px;margin:0;color:#fff;font-weight:600}
 .modal-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:20px;padding:0;line-height:1}
-.modal-body{padding:24px}
-.modal-footer{padding:16px 24px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px}
-.form-group{margin-bottom:16px}
-.form-label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
-.form-input,.form-select{width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;color:#1e293b}
-.form-input:focus,.form-select:focus{outline:none;border-color:#0D7377;box-shadow:0 0 0 3px rgba(13,115,119,.1)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.info-item{background:#f8fafc;border-radius:6px;padding:10px 12px}
-.info-item label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:3px}
-.info-item span{font-size:13px;color:#1e293b;font-weight:500}
-.divider{border:none;border-top:1px solid #f1f5f9;margin:16px 0}
-.toast{position:fixed;bottom:24px;right:24px;background:#14213D;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;gap:8px;background:#f8fafc}
+.audit-row{font-size:12px}
+.audit-action{font-weight:600;color:#14213D}
+.audit-meta{color:#94a3b8;font-size:10px}
+.health-ok{color:#166534}.health-warn{color:#92400e}.health-err{color:#991b1b}
+.section-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-bar h3{font-size:12px;font-weight:700;color:#14213D;text-transform:uppercase;letter-spacing:0.06em}
+.empty{text-align:center;padding:40px;color:#94a3b8;font-size:13px}
+.toast{position:fixed;bottom:24px;right:24px;background:#14213D;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:320px}
 .toast.show{opacity:1}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #e2e8f0;border-top-color:#0D7377;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <span style="font-size:20px">🐂</span>
+  <span style="font-size:18px">🐂</span>
   <h1>no~bull <span>Admin Console</span></h1>
   <div class="header-right">
-    <span id="clock" style="font-size:11px;opacity:0.6"></span>
-    <a href="#" onclick="loadData()">↻ Refresh</a>
+    <span id="clock"></span>
+    <a onclick="loadAll()">↻ Refresh</a>
+    <span style="opacity:0.4">|</span>
+    <a onclick="installTriggers()">⏰ Install Triggers</a>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Clients</div></div>
-  <div class="stat" style="border-left-color:#166534"><div class="stat-val" id="s-active" style="color:#166534">—</div><div class="stat-lbl">Active</div></div>
-  <div class="stat" style="border-left-color:#1e40af"><div class="stat-val" id="s-trial" style="color:#1e40af">—</div><div class="stat-lbl">Trial</div></div>
-  <div class="stat" style="border-left-color:#991b1b"><div class="stat-val" id="s-suspended" style="color:#991b1b">—</div><div class="stat-lbl">Suspended</div></div>
-  <div class="stat" style="border-left-color:#d97706"><div class="stat-val" id="s-mrr" style="color:#d97706">—</div><div class="stat-lbl">Est. MRR</div></div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('clients',this)">📋 Clients</div>
+  <div class="tab" onclick="switchTab('health',this)">❤️ Health</div>
+  <div class="tab" onclick="switchTab('comms',this)">📧 Communications</div>
+  <div class="tab" onclick="switchTab('audit',this)">🔍 Audit Log</div>
+  <div class="tab" onclick="switchTab('ops',this)">⚙️ Operations</div>
 </div>
 
-<div class="section">
-  <div class="section-hdr">
-    <h2>Client Instances</h2>
-    <button class="btn btn-primary btn-sm" onclick="openAddClient()">+ Add Client</button>
+<!-- CLIENTS TAB -->
+<div id="tab-clients" class="tab-content active">
+  <div class="stats" id="stats-bar">
+    <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total</div></div>
+    <div class="stat" style="border-left-color:#166534"><div class="stat-val" id="s-active" style="color:#166534">—</div><div class="stat-lbl">Active</div></div>
+    <div class="stat" style="border-left-color:#1e40af"><div class="stat-val" id="s-trial" style="color:#1e40af">—</div><div class="stat-lbl">Trial</div></div>
+    <div class="stat" style="border-left-color:#991b1b"><div class="stat-val" id="s-suspended" style="color:#991b1b">—</div><div class="stat-lbl">Suspended</div></div>
+    <div class="stat" style="border-left-color:#d97706"><div class="stat-val" id="s-mrr" style="color:#d97706">—</div><div class="stat-lbl">Est. MRR</div></div>
+    <div class="stat" style="border-left-color:#dc2626"><div class="stat-val" id="s-expiring" style="color:#dc2626">—</div><div class="stat-lbl">Expiring Soon</div></div>
   </div>
   <div class="card">
-    <table id="client-table">
-      <thead><tr>
-        <th>Company</th><th>Email</th><th>Plan</th><th>Status</th>
-        <th>Last Seen</th><th>Version</th><th>Actions</th>
-      </tr></thead>
-      <tbody id="client-tbody"><tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">Loading...</td></tr></tbody>
+    <div class="card-hdr">
+      <h3>Client Instances</h3>
+      <button class="btn btn-primary btn-sm" onclick="openSendBroadcast()">📢 Broadcast Email</button>
+    </div>
+    <table>
+      <thead><tr><th>Company</th><th>Email</th><th>Plan</th><th>Status / Trial</th><th>Last Seen</th><th>Ver</th><th>Actions</th></tr></thead>
+      <tbody id="client-tbody"><tr><td colspan="7" class="empty"><span class="spinner"></span>Loading...</td></tr></tbody>
     </table>
   </div>
 </div>
 
-<!-- EDIT MODAL -->
+<!-- HEALTH TAB -->
+<div id="tab-health" class="tab-content">
+  <div class="section-bar">
+    <h3>System Health</h3>
+    <button class="btn btn-primary btn-sm" onclick="runHealthCheck()">▶ Run Health Check</button>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Company</th><th>Client Status</th><th>Health</th><th>Missing Sheets</th><th>Users</th><th>Actions</th></tr></thead>
+      <tbody id="health-tbody"><tr><td colspan="6" class="empty">Click "Run Health Check" to scan all instances</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- COMMS TAB -->
+<div id="tab-comms" class="tab-content">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-hdr"><h3>Trial Expiry Reminders</h3></div>
+      <div class="card-body">
+        <p style="color:#64748b;font-size:13px;margin-bottom:16px;line-height:1.6">Automatically sends reminder emails to trial users at day 11 (3 days left) and day 13 (1 day left). The daily trigger runs this automatically at 8am London time.</p>
+        <button class="btn btn-primary" onclick="sendTrialReminders()">▶ Run Now</button>
+        <div id="trial-result" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><h3>Broadcast Email</h3></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Send to</label>
+          <select class="form-select" id="broadcast-filter">
+            <option value="Active">Active clients only</option>
+            <option value="Trial">Trial clients only</option>
+            <option value="All">All clients</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input type="text" class="form-input" id="broadcast-subject" placeholder="e.g. no~bull books v2.1 is live">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-textarea" id="broadcast-body" placeholder="Your message here..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="sendBroadcast()">📤 Send Broadcast</button>
+        <div id="broadcast-result" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT LOG TAB -->
+<div id="tab-audit" class="tab-content">
+  <div class="section-bar">
+    <h3>Audit Log</h3>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="form-select" id="audit-client-select" style="width:220px;font-size:12px;padding:5px 8px">
+        <option value="">Select client...</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="loadAuditLog()">Load</button>
+    </div>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Time</th><th>Action</th><th>Entity</th><th>ID</th><th>User</th><th>Detail</th></tr></thead>
+      <tbody id="audit-tbody"><tr><td colspan="6" class="empty">Select a client to view their audit log</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OPERATIONS TAB -->
+<div id="tab-ops" class="tab-content">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-hdr"><h3>Client Maintenance</h3></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Select Client</label>
+          <select class="form-select" id="ops-client-select"><option value="">Select...</option></select>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="runMaintenance()">🔧 Run Maintenance</button>
+          <button class="btn btn-secondary" onclick="runHealthSingle()">❤️ Health Check</button>
+          <button class="btn btn-secondary" onclick="viewAuditFromOps()">🔍 View Audit Log</button>
+        </div>
+        <div id="ops-result" style="margin-top:12px;font-size:12px;color:#475569"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><h3>System Operations</h3></div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;flex-direction:column">
+          <button class="btn btn-secondary" onclick="installTriggers()">⏰ Install Admin Triggers</button>
+          <button class="btn btn-secondary" onclick="sendTrialReminders()">📧 Send Trial Reminders Now</button>
+          <button class="btn btn-secondary" onclick="runHealthCheck()">❤️ Check All Client Health</button>
+        </div>
+        <div id="sys-result" style="margin-top:12px;font-size:12px;color:#475569"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CLIENT MODAL -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
     <div class="modal-hdr">
       <h3 id="modal-title">Edit Client</h3>
-      <button class="modal-close" onclick="closeModal()">×</button>
+      <button class="modal-close" onclick="closeModal('edit-modal')">×</button>
     </div>
     <div class="modal-body">
-      <div id="instance-info"></div>
-      <hr class="divider">
+      <div id="instance-info" style="margin-bottom:14px"></div>
+      <hr style="border:none;border-top:1px solid #f1f5f9;margin:14px 0">
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label">Status</label>
           <select class="form-select" id="edit-status">
-            <option>Active</option><option>Trial</option>
-            <option>Suspended</option><option>Cancelled</option>
+            <option>Active</option><option>Trial</option><option>Suspended</option><option>Cancelled</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Plan</label>
           <select class="form-select" id="edit-plan">
-            <option>Trial</option><option>Solo</option>
-            <option>Small Business</option><option>Accountant</option>
+            <option>Trial</option><option>Solo</option><option>Small Business</option><option>Accountant</option>
           </select>
         </div>
       </div>
@@ -126,10 +252,11 @@ tr:hover td{background:#fafcff}
         <input type="text" class="form-input" id="edit-notes" placeholder="Internal notes...">
       </div>
       <input type="hidden" id="edit-registry-id">
+      <input type="hidden" id="edit-sheet-id">
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-danger btn-sm" onclick="suspendClient()" style="margin-right:auto" id="suspend-btn">Suspend</button>
+      <button class="btn btn-danger btn-sm" onclick="suspendClient()" id="suspend-btn" style="margin-right:auto">Suspend</button>
+      <button class="btn btn-secondary" onclick="closeModal('edit-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
     </div>
   </div>
@@ -140,96 +267,166 @@ tr:hover td{background:#fafcff}
 <script>
 var _clients = [];
 
+// ── UTILS ──────────────────────────────────────────────────────────────────
+
 function showToast(msg, ok) {
   var t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = ok === false ? '#991b1b' : '#14213D';
   t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+function call(action, params, cb, errCb) {
+  google.script.run
+    .withSuccessHandler(function(r){ cb(r); })
+    .withFailureHandler(function(e){ if(errCb) errCb(e); else showToast('Error: '+e, false); })
+    .handleAdminCall(action, params || {});
 }
 
 function badge(status) {
-  var cls = {Active:'active',Trial:'trial',Suspended:'suspended',Cancelled:'cancelled'}[status]||'cancelled';
-  return '<span class="badge badge-' + cls + '">' + (status||'—') + '</span>';
+  var cls = {Active:'active',Trial:'trial',Suspended:'suspended',Cancelled:'cancelled',
+             Healthy:'healthy',Warning:'warning',Error:'error',Skipped:'skipped'}[status]||'cancelled';
+  return '<span class="badge badge-'+cls+'">'+(status||'—')+'</span>';
 }
 
-function loadData() {
-  google.script.run
-    .withSuccessHandler(function(r) {
-      _clients = (r && r.clients) || [];
-      renderStats(_clients);
-      renderTable(_clients);
-    })
-    .withFailureHandler(function(e){ showToast('Load error: ' + e, false); })
-    .handleAdminCall('getAllRegistryClients', {});
+function _trialBadge(c) {
+  if (c.status !== 'Trial' || !c.createdDate) return '';
+  var days = Math.floor((new Date() - new Date(c.createdDate)) / 86400000);
+  var left = 14 - days;
+  var col  = left <= 1 ? '#991b1b' : left <= 3 ? '#d97706' : '#166534';
+  if (left < 0) return '<br><span style="font-size:10px;color:#991b1b;font-weight:600">⚠ Expired '+ Math.abs(left)+'d ago</span>';
+  return '<br><span style="font-size:10px;color:'+col+';font-weight:600">Day '+days+'/14 · '+left+'d left</span>';
+}
+
+function _infoItem(label, val) {
+  return '<div class="info-item"><label>'+label+'</label><span>'+val+'</span></div>';
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── DATA LOAD ──────────────────────────────────────────────────────────────
+
+function loadAll() {
+  call('getAllRegistryClients', {}, function(r) {
+    _clients = (r && r.clients) || [];
+    renderStats(_clients);
+    renderClientTable(_clients);
+    populateSelects(_clients);
+  });
 }
 
 function renderStats(clients) {
-  document.getElementById('s-total').textContent     = clients.length;
-  document.getElementById('s-active').textContent    = clients.filter(function(c){return c.status==='Active';}).length;
-  document.getElementById('s-trial').textContent     = clients.filter(function(c){return c.status==='Trial';}).length;
-  document.getElementById('s-suspended').textContent = clients.filter(function(c){return c.status==='Suspended';}).length;
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('s-total',   clients.length);
+  set('s-active',  clients.filter(function(c){return c.status==='Active';}).length);
+  set('s-trial',   clients.filter(function(c){return c.status==='Trial';}).length);
+  set('s-suspended',clients.filter(function(c){return c.status==='Suspended';}).length);
   var mrr = clients.filter(function(c){return c.status==='Active';}).reduce(function(s,c){
-    return s + ({'Solo':12,'Small Business':24,'Accountant':49}[c.plan]||0);
-  }, 0);
-  document.getElementById('s-mrr').textContent = mrr ? '£'+mrr : '—';
+    return s+({'Solo':12,'Small Business':24,'Accountant':49}[c.plan]||0);
+  },0);
+  set('s-mrr', mrr ? '£'+mrr : '—');
+  var exp = clients.filter(function(c){
+    if (c.status!=='Trial'||!c.createdDate) return false;
+    return Math.floor((new Date()-new Date(c.createdDate))/86400000)>=11;
+  }).length;
+  set('s-expiring', exp||'0');
 }
 
-function renderTable(clients) {
+function populateSelects(clients) {
+  ['audit-client-select','ops-client-select'].forEach(function(id){
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">Select client...</option>';
+    clients.forEach(function(c){
+      var opt = document.createElement('option');
+      opt.value = c.sheetId || '';
+      opt.textContent = c.companyName + ' (' + c.status + ')';
+      sel.appendChild(opt);
+    });
+    if (cur) sel.value = cur;
+  });
+}
+
+function renderClientTable(clients) {
   var tbody = document.getElementById('client-tbody');
-  if (!clients.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8">No clients registered</td></tr>';
-    return;
-  }
-  tbody.innerHTML = clients.map(function(c, i) {
-    return '<tr>' +
-      '<td><strong>' + (c.companyName||'—') + '</strong>' +
-        (c.vatNumber ? '<br><span style="font-size:11px;color:#94a3b8">VAT: ' + c.vatNumber + '</span>' : '') +
-      '</td>' +
-      '<td>' + (c.contactEmail||'—') + '</td>' +
-      '<td>' + (c.plan||'—') + '</td>' +
-      '<td>' + badge(c.status) + '</td>' +
-      '<td>' + (c.lastSeen ? c.lastSeen.substring(0,10) : '—') + '</td>' +
-      '<td><span style="font-size:11px;color:#94a3b8">' + (c.version||'—') + '</span></td>' +
-      '<td><div class="actions">' +
-        '<button class="btn btn-secondary btn-sm" onclick="openEdit(' + i + ')">Edit</button>' +
-        (c.appLink ? '<a href="' + c.appLink + '" target="_blank" class="btn btn-primary btn-sm">Open →</a>' : '') +
-      '</div></td>' +
+  if (!clients.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No clients registered</td></tr>'; return; }
+  tbody.innerHTML = clients.map(function(c,i){
+    return '<tr>'+
+      '<td><strong>'+(c.companyName||'—')+'</strong>'+(c.vatNumber?'<br><span style="font-size:10px;color:#94a3b8">VAT: '+c.vatNumber+'</span>':'')+'</td>'+
+      '<td style="font-size:12px">'+(c.contactEmail||'—')+'</td>'+
+      '<td>'+(c.plan||'—')+'</td>'+
+      '<td>'+badge(c.status)+_trialBadge(c)+'</td>'+
+      '<td style="font-size:11px;color:#64748b">'+(c.lastSeen?c.lastSeen.substring(0,10):'—')+'</td>'+
+      '<td style="font-size:10px;color:#94a3b8">'+(c.version||'—')+'</td>'+
+      '<td><div class="actions">'+
+        '<button class="btn btn-secondary btn-xs" onclick="openEdit('+i+')">Edit</button>'+
+        (c.appLink?'<a href="'+c.appLink+'" target="_blank" class="btn btn-primary btn-xs">Open →</a>':'')+
+      '</div></td>'+
     '</tr>';
   }).join('');
 }
 
+// ── EDIT CLIENT ────────────────────────────────────────────────────────────
+
 function openEdit(idx) {
   var c = _clients[idx];
-  document.getElementById('modal-title').textContent = 'Edit — ' + (c.companyName||'Client');
-  document.getElementById('edit-registry-id').value = c.registryId || '';
-  document.getElementById('edit-status').value = c.status || 'Active';
-  document.getElementById('edit-plan').value   = c.plan   || 'Trial';
-  document.getElementById('edit-notes').value  = c.notes  || '';
-  document.getElementById('suspend-btn').style.display = c.status === 'Suspended' ? 'none' : '';
+  document.getElementById('modal-title').textContent = 'Edit — '+(c.companyName||'Client');
+  document.getElementById('edit-registry-id').value = c.registryId||'';
+  document.getElementById('edit-sheet-id').value    = c.sheetId||'';
+  document.getElementById('edit-status').value      = c.status||'Active';
+  document.getElementById('edit-plan').value        = c.plan||'Trial';
+  document.getElementById('edit-notes').value       = c.notes||'';
+  document.getElementById('suspend-btn').style.display = c.status==='Suspended'?'none':'';
 
-  // Instance info panel
-  var info = '<div class="info-grid">' +
-    _infoItem('Registry ID', c.registryId||'—') +
-    _infoItem('Sheet ID', c.sheetId ? c.sheetId.substring(0,12)+'...' : '—') +
-    _infoItem('Created', c.createdDate||'—') +
-    _infoItem('Last seen by', c.lastSeenBy||'—') +
-    _infoItem('Invoices', c.invoiceCount||'0') +
-    _infoItem('Clients', c.clientCount||'0') +
-    _infoItem('Bills', c.billCount||'0') +
-    _infoItem('Country', c.country||'UK') +
-  '</div>';
-  document.getElementById('instance-info').innerHTML = info;
+  var trialDay = '';
+  if (c.status==='Trial'&&c.createdDate) {
+    var d=Math.floor((new Date()-new Date(c.createdDate))/86400000);
+    trialDay='Day '+d+' of 14 ('+(14-d)+' remaining)';
+  }
+
+  document.getElementById('instance-info').innerHTML =
+    '<div class="info-grid">'+
+    _infoItem('Registry ID', (c.registryId||'—').substring(0,16)+'...')+
+    _infoItem('Created', c.createdDate||'—')+
+    _infoItem('Last seen by', c.lastSeenBy||'—')+
+    _infoItem('Invoices', '<span id="live-invoices">'+(c.invoiceCount||'0')+'</span>')+
+    _infoItem('Clients', '<span id="live-clients">'+(c.clientCount||'0')+'</span>')+
+    _infoItem('Bills', '<span id="live-bills">'+(c.billCount||'0')+'</span>')+
+    _infoItem('Transactions', '<span id="live-txns">…</span>')+
+    _infoItem('Bank accounts', '<span id="live-banks">…</span>')+
+    _infoItem('Suppliers', '<span id="live-suppliers">…</span>')+
+    _infoItem('Currency', '<span id="live-currency">…</span>')+
+    _infoItem('VAT number', '<span id="live-vat">'+(c.vatNumber||'—')+'</span>')+
+    (trialDay?_infoItem('Trial progress',trialDay):'')+
+    _infoItem('Last activity', '<span id="live-activity">Loading…</span>')+
+    '</div>';
 
   document.getElementById('edit-modal').classList.add('show');
-}
 
-function _infoItem(label, val) {
-  return '<div class="info-item"><label>' + label + '</label><span>' + val + '</span></div>';
-}
-
-function closeModal() {
-  document.getElementById('edit-modal').classList.remove('show');
+  if (c.sheetId) {
+    call('getClientLiveStats',{sheetId:c.sheetId},function(r){
+      if (!r||!r.success) return;
+      var s=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+      s('live-invoices',  r.counts.invoices||0);
+      s('live-clients',   r.counts.clients||0);
+      s('live-bills',     r.counts.bills||0);
+      s('live-txns',      r.counts.transactions||0);
+      s('live-banks',     r.counts.bankAccounts||0);
+      s('live-suppliers', r.counts.suppliers||0);
+      s('live-currency',  r.baseCurrency||'GBP');
+      s('live-vat',       r.vatNumber||'—');
+      s('live-activity',  r.lastActivity||'—');
+    });
+  }
 }
 
 function saveEdit() {
@@ -237,48 +434,161 @@ function saveEdit() {
   var status = document.getElementById('edit-status').value;
   var plan   = document.getElementById('edit-plan').value;
   var notes  = document.getElementById('edit-notes').value;
-
-  google.script.run
-    .withSuccessHandler(function(r) {
-      if (r && r.success) {
-        showToast('Saved ✓', true);
-        closeModal();
-        loadData();
-      } else {
-        showToast('Error: ' + (r ? r.message : 'unknown'), false);
-      }
-    })
-    .withFailureHandler(function(e){ showToast('Error: ' + e, false); })
-    .handleAdminCall('updateRegistryClient', { registryId: id, status: status, plan: plan, notes: notes });
+  call('updateRegistryClient',{registryId:id,status:status,plan:plan,notes:notes},function(r){
+    if (r&&r.success) { showToast('Saved ✓'); closeModal('edit-modal'); loadAll(); }
+    else showToast('Error: '+(r?r.message:'unknown'), false);
+  });
 }
 
 function suspendClient() {
-  if (!confirm('Suspend this client? They will lose access to the app.')) return;
+  if (!confirm('Suspend this client? They will lose access.')) return;
   var id = document.getElementById('edit-registry-id').value;
-  google.script.run
-    .withSuccessHandler(function(r) {
-      if (r && r.success) {
-        showToast('Client suspended', true);
-        closeModal();
-        loadData();
-      } else {
-        showToast('Error: ' + (r ? r.message : 'unknown'), false);
-      }
-    })
-    .handleAdminCall('updateRegistryClient', { registryId: id, status: 'Suspended' });
+  call('updateRegistryClient',{registryId:id,status:'Suspended'},function(r){
+    if (r&&r.success) { showToast('Client suspended'); closeModal('edit-modal'); loadAll(); }
+    else showToast('Error: '+(r?r.message:'unknown'), false);
+  });
 }
 
-function openAddClient() {
-  showToast('Use registerClient() in the GAS editor to add clients', true);
+// ── HEALTH ─────────────────────────────────────────────────────────────────
+
+function runHealthCheck() {
+  var tbody = document.getElementById('health-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Running health check on all instances...</td></tr>';
+  call('checkAllClientsHealth',{},function(r){
+    if (!r||!r.success) { tbody.innerHTML='<tr><td colspan="6" class="empty">Failed: '+(r?r.message:'unknown')+'</td></tr>'; return; }
+    var results = r.results||[];
+    tbody.innerHTML = results.map(function(c){
+      var missing = (c.missingSheets||[]).length;
+      return '<tr>'+
+        '<td><strong>'+(c.companyName||'—')+'</strong></td>'+
+        '<td>'+badge(c.clientStatus||'—')+'</td>'+
+        '<td>'+badge(c.healthStatus||'—')+'</td>'+
+        '<td style="font-size:11px;color:'+(missing?'#991b1b':'#166534')+'">'+(missing?c.missingSheets.join(', '):'All present')+'</td>'+
+        '<td>'+(c.userCount||0)+'</td>'+
+        '<td><div class="actions">'+
+          (c.sheetId&&missing?'<button class="btn btn-warning btn-xs" onclick="fixClient(\''+c.sheetId+'\')">Fix</button>':'')+
+        '</div></td>'+
+      '</tr>';
+    }).join('');
+    showToast('Health check complete — '+results.length+' instances checked');
+  });
 }
 
-// Clock
+function fixClient(sheetId) {
+  showToast('Running maintenance...');
+  call('runClientMaintenance',{sheetId:sheetId},function(r){
+    showToast(r&&r.success?'Fixed: '+(r.message||'OK'):'Error: '+(r?r.message:'unknown'), r&&r.success);
+    if (r&&r.success) runHealthCheck();
+  });
+}
+
+// ── COMMUNICATIONS ─────────────────────────────────────────────────────────
+
+function sendTrialReminders() {
+  var el = document.getElementById('trial-result');
+  if (el) el.innerHTML = '<span class="spinner"></span>Sending...';
+  call('sendTrialExpiryReminders',{},function(r){
+    var msg = r&&r.success ? '✓ Sent '+r.sent+' emails ('+r.skipped+' not due yet)' : '✗ '+(r?r.message:'Failed');
+    if (el) el.innerHTML = '<span style="color:'+(r&&r.success?'#166534':'#991b1b')+'">'+msg+'</span>';
+    showToast(msg, r&&r.success);
+    var sr = document.getElementById('sys-result');
+    if (sr) sr.innerHTML = msg;
+  });
+}
+
+function sendBroadcast() {
+  var subject = document.getElementById('broadcast-subject').value.trim();
+  var body    = document.getElementById('broadcast-body').value.trim();
+  var filter  = document.getElementById('broadcast-filter').value;
+  if (!subject||!body) { showToast('Subject and message required', false); return; }
+  if (!confirm('Send broadcast to all '+filter+' clients?')) return;
+  var el = document.getElementById('broadcast-result');
+  if (el) el.innerHTML = '<span class="spinner"></span>Sending...';
+  call('sendBroadcast',{subject:subject,body:body,filter:filter},function(r){
+    var msg = r&&r.success ? '✓ Sent to '+r.sent+' of '+r.total+' clients' : '✗ '+(r?r.message:'Failed');
+    if (el) el.innerHTML = '<span style="color:'+(r&&r.success?'#166534':'#991b1b')+'">'+msg+'</span>';
+    showToast(msg, r&&r.success);
+  });
+}
+
+function openSendBroadcast() { switchTab('comms', document.querySelectorAll('.tab')[2]); }
+
+// ── AUDIT LOG ──────────────────────────────────────────────────────────────
+
+function loadAuditLog() {
+  var sheetId = document.getElementById('audit-client-select').value;
+  if (!sheetId) { showToast('Select a client first', false); return; }
+  var tbody = document.getElementById('audit-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty"><span class="spinner"></span>Loading...</td></tr>';
+  call('getClientAuditLog',{sheetId:sheetId,limit:100},function(r){
+    if (!r||!r.success||!r.entries.length) {
+      tbody.innerHTML='<tr><td colspan="6" class="empty">No audit entries found</td></tr>'; return;
+    }
+    tbody.innerHTML = r.entries.map(function(e){
+      return '<tr>'+
+        '<td style="font-size:10px;color:#94a3b8;white-space:nowrap">'+(e.timestamp||'—')+'</td>'+
+        '<td><span class="audit-action">'+(e.action||'—')+'</span></td>'+
+        '<td style="font-size:11px">'+(e.entity||'—')+'</td>'+
+        '<td style="font-size:10px;color:#94a3b8">'+(e.entityId||'—').substring(0,16)+'</td>'+
+        '<td style="font-size:11px">'+(e.user||'—')+'</td>'+
+        '<td style="font-size:11px;color:#475569">'+(e.detail||'—').substring(0,80)+'</td>'+
+      '</tr>';
+    }).join('');
+    showToast('Loaded '+r.entries.length+' of '+r.total+' entries');
+  });
+}
+
+function viewAuditFromOps() {
+  var sheetId = document.getElementById('ops-client-select').value;
+  if (!sheetId) { showToast('Select a client first', false); return; }
+  document.getElementById('audit-client-select').value = sheetId;
+  switchTab('audit', document.querySelectorAll('.tab')[3]);
+  loadAuditLog();
+}
+
+// ── OPERATIONS ─────────────────────────────────────────────────────────────
+
+function runMaintenance() {
+  var sheetId = document.getElementById('ops-client-select').value;
+  if (!sheetId) { showToast('Select a client first', false); return; }
+  var el = document.getElementById('ops-result');
+  el.innerHTML = '<span class="spinner"></span>Running maintenance...';
+  call('runClientMaintenance',{sheetId:sheetId},function(r){
+    el.innerHTML = r&&r.success ? '✓ '+r.message : '✗ '+(r?r.message:'Failed');
+    el.style.color = r&&r.success ? '#166534' : '#991b1b';
+    showToast(r&&r.success?'Maintenance complete':'Maintenance failed', r&&r.success);
+  });
+}
+
+function runHealthSingle() {
+  var sheetId = document.getElementById('ops-client-select').value;
+  if (!sheetId) { showToast('Select a client first', false); return; }
+  var el = document.getElementById('ops-result');
+  el.innerHTML = '<span class="spinner"></span>Checking health...';
+  call('checkClientHealth',{sheetId:sheetId},function(r){
+    var msg = r&&r.success ? r.status+' — '+(r.missingSheets&&r.missingSheets.length?'Missing: '+r.missingSheets.join(', '):'All sheets present') : 'Error: '+(r?r.message:'unknown');
+    el.innerHTML = msg;
+    el.style.color = r&&r.status==='Healthy' ? '#166534' : '#991b1b';
+  });
+}
+
+function installTriggers() {
+  if (!confirm('Install daily admin triggers (trial reminders at 8am)?')) return;
+  call('installAdminTriggers',{},function(r){
+    showToast(r&&r.success?'Triggers installed ✓':'Error: '+(r?r.message:'unknown'), r&&r.success);
+    var el = document.getElementById('sys-result');
+    if (el) el.innerHTML = r&&r.success?'✓ '+r.message:'✗ '+(r?r.message:'unknown');
+  });
+}
+
+// ── CLOCK & INIT ───────────────────────────────────────────────────────────
+
 setInterval(function(){
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB');
+  var el = document.getElementById('clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-GB');
 }, 1000);
 
-// Load on start
-loadData();
+loadAll();
 </script>
 </body>
 </html>

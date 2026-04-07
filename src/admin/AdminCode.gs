@@ -84,6 +84,7 @@ function _adminRoute(action, params) {
     case 'deactivateRegistryClient':return deactivateRegistryClient(params.registryId, params.reason, params);
     case 'pingRegistry':            return pingRegistry(params.sheetId, params);
     case 'getInstanceMeta':         return getInstanceMeta(params);
+    case 'getClientLiveStats':      return getClientLiveStats(params);
 
     // Maintenance
     case 'runMaintenance':          return runMaintenance();
@@ -91,6 +92,19 @@ function _adminRoute(action, params) {
     case 'verifyIntegrity':         return verifyIntegrity(params);
     case 'diagnoseSheets':          return diagnoseSheets(params);
     case 'getAdminStats':           return getAdminStats(params);
+    case 'runClientMaintenance':    return runClientMaintenance(params);
+    case 'installAdminTriggers':    return installAdminTriggers();
+
+    // Health monitoring
+    case 'checkClientHealth':       return checkClientHealth(params);
+    case 'checkAllClientsHealth':   return checkAllClientsHealth(params);
+
+    // Audit log
+    case 'getClientAuditLog':       return getClientAuditLog(params);
+
+    // Communications
+    case 'sendTrialExpiryReminders': return sendTrialExpiryReminders(params);
+    case 'sendBroadcast':           return sendBroadcast(params);
 
     // GDPR
     case 'eraseClient':             return eraseClient(params.clientId, params.retainFinancial);
@@ -115,6 +129,77 @@ function _adminRoute(action, params) {
 // ─────────────────────────────────────────────────────────────────────────────
 // FRONTEND BRIDGE — called via google.script.run from AdminDashboard.html
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+/**
+ * getClientLiveStats(sheetId)
+ * Reads live counts directly from the client's spreadsheet.
+ * Called from the admin dashboard when opening the edit modal.
+ */
+function getClientLiveStats(params) {
+  try {
+    var sheetId = params && params.sheetId;
+    if (!sheetId) return { success: false, message: 'No sheetId provided' };
+
+    var ss = SpreadsheetApp.openById(sheetId);
+
+    var counts = {
+      invoices:  0,
+      clients:   0,
+      bills:     0,
+      suppliers: 0,
+      bankAccounts: 0
+    };
+
+    var sheetMap = {
+      invoices:     'Invoices',
+      clients:      'Clients',
+      bills:        'Bills',
+      suppliers:    'Suppliers',
+      bankAccounts: 'BankAccounts'
+    };
+
+    Object.keys(sheetMap).forEach(function(key) {
+      var sheet = ss.getSheetByName(sheetMap[key]);
+      if (sheet && sheet.getLastRow() > 1) {
+        counts[key] = sheet.getLastRow() - 1; // subtract header row
+      }
+    });
+
+    // Get last activity from Transactions sheet
+    var txSheet = ss.getSheetByName('Transactions');
+    var lastActivity = '';
+    if (txSheet && txSheet.getLastRow() > 1) {
+      var lastRow = txSheet.getRange(txSheet.getLastRow(), 1, 1, txSheet.getLastColumn()).getValues()[0];
+      // Date is typically in column 3
+      if (lastRow[2]) {
+        try { lastActivity = new Date(lastRow[2]).toISOString().substring(0, 10); } catch(e) {}
+      }
+      counts.transactions = txSheet.getLastRow() - 1;
+    }
+
+    // Get settings
+    var settings = {};
+    var settingsSheet = ss.getSheetByName('Settings');
+    if (settingsSheet && settingsSheet.getLastRow() >= 2) {
+      var headers = settingsSheet.getRange(1, 1, 1, settingsSheet.getLastColumn()).getValues()[0];
+      var values  = settingsSheet.getRange(2, 1, 1, settingsSheet.getLastColumn()).getValues()[0];
+      headers.forEach(function(h, i) { if (h) settings[h] = values[i]; });
+    }
+
+    return {
+      success:      true,
+      counts:       counts,
+      lastActivity: lastActivity,
+      companyName:  settings.companyName || '',
+      baseCurrency: settings.baseCurrency || 'GBP',
+      vatNumber:    settings.vatRegNumber || ''
+    };
+  } catch(e) {
+    Logger.log('getClientLiveStats error: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
 
 function handleAdminCall(action, params) {
   try {

@@ -712,8 +712,35 @@ function spendMoney(data, params) {
   try {
     _checkPeriodLock(data && data.date ? new Date(data.date) : new Date());
     var bankTxId = generateId('BTX');
-    var txSheet = getDb(params || {}).getSheetByName(SHEETS.BANK_TRANSACTIONS);
+    var ss      = getDb(params || {});
+    var txSheet = ss.getSheetByName(SHEETS.BANK_TRANSACTIONS);
     if (!txSheet) return { success: false, message: 'BankTransactions sheet not found' };
+
+    // Look up nominal code for this bank account
+    var baSheet = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
+    var bankNominalCode = '1000';
+    if (baSheet && baSheet.getLastRow() > 1) {
+      var baData = baSheet.getDataRange().getValues();
+      for (var bi = 1; bi < baData.length; bi++) {
+        if (baData[bi][0] === data.bankAccountId) {
+          bankNominalCode = baData[bi][9] ? baData[bi][9].toString() : '1000';
+          break;
+        }
+      }
+    }
+    data.bankAccountCode = bankNominalCode;
+
+    // Update bank account balance
+    if (baSheet) {
+      var baData2 = baSheet.getDataRange().getValues();
+      for (var bi2 = 1; bi2 < baData2.length; bi2++) {
+        if (baData2[bi2][0] === data.bankAccountId) {
+          var curBal = parseFloat(baData2[bi2][3]) || 0;
+          baSheet.getRange(bi2 + 1, 4).setValue(curBal - Math.abs(parseFloat(data.amount)));
+          break;
+        }
+      }
+    }
     
     txSheet.appendRow([
       bankTxId,
@@ -736,11 +763,12 @@ function spendMoney(data, params) {
       'Expense',
       data.reference || bankTxId,
       data.accountCode || '6000',
-      '1000',
+      data.bankAccountCode || '1000',
       Math.abs(parseFloat(data.amount)),
       data.description,
       null,
-      null
+      null,
+      params
     );
     
     return { 
@@ -758,9 +786,36 @@ function receiveMoney(data, params) {
   try {
     _checkPeriodLock(data && data.date ? new Date(data.date) : new Date());
     var bankTxId = generateId('BTX');
-    var txSheet = getDb(params || {}).getSheetByName(SHEETS.BANK_TRANSACTIONS);
+    var ss2      = getDb(params || {});
+    var txSheet  = ss2.getSheetByName(SHEETS.BANK_TRANSACTIONS);
     if (!txSheet) return { success: false, message: 'BankTransactions sheet not found' };
-    
+
+    // Look up nominal code for this bank account
+    var baSheet2 = ss2.getSheetByName(SHEETS.BANK_ACCOUNTS);
+    var bankNominalCode2 = '1000';
+    if (baSheet2 && baSheet2.getLastRow() > 1) {
+      var baData3 = baSheet2.getDataRange().getValues();
+      for (var bi3 = 1; bi3 < baData3.length; bi3++) {
+        if (baData3[bi3][0] === data.bankAccountId) {
+          bankNominalCode2 = baData3[bi3][9] ? baData3[bi3][9].toString() : '1000';
+          break;
+        }
+      }
+    }
+    data.bankAccountCode = bankNominalCode2;
+
+    // Update bank account balance
+    if (baSheet2) {
+      var baData4 = baSheet2.getDataRange().getValues();
+      for (var bi4 = 1; bi4 < baData4.length; bi4++) {
+        if (baData4[bi4][0] === data.bankAccountId) {
+          var curBal2 = parseFloat(baData4[bi4][3]) || 0;
+          baSheet2.getRange(bi4 + 1, 4).setValue(curBal2 + Math.abs(parseFloat(data.amount)));
+          break;
+        }
+      }
+    }
+
     txSheet.appendRow([
       bankTxId,
       safeSerializeDate(data.date),
@@ -781,12 +836,13 @@ function receiveMoney(data, params) {
       data.date,
       'Income',
       data.reference || bankTxId,
-      '1000',
+      data.bankAccountCode || '1000',
       data.accountCode || '4000',
       Math.abs(parseFloat(data.amount)),
       data.description,
       null,
-      null
+      null,
+      params
     );
     
     return { 
