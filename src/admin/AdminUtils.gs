@@ -51,3 +51,12 @@ function eraseClient(clientId, retainFinancial) {
 function exportClientData(clientId) {
   return { success: false, message: 'GDPR export not yet implemented.' };
 }
+
+function safeSerializeDate(val) {
+  if (!val) return '';
+  try {
+    var d = (val instanceof Date) ? val : new Date(val);
+    if (isNaN(d.getTime())) return val.toString().substring(0, 10);
+    return d.toISOString().substring(0, 10);
+  } catch(e) { return ''; }
+}
