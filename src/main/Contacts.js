@@ -1,5 +1,5 @@
 /**
- * NO~BULL BOOKS — CONTACTS
+ * NO~BULL BOOKS -- CONTACTS
  * Client and Supplier CRUD operations.
  *
  * Sheet schemas (from Initializer.gs):
@@ -9,9 +9,9 @@
  *              VATNumber, ContactName, Notes, CreatedDate, Active
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // CLIENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getAllClients(params) {
   try {
@@ -121,7 +121,7 @@ function deleteClient(clientId, params) {
     var data = sheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] && data[i][0].toString() === clientId) {
-        // Safety check — refuse if client has outstanding invoices
+        // Safety check -- refuse if client has outstanding invoices
         var invSheet = ss.getSheetByName(SHEETS.INVOICES);
         if (invSheet) {
           var invData = invSheet.getDataRange().getValues();
@@ -130,7 +130,7 @@ function deleteClient(clientId, params) {
               var status = (invData[j][14] || '').toString();
               var due    = parseFloat(invData[j][13]) || 0;
               if (due > 0 && status !== 'Void') {
-                return { success: false, message: 'Cannot delete client with outstanding invoices (£' + due.toFixed(2) + ' due). Void or write off all invoices first.' };
+                return { success: false, message: 'Cannot delete client with outstanding invoices (GBP ' + due.toFixed(2) + ' due). Void or write off all invoices first.' };
               }
             }
           }
@@ -148,9 +148,9 @@ function deleteClient(clientId, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // SUPPLIERS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getAllSuppliers(params) {
   try {

@@ -1,8 +1,8 @@
 /**
- * NO~BULL BOOKS — INITIALIZER
+ * NO~BULL BOOKS -- INITIALIZER
  *
  * Provisions all required sheets on a blank client spreadsheet.
- * Safe to run multiple times — only creates sheets that are missing.
+ * Safe to run multiple times -- only creates sheets that are missing.
  * Called automatically on first boot via api('runInitialSetup').
  */
 function checkAndInitSheet(params) {
@@ -10,7 +10,7 @@ function checkAndInitSheet(params) {
     var ss      = getDb(params);
     var created = [];
 
-    // ── Full schema — must match column indices in Config.gs ─────────────────
+    // -- Full schema -- must match column indices in Config.gs -----------------
     var SCHEMA = {
       'Settings': [
         'CompanyName','CompanyAddress','CompanyPostcode','CompanyPhone','CompanyEmail',
@@ -161,7 +161,7 @@ function checkAndInitSheet(params) {
       }
     }
 
-    // ── Seed Users sheet with the caller as Owner (bootstrap only) ────────────
+    // -- Seed Users sheet with the caller as Owner (bootstrap only) ------------
     var usersSheet = ss.getSheetByName('Users');
     if (usersSheet && usersSheet.getLastRow() < 2) {
       // Prefer the email passed from SetupService (real client email)
@@ -172,9 +172,9 @@ function checkAndInitSheet(params) {
       }
       if (ownerEmail) {
         usersSheet.appendRow([ownerEmail, 'Owner', 'system', new Date(), true, 'Initial setup']);
-        Logger.log('Initializer: seeded Owner — ' + ownerEmail);
+        Logger.log('Initializer: seeded Owner -- ' + ownerEmail);
 
-        // ── Store ownerEmail in Settings so Auth.gs can identify the user ──────
+        // -- Store ownerEmail in Settings so Auth.gs can identify the user ------
         // Since the hub runs as edward (USER_DEPLOYING), we cannot use
         // Session.getActiveUser() to identify clients. We store their email
         // in the Settings sheet so every API call can resolve identity.
@@ -188,7 +188,7 @@ function checkAndInitSheet(params) {
               settingsSheet.appendRow([]);
             }
             settingsSheet.getRange(2, ownerEmailCol + 1).setValue(ownerEmail);
-            Logger.log('Initializer: stored ownerEmail in Settings — ' + ownerEmail);
+            Logger.log('Initializer: stored ownerEmail in Settings -- ' + ownerEmail);
           }
         }
       }
@@ -200,7 +200,7 @@ function checkAndInitSheet(params) {
       created: created,
       message: created.length
         ? 'Provisioned ' + created.length + ' sheets.'
-        : 'All sheets already exist — no changes made.'
+        : 'All sheets already exist -- no changes made.'
     };
 
   } catch(e) {
@@ -209,7 +209,7 @@ function checkAndInitSheet(params) {
   }
 }
 
-// ── Dev helper — run from Apps Script editor to test against a blank sheet ───
+// -- Dev helper -- run from Apps Script editor to test against a blank sheet ---
 function debug_testInit() {
   var testParams = { _sheetId: '11G7eOUSefvUCR95evsx0A_pauub5LwaE10DNtcium8M' };
   var result = checkAndInitSheet(testParams);

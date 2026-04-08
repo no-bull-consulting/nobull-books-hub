@@ -1,5 +1,5 @@
 <script>
-var _CURR_SYMBOLS={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+var _CURR_SYMBOLS={'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','JPY':'&#165;','CAD':'C$','AUD':'A$'};
 function _fmtCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+(Math.abs(n)||0).toFixed(2);}
 
 function include(filename) {
@@ -30,8 +30,8 @@ function renderSA103(d) {
       '</tbody></table></div>' +
       '<div class="card"><div class="card-hdr"><span class="card-ttl">Adjustments</span></div><div class="card-body">' +
         '<div class="form-grid-2">' +
-          '<div class="form-group"><label class="form-label">Own-use (£)</label><input type="number" class="form-input" id="sa-ownuse" value="'+(d.ownUseAdjustment||0)+'" step="0.01"></div>' +
-          '<div class="form-group"><label class="form-label">Other adj (£)</label><input type="number" class="form-input" id="sa-other" value="'+(d.otherAdjustments||0)+'" step="0.01"></div>' +
+          '<div class="form-group"><label class="form-label">Own-use (&pound;)</label><input type="number" class="form-input" id="sa-ownuse" value="'+(d.ownUseAdjustment||0)+'" step="0.01"></div>' +
+          '<div class="form-group"><label class="form-label">Other adj (&pound;)</label><input type="number" class="form-input" id="sa-other" value="'+(d.otherAdjustments||0)+'" step="0.01"></div>' +
         '</div>' +
         '<button class="btn btn-secondary btn-sm" onclick="saveAdjustments()">Save & Recalculate</button>' +
       '</div></div>' +
@@ -96,7 +96,7 @@ function openAddAssetModal() {
     '<div class="form-grid-2">' +
       '<div class="form-group" style="grid-column:1/-1"><label class="form-label">Description *</label><input type="text" class="form-input" id="ca-desc" placeholder="e.g. MacBook Pro"></div>' +
       '<div class="form-group"><label class="form-label">Purchase Date *</label><input type="date" class="form-input" id="ca-date"></div>' +
-      '<div class="form-group"><label class="form-label">Cost (£) *</label><input type="number" class="form-input" id="ca-cost" min="0" step="0.01" placeholder="0.00"></div>' +
+      '<div class="form-group"><label class="form-label">Cost (&pound;) *</label><input type="number" class="form-input" id="ca-cost" min="0" step="0.01" placeholder="0.00"></div>' +
       '<div class="form-group"><label class="form-label">Asset Type</label><select class="form-select" id="ca-type"><option value="AIA">AIA (100%)</option><option value="Main Pool">Main Pool (18%)</option><option value="Special Pool">Special Rate (6%)</option></select></div>' +
       '<div class="form-group"><label class="form-label">Private Use %</label><input type="number" class="form-input" id="ca-priv" min="0" max="100" value="0"></div>' +
       '<div class="form-group"><label class="form-label">Tax Year</label><input type="text" class="form-input" id="ca-year" value="'+yr+'" placeholder="2025-26"></div>' +
@@ -150,9 +150,9 @@ function previewEmailTemplate() {
   var subj = (document.getElementById('s_emailSubject')||{}).value||'';
   var body = (document.getElementById('s_emailBody')||{}).value||'';
   var vars = {
-    invoiceNumber:'INV-0042', clientName:'Acme Ltd', total:'£1,200.00',
+    invoiceNumber:'INV-0042', clientName:'Acme Ltd', total:'&pound;1,200.00',
     dueDate:'31 March 2026', companyName:(App.settings||{}).companyName||'Your Company',
-    paymentDetails:'Bank: '+(App.settings||{}).bankName+' · Sort: '+(App.settings||{}).sortCode+' · Acc: '+(App.settings||{}).accountNumber
+    paymentDetails:'Bank: '+(App.settings||{}).bankName+' . Sort: '+(App.settings||{}).sortCode+' . Acc: '+(App.settings||{}).accountNumber
   };
   var render = function(str){ return str.replace(/\{\{(\w+)\}\}/g, function(_,k){ return vars[k]||('{{'+k+'}}'); }); };
   openModal('email-preview','Email Preview',
@@ -162,7 +162,7 @@ function previewEmailTemplate() {
     'modal-md'
   );
 }
-// ── CLIENT STATEMENT MODAL ────────────────────────────────────────────────────
+// -- CLIENT STATEMENT MODAL ----------------------------------------------------
 function openClientStatementModal(clientId, clientName) {
   var today = new Date().toISOString().split('T')[0];
   var fyStart = (App.settings&&App.settings.financialYearStart) || today.slice(0,4)+'-04-01';
@@ -192,18 +192,18 @@ async function _doClientStmt(btn) {
   if (r&&r.success) {
     closeModal('cl-statement');
     window.open(r.pdfUrl,'_blank');
-    toast(r.invoiceCount+' invoice(s) · '+fmt(r.totalOutstanding)+' outstanding','success',5000);
+    toast(r.invoiceCount+' invoice(s) . '+fmt(r.totalOutstanding)+' outstanding','success',5000);
   } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
 }
 
-// ── REMITTANCE ADVICE MODAL ───────────────────────────────────────────────────
+// -- REMITTANCE ADVICE MODAL ---------------------------------------------------
 var _remBillIds = [];
 function openRemittanceModal(billIds, supplierName) {
   _remBillIds = billIds||[];
   var today = new Date().toISOString().split('T')[0];
   var bills = (App.data.bills||[]).filter(function(b){ return _remBillIds.indexOf(b.billId)>=0; });
   var total = bills.reduce(function(s,b){ return s+(parseFloat(b.total)||0); }, 0);
-  openModal('su-remittance','Remittance Advice — '+(supplierName||''),
+  openModal('su-remittance','Remittance Advice -- '+(supplierName||''),
     '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:12px">' +
       '<div class="stat-card" style="padding:10px"><div class="stat-label">Bills</div><div style="font-weight:700">'+bills.length+'</div></div>' +
       '<div class="stat-card" style="padding:10px"><div class="stat-label">Total</div><div style="font-weight:700">'+fmt(total)+'</div></div>' +
@@ -229,14 +229,14 @@ async function _doRemittance() {
   if (r&&r.success) {
     closeModal('su-remittance');
     window.open(r.pdfUrl,'_blank');
-    toast('Remittance advice generated · '+fmt(r.total),'success',4000);
+    toast('Remittance advice generated . '+fmt(r.total),'success',4000);
   } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // RECURRING INVOICES PAGE
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 var _recurringData = [];
 function closeRecCreate() { closeModal('rec-create'); }
 function closeRecEdit() { closeModal('rec-edit'); }
@@ -253,13 +253,13 @@ async function showRecurring() {
 
 showContent(
     '<div class="page-hdr"><div><div class="page-title">Recurring Invoices</div>' +
-    '<div class="page-sub">'+active.length+' active · '+paused.length+' paused</div></div>' +
+    '<div class="page-sub">'+active.length+' active . '+paused.length+' paused</div></div>' +
     '<div class="page-actions">' +
-    (cw?'<button class="btn btn-secondary btn-sm" onclick="runRecurringNow()">▶ Run Now</button> ':'')+
+    (cw?'<button class="btn btn-secondary btn-sm" onclick="runRecurringNow()">&#9654; Run Now</button> ':'')+
     (cw?'<button class="btn btn-primary" onclick="openRecCreateModal()">+ New Schedule</button>':'')+
     '</div></div>' +
     '<div class="alert alert-info" style="margin-bottom:14px">' +
-    '<p>Recurring invoices are created automatically. Install the daily trigger once via <strong>Settings → Maintenance</strong> or the Run Now button above.</p></div>' +
+    '<p>Recurring invoices are created automatically. Install the daily trigger once via <strong>Settings -> Maintenance</strong> or the Run Now button above.</p></div>' +
     '<div class="tbl-wrap">' +
     (!_recurringData.length
       ? '<div class="empty"><h3>No recurring schedules</h3><p>Set up a recurring invoice to auto-generate invoices for regular clients.</p>'+(cw?'<button class="btn btn-primary" onclick="openRecCreateModal()">Create Schedule</button>':'')+' </div>'
@@ -271,9 +271,9 @@ showContent(
           var due = r.nextRunDate && new Date(r.nextRunDate) < new Date();
           return '<tr>' +
             '<td><strong>'+r.clientName+'</strong></td>' +
-            '<td style="color:var(--g500);font-size:12px">'+(r.description||r.lines.map(function(l){return l.description;}).join(', ')||'—')+'</td>' +
+            '<td style="color:var(--g500);font-size:12px">'+(r.description||r.lines.map(function(l){return l.description;}).join(', ')||'--')+'</td>' +
             '<td>'+badge(r.frequency)+'</td>' +
-            '<td style="color:'+(due?'var(--amber-500)':'inherit')+'">'+(r.nextRunDate?fmtDate(r.nextRunDate):'—')+(due?' ⚠':'')+' </td>' +
+            '<td style="color:'+(due?'var(--amber-500)':'inherit')+'">'+(r.nextRunDate?fmtDate(r.nextRunDate):'--')+(due?' &#9888;':'')+' </td>' +
             '<td>'+( r.lastRunDate?fmtDate(r.lastRunDate):'Never')+'</td>' +
             '<td style="font-size:11px;color:var(--g500)">'+r.invoiceCount+' invoice'+(r.invoiceCount!==1?'s':'')+' </td>' +
             '<td>'+badge(r.status)+'</td>' +
@@ -353,7 +353,7 @@ function _renderRecLines() {
         '<td style="padding:3px"><input class="form-input" style="padding:5px;font-size:13px;text-align:right" type="number" min="0.01" step="0.01" value="'+(l.qty||1)+'" onchange="_recLines['+i+'].qty=parseFloat(this.value)||1"></td>' +
         '<td style="padding:3px"><input class="form-input" style="padding:5px;font-size:13px;text-align:right" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" onchange="_recLines['+i+'].unitPrice=parseFloat(this.value)||0"></td>' +
         '<td style="padding:3px"><input class="form-input" style="padding:5px;font-size:13px;text-align:right" type="number" min="0" max="100" step="0.5" value="'+(l.vatRate||0)+'" onchange="_recLines['+i+'].vatRate=parseFloat(this.value)||0"></td>' +
-        '<td style="padding:3px;text-align:center"><button onclick="_recLines.splice('+i+',1);_renderRecLines()" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px">×</button></td>' +
+        '<td style="padding:3px;text-align:center"><button onclick="_recLines.splice('+i+',1);_renderRecLines()" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px">x</button></td>' +
       '</tr>';
     }).join('') +
     '</tbody></table>';
@@ -383,7 +383,7 @@ async function saveRecurring() {
   });
   if (r&&r.success) {
     closeRecCreate();
-    toast('Recurring schedule created · next run: '+fmtDate(r.nextRunDate),'success',4000);
+    toast('Recurring schedule created . next run: '+fmtDate(r.nextRunDate),'success',4000);
     showRecurring();
   } else {
     if (btn) { btn.disabled=false; btn.textContent='Create Schedule'; }
@@ -396,7 +396,7 @@ function openRecEditModal(recId) {
   var rec = _recurringData.find(function(r){return r.recurringId===recId;});
   if (!rec) return;
   _reeLines = JSON.parse(JSON.stringify(rec.lines||[{description:'',quantity:1,unitPrice:0,vatRate:0,accountCode:'4000'}]));
-  openModal('rec-edit','Edit Schedule — '+rec.clientName,
+  openModal('rec-edit','Edit Schedule -- '+rec.clientName,
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Description</label>' +
         '<input type="text" class="form-input" id="ree-desc" value="'+(rec.description||'')+'"></div>' +
@@ -452,7 +452,7 @@ function _reeRenderLines() {
       '<td style="padding:3px"><input class="form-input" style="padding:5px 7px;font-size:12px;text-align:right;width:90px" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" onchange="_reeLines['+i+'].unitPrice=parseFloat(this.value)||0"></td>' +
       '<td style="padding:3px"><input class="form-input" style="padding:5px 7px;font-size:12px;text-align:right;width:60px" type="number" min="0" max="100" step="0.01" value="'+(l.vatRate!==undefined?l.vatRate:0)+'" onchange="_reeLines['+i+'].vatRate=parseFloat(this.value)||0"></td>' +
       '<td style="padding:3px">'+_coaSelect((App.data._coaAccounts||[]),l.accountCode||'4000',i,'ree')+'</td>' +
-      '<td style="padding:3px;text-align:center"><button onclick="_reeLines.splice('+i+',1);_reeRenderLines()" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:2px 4px">×</button></td>' +
+      '<td style="padding:3px;text-align:center"><button onclick="_reeLines.splice('+i+',1);_reeRenderLines()" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:2px 4px">x</button></td>' +
     '</tr>';
   }).join('');
 }
@@ -495,7 +495,7 @@ async function _doDelRecurring() {
 }
 
 
-// ── WhatsApp Invoice Delivery ─────────────────────────────────────────────────
+// -- WhatsApp Invoice Delivery -------------------------------------------------
 async function openWhatsAppModal(invoiceId) {
   var inv    = (App.data.invoices||[]).find(function(i){ return i.invoiceId===invoiceId; });
   var client = inv ? (App.data.clients||[]).find(function(c){ return c.clientId===inv.clientId; }) : null;
@@ -508,7 +508,7 @@ async function openWhatsAppModal(invoiceId) {
   openModal('inv-whatsapp','Send via WhatsApp',
     '<div class="form-group"><label class="form-label">Recipient WhatsApp Number</label>' +
       '<input type="tel" class="form-input" id="wa-to" value="'+waNum+'" placeholder="+447700900123 (include country code)"></div>' +
-    '<div class="form-group"><label class="form-label">Message (optional — leave blank for default)</label>' +
+    '<div class="form-group"><label class="form-label">Message (optional -- leave blank for default)</label>' +
       '<textarea class="form-textarea" id="wa-body" rows="5" placeholder="Leave blank to use the default invoice message"></textarea></div>' +
     (!hasTwilio
       ? '<div class="alert alert-warning"><p>Twilio is not configured. Use the <strong>wa.me link</strong> option below (opens WhatsApp on your device, no PDF attachment).</p></div>'
@@ -551,14 +551,14 @@ async function _getWALink(btn) {
       '<a href="'+r.link+'" target="_blank" class="btn btn-primary btn-sm" style="margin-top:8px;display:inline-block">Open WhatsApp</a>';
     var modal = document.querySelector('#mb-inv-whatsapp .modal-body');
     if (modal) modal.appendChild(area);
-    toast('Link generated — open on your phone','info',5000);
+    toast('Link generated -- open on your phone','info',5000);
   } else toast('Error: '+(r?r.message||r.error:'unknown'),'error');
 }
 
 function showSettings() {
   var s = App.data.settings || App.settings || {};
 
-  // ── Async loaders ───────────────────────────────────────────────────────────
+  // -- Async loaders -----------------------------------------------------------
   setTimeout(async function() {
     var el = document.getElementById('wa-status-area');
     if (!el) return;
@@ -575,13 +575,13 @@ function showSettings() {
       el.innerHTML = r.configured
         ? '<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green-600)">&#10003;</span>' +
           '<span style="font-size:13px">' + provLabel + ' configured &middot; ' + detail + '</span></div>'
-        : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured — use the setup guide below.</div>';
+        : '<div style="color:var(--amber-500);font-size:13px">&#9888; Not configured -- use the setup guide below.</div>';
     } catch(e) {
       el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
     }
   }, 300);
 
-  // ── Field helpers ───────────────────────────────────────────────────────────
+  // -- Field helpers -----------------------------------------------------------
   function sf(lbl, id, val, type) {
     return '<div class="form-group"><label class="form-label">' + lbl + '</label>' +
       '<input type="' + (type || 'text') + '" class="form-input" id="s_' + id + '" value="' + (val != null ? val : '') + '" placeholder="' + (type === 'number' ? '0' : '') + '"></div>';
@@ -600,7 +600,7 @@ function showSettings() {
       '</select></div>';
   }
 
-  // ── Accordion section builder ───────────────────────────────────────────────
+  // -- Accordion section builder -----------------------------------------------
   function acc(id, icon, title, body, open, statusHtml) {
     return '<div class="sacc" id="sacc-' + id + '">' +
       '<div class="sacc-hdr" onclick="toggleSettingsAcc(\'' + id + '\')">' +
@@ -619,7 +619,7 @@ function showSettings() {
     '</div>';
   }
 
-  // ── Section: Company ────────────────────────────────────────────────────────
+  // -- Section: Company --------------------------------------------------------
   var secCompany =
     sf('Company Name *', 'companyName', s.companyName) +
     sf('Address', 'companyAddress', s.companyAddress) +
@@ -631,10 +631,10 @@ function showSettings() {
       '<label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block">Upload Logo' +
         '<input type="file" accept="image/*" style="display:none" onchange="uploadLogoFile(this)">' +
       '</label>' +
-      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PNG/SVG/JPG recommended · max 200KB</span>' +
+      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PNG/SVG/JPG recommended . max 200KB</span>' +
     '</div>';
 
-  // ── Section: Invoicing ──────────────────────────────────────────────────────
+  // -- Section: Invoicing ------------------------------------------------------
   var secInvoicing =
     '<div class="form-grid-2">' +
       sf('Invoice Prefix', 'invoicePrefix', s.invoicePrefix) +
@@ -649,7 +649,7 @@ function showSettings() {
       '<textarea class="form-textarea" id="s_invoiceFooter" rows="2" placeholder="Shown at bottom of PDF invoices">' + (s.invoiceFooter || '') + '</textarea>' +
     '</div>';
 
-  // ── Section: Invoice PDF Template ───────────────────────────────────────────
+  // -- Section: Invoice PDF Template -------------------------------------------
   var secTemplate =
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Accent Colour</label>' +
@@ -673,7 +673,7 @@ function showSettings() {
       '</div>' +
     '</div>';
 
-  // ── Section: Financial Year ─────────────────────────────────────────────────
+  // -- Section: Financial Year -------------------------------------------------
   var secFY =
     '<div class="form-grid-2">' +
       sf('Business Start Date', 'businessStartDate', s.businessStartDate || '', 'date') +
@@ -682,7 +682,7 @@ function showSettings() {
     '<div style="font-size:11px;color:var(--g500);margin-bottom:8px">e.g. <strong>31 March</strong>, <strong>31 December</strong>, <strong>30 April</strong>. The system derives the current financial year automatically.</div>' +
     '<div id="fy-preview" style="font-size:12px;color:var(--blue-600);padding:6px 10px;background:var(--blue-50);border-radius:var(--r8)"></div>';
 
-  // ── Section: VAT ────────────────────────────────────────────────────────────
+  // -- Section: VAT ------------------------------------------------------------
   var secVAT =
     sc('VAT Registered', 'vatRegistered', s.vatRegistered, 'Enables Tax Invoice labelling and VAT calculations') +
     '<div id="vat-fields-section">' +
@@ -702,7 +702,7 @@ function showSettings() {
       '</div>' +
     '</div>';
 
-  // ── Section: Bank Details ───────────────────────────────────────────────────
+  // -- Section: Bank Details ---------------------------------------------------
   var secBank =
     '<div class="form-grid-2">' +
       sf('Bank Name', 'bankName', s.bankName) +
@@ -711,7 +711,7 @@ function showSettings() {
       sf('Account Number', 'accountNumber', s.accountNumber) +
     '</div>';
 
-  // ── Section: Email Template ─────────────────────────────────────────────────
+  // -- Section: Email Template -------------------------------------------------
   var secEmail =
     '<div style="font-size:11px;color:var(--g400);margin-bottom:12px">Variables: <code>{{invoiceNumber}} {{clientName}} {{total}} {{dueDate}} {{companyName}} {{paymentDetails}}</code></div>' +
     sf('Email Subject', 'emailSubject', s.emailSubject || 'Invoice {{invoiceNumber}} from {{companyName}}') +
@@ -719,11 +719,11 @@ function showSettings() {
       '<textarea class="form-textarea" id="s_emailBody" rows="8" style="font-family:var(--mono);font-size:12px">' + (s.emailBody || _defaultEmailBody()) + '</textarea>' +
     '</div>' +
     '<div style="display:flex;gap:8px">' +
-      '<button class="btn btn-secondary btn-sm" onclick="previewEmailTemplate()">👁 Preview</button>' +
-      '<button class="btn btn-ghost btn-sm" onclick="resetEmailTemplate()">↩ Reset to Default</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="previewEmailTemplate()"> Preview</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="resetEmailTemplate()">&#8617; Reset to Default</button>' +
     '</div>';
 
-  // ── Section: HMRC / MTD ─────────────────────────────────────────────────────
+  // -- Section: HMRC / MTD -----------------------------------------------------
   var secHMRC =
     '<div id="hmrc-status-bar"></div>' +
     '<div class="form-grid-2">' +
@@ -733,17 +733,17 @@ function showSettings() {
     '<div class="alert alert-info" style="margin-bottom:12px">' +
       '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. Leave Secret blank to keep existing value.</p>' +
     '</div>' +
-    sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox — disable for live submission') +
+    sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox -- disable for live submission') +
     '<div style="display:flex;gap:8px;margin-top:12px">' +
-      '<button class="btn btn-secondary btn-sm" onclick="testHMRCConn()">🔌 Test Connection</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openHMRCConnectModal()">🔑 Connect / Re-authenticate</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="testHMRCConn()"> Test Connection</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openHMRCConnectModal()"> Connect / Re-authenticate</button>' +
     '</div>';
 
-  // ── Section: Currency ───────────────────────────────────────────────────────
+  // -- Section: Currency -------------------------------------------------------
   var currencyNames = {
-    'GBP':'GBP — British Pound','EUR':'EUR — Euro','USD':'USD — US Dollar',
-    'CHF':'CHF — Swiss Franc','SEK':'SEK — Swedish Krona','NOK':'NOK — Norwegian Krone',
-    'DKK':'DKK — Danish Krone','JPY':'JPY — Japanese Yen','CAD':'CAD — Canadian Dollar','AUD':'AUD — Australian Dollar'
+    'GBP':'GBP -- British Pound','EUR':'EUR -- Euro','USD':'USD -- US Dollar',
+    'CHF':'CHF -- Swiss Franc','SEK':'SEK -- Swedish Krona','NOK':'NOK -- Norwegian Krone',
+    'DKK':'DKK -- Danish Krone','JPY':'JPY -- Japanese Yen','CAD':'CAD -- Canadian Dollar','AUD':'AUD -- Australian Dollar'
   };
   var currencies = ['GBP','EUR','USD','CHF','SEK','NOK','DKK','JPY','CAD','AUD'];
   var enabledCurr = s.enabledCurrencies || ['GBP','EUR','USD'];
@@ -767,25 +767,25 @@ function showSettings() {
       '</div>' +
     '</div>';
 
-  // ── Section: WhatsApp ───────────────────────────────────────────────────────
+  // -- Section: WhatsApp -------------------------------------------------------
   var secWhatsApp =
     '<div id="wa-status-area"><div class="loader" style="height:40px"><div class="spin"></div></div></div>' +
     '<div style="margin-top:12px">' +
-      '<button class="btn btn-ghost btn-sm" onclick="toggleWAGuide()" id="wa-guide-btn">📖 Show setup guide</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="toggleWAGuide()" id="wa-guide-btn"> Show setup guide</button>' +
     '</div>' +
     '<div id="wa-guide" style="display:none;margin-top:14px;padding:14px;background:var(--g50);border-radius:var(--r8);border:1px solid var(--g200)">' +
       '<div class="form-grid-2">' +
         '<div>' +
-          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option A — Meta Cloud API (recommended)</div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option A -- Meta Cloud API (recommended)</div>' +
           '<div style="font-size:12px;color:var(--g500);line-height:1.7">' +
-            '1. Go to <strong>developers.facebook.com</strong> → My Apps → your app → WhatsApp → API Setup<br>' +
+            '1. Go to <strong>developers.facebook.com</strong> -> My Apps -> your app -> WhatsApp -> API Setup<br>' +
             '2. Copy the <strong>Phone Number ID</strong><br>' +
             '3. Generate or copy your access token<br>' +
             '4. In GAS editor run:<br><code style="font-size:11px">saveMetaCredentials(phoneNumberId, accessToken)</code>' +
           '</div>' +
         '</div>' +
         '<div>' +
-          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option B — Twilio (legacy)</div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">Option B -- Twilio (legacy)</div>' +
           '<div style="font-size:12px;color:var(--g500);line-height:1.7">' +
             '1. Sign up at <strong>twilio.com</strong><br>' +
             '2. Enable WhatsApp sandbox<br>' +
@@ -796,31 +796,31 @@ function showSettings() {
       '<div style="font-size:11px;color:var(--g400);margin-top:10px">Credentials are stored in Script Properties only and never written to the spreadsheet.</div>' +
     '</div>';
 
-  // ── Section: Chart of Accounts ────────────────────────────────────────────
+  // -- Section: Chart of Accounts --------------------------------------------
   var secCOA =
     '<div id="coa-seed-status" style="margin-bottom:14px">' +
       '<div class="loader" style="height:32px"><div class="spin"></div></div>' +
     '</div>' +
     '<p style="font-size:13px;color:var(--g600);margin-bottom:16px;line-height:1.6">' +
       'Seed your Chart of Accounts with the standard UK nominal accounts. ' +
-      'Existing accounts are never overwritten — only missing accounts are added.' +
+      'Existing accounts are never overwritten -- only missing accounts are added.' +
     '</p>' +
     '<div style="margin-bottom:16px">' +
       '<label class="form-label">Template</label>' +
       '<select class="form-select" id="coa-template-sel" style="max-width:320px">' +
-        '<option value="uk_standard">UK Standard (90 accounts — recommended)</option>' +
+        '<option value="uk_standard">UK Standard (90 accounts -- recommended)</option>' +
         '<option value="uk_sole_trader">UK Sole Trader Simplified (50 accounts)</option>' +
       '</select>' +
       '<div style="font-size:11px;color:var(--g400);margin-top:4px">The standard template covers all common account types for UK SMEs including MTD VAT accounts.</div>' +
     '</div>' +
-    '<button class="btn btn-primary" id="coa-seed-btn" onclick="doSeedCOA()">🌱 Seed Chart of Accounts</button>' +
-    '<span style="font-size:12px;color:var(--g400);margin-left:12px">Safe to run on existing data — skips accounts that already exist</span>';
+    '<button class="btn btn-primary" id="coa-seed-btn" onclick="doSeedCOA()"> Seed Chart of Accounts</button>' +
+    '<span style="font-size:12px;color:var(--g400);margin-left:12px">Safe to run on existing data -- skips accounts that already exist</span>';
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // -- Render ------------------------------------------------------------------
   showContent(
     '<div class="page-hdr">' +
-      '<div class="page-title">⚙️ Settings</div>' +
-      '<div class="page-actions"><button class="btn btn-primary" onclick="saveSettings()">💾 Save Changes</button></div>' +
+      '<div class="page-title">&#9881;&#65039; Settings</div>' +
+      '<div class="page-actions"><button class="btn btn-primary" onclick="saveSettings()"> Save Changes</button></div>' +
     '</div>' +
 
     '<style>' +
@@ -835,17 +835,17 @@ function showSettings() {
     '@media(max-width:600px){.form-grid-2{grid-template-columns:1fr!important}.sacc-body{padding:14px}}' +
     '</style>' +
 
-    acc('company',    '🏢', 'Company',             secCompany,   true)  +
-    acc('invoicing',  '🧾', 'Invoicing',            secInvoicing, false) +
-    acc('template',   '🎨', 'Invoice PDF Template', secTemplate,  false) +
-    acc('fy',         '📅', 'Financial Year',       secFY,        false) +
-    acc('coa',         '📊', 'Chart of Accounts',    secCOA,       false) +
-    acc('vat',        '%',  'VAT',                  secVAT,       false, s.vatRegistered ? '✓ Registered' : '') +
-    acc('bank',       '🏦', 'Bank Details',         secBank,      false) +
-    acc('email',      '✉️', 'Email Template',       secEmail,     false) +
-    acc('hmrc',       '🏛', 'HMRC / MTD',           secHMRC,      false) +
-    acc('currency',   '💱', 'Currency',             secCurrency,  false) +
-    acc('whatsapp',   '💬', 'WhatsApp Delivery',    secWhatsApp,  false)
+    acc('company',    '', 'Company',             secCompany,   true)  +
+    acc('invoicing',  '', 'Invoicing',            secInvoicing, false) +
+    acc('template',   '', 'Invoice PDF Template', secTemplate,  false) +
+    acc('fy',         '', 'Financial Year',       secFY,        false) +
+    acc('coa',         '', 'Chart of Accounts',    secCOA,       false) +
+    acc('vat',        '%',  'VAT',                  secVAT,       false, s.vatRegistered ? '&#10003; Registered' : '') +
+    acc('bank',       '', 'Bank Details',         secBank,      false) +
+    acc('email',      '&#9993;&#65039;', 'Email Template',       secEmail,     false) +
+    acc('hmrc',       '', 'HMRC / MTD',           secHMRC,      false) +
+    acc('currency',   '', 'Currency',             secCurrency,  false) +
+    acc('whatsapp',   '', 'WhatsApp Delivery',    secWhatsApp,  false)
   );
 
   loadHMRCStatusBar();
@@ -871,7 +871,7 @@ function toggleWAGuide() {
   var btn   = document.getElementById('wa-guide-btn');
   var isOpen = guide.style.display !== 'none';
   guide.style.display = isOpen ? 'none' : 'block';
-  btn.textContent = isOpen ? '📖 Show setup guide' : '📖 Hide setup guide';
+  btn.textContent = isOpen ? ' Show setup guide' : ' Hide setup guide';
 }
 
 async function loadCOASeedStatus() {
@@ -886,20 +886,20 @@ async function loadCOASeedStatus() {
     el.innerHTML =
       '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;' +
         'background:var(--amber-50);border:1px solid var(--amber-200);border-radius:8px">' +
-        '<span style="font-size:18px">⚠️</span>' +
+        '<span style="font-size:18px">&#9888;&#65039;</span>' +
         '<div>' +
           '<div style="font-size:13px;font-weight:600;color:#92400e">No accounts found</div>' +
-          '<div style="font-size:12px;color:#92400e">Your Chart of Accounts is empty — seed it to get started.</div>' +
+          '<div style="font-size:12px;color:#92400e">Your Chart of Accounts is empty -- seed it to get started.</div>' +
         '</div>' +
       '</div>';
   } else {
     el.innerHTML =
       '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;' +
         'background:var(--green-50);border:1px solid var(--green-200);border-radius:8px">' +
-        '<span style="font-size:18px">✅</span>' +
+        '<span style="font-size:18px">&#9989;</span>' +
         '<div>' +
           '<div style="font-size:13px;font-weight:600;color:var(--green-700)">' + count + ' accounts in your Chart of Accounts</div>' +
-          '<div style="font-size:12px;color:var(--green-600)">Seeding will only add accounts that are missing — existing accounts are safe.</div>' +
+          '<div style="font-size:12px;color:var(--green-600)">Seeding will only add accounts that are missing -- existing accounts are safe.</div>' +
         '</div>' +
       '</div>';
   }
@@ -907,16 +907,16 @@ async function loadCOASeedStatus() {
 
 async function doSeedCOA() {
   var btn = document.getElementById('coa-seed-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Seeding…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '&#9203; Seeding...'; }
 
   var r = await api('seedCOA', {});
 
-  if (btn) { btn.disabled = false; btn.textContent = '🌱 Seed Chart of Accounts'; }
+  if (btn) { btn.disabled = false; btn.textContent = ' Seed Chart of Accounts'; }
 
   if (r && r.success) {
     var msg = r.created > 0
       ? r.created + ' accounts added' + (r.skipped > 0 ? ', ' + r.skipped + ' already existed' : '') + '.'
-      : 'All ' + r.skipped + ' accounts already exist — nothing to add.';
+      : 'All ' + r.skipped + ' accounts already exist -- nothing to add.';
     toast(msg, r.created > 0 ? 'success' : 'info', 5000);
     loadCOASeedStatus(); // refresh the status badge
   } else {
@@ -947,7 +947,7 @@ function updateFYPreview() {
     fyStart.setFullYear(fyEnd.getFullYear() - 1);
     fyStart.setDate(fyStart.getDate() + 1);
     var fmt2 = function(d){ return d.getDate()+' '+ months[d.getMonth()]+' '+d.getFullYear(); };
-    var preview = 'Current financial year: <strong>'+fmt2(fyStart)+'</strong> → <strong>'+fmt2(fyEnd)+'</strong>';
+    var preview = 'Current financial year: <strong>'+fmt2(fyStart)+'</strong> -> <strong>'+fmt2(fyEnd)+'</strong>';
     // Show business start context
     if (bizStart) {
       var bs = new Date(bizStart);
@@ -955,7 +955,7 @@ function updateFYPreview() {
       if (bs > fyStart) {
         var firstYearEnd = new Date(fyEnd);
         if (bs > fyEnd) { firstYearEnd.setFullYear(fyEnd.getFullYear()+1); }
-        preview += ' · First year end: <strong>'+fmt2(firstYearEnd)+'</strong>';
+        preview += ' . First year end: <strong>'+fmt2(firstYearEnd)+'</strong>';
       }
     }
     el.innerHTML = preview;
@@ -969,15 +969,15 @@ async function loadHMRCStatusBar() {
   var connected = r.connected;
   el.innerHTML = connected
     ? '<div style="background:var(--green-50);border-bottom:1px solid var(--green-200);padding:8px 16px;font-size:12px;color:var(--green-700)">' +
-        '✓ Connected to HMRC MTD'+(r.testMode?' (Sandbox)':' (Live)')+
-        ' · Token expires in '+r.expiresIn+' min · VRN: '+(r.vrn||'—')+'</div>'
+        '&#10003; Connected to HMRC MTD'+(r.testMode?' (Sandbox)':' (Live)')+
+        ' . Token expires in '+r.expiresIn+' min . VRN: '+(r.vrn||'--')+'</div>'
     : '<div style="background:var(--amber-50);border-bottom:1px solid var(--amber-200);padding:8px 16px;font-size:12px;color:#92400e">' +
-        '⚠ Not connected to HMRC MTD — <a href="javascript:void(0)" onclick="openHMRCConnectModal()" style="color:inherit;font-weight:600">Connect now</a></div>';
+        '&#9888; Not connected to HMRC MTD -- <a href="javascript:void(0)" onclick="openHMRCConnectModal()" style="color:inherit;font-weight:600">Connect now</a></div>';
 }
 
 async function uploadLogoFile(input) {
   var file = input.files[0]; if (!file) return;
-  if (file.size > 204800) { toast('Logo too large — max 200KB', 'warning'); return; }
+  if (file.size > 204800) { toast('Logo too large -- max 200KB', 'warning'); return; }
   var reader = new FileReader();
   reader.onload = async function(e) {
     var dataUrl = e.target.result;
@@ -1006,8 +1006,8 @@ async function uploadLogoFile(input) {
 async function testHMRCConn() {
   var btn = event.target; btn.disabled=true; btn.textContent='Testing...';
   var r = await api('testHMRCConnection');
-  btn.disabled=false; btn.textContent='🔌 Test Connection';
-  toast(r&&r.success ? '✓ HMRC connection OK' : 'Test failed: '+(r?r.message:'unknown'), r&&r.success?'success':'error');
+  btn.disabled=false; btn.textContent=' Test Connection';
+  toast(r&&r.success ? '&#10003; HMRC connection OK' : 'Test failed: '+(r?r.message:'unknown'), r&&r.success?'success':'error');
 }
 
 async function saveSettings() {
@@ -1073,7 +1073,7 @@ async function saveSettings() {
   } else {
     toast('Error: '+(r?r.message||r.error:'unknown'), 'error');
   }
-  if (btn) { btn.disabled=false; btn.textContent='💾 Save Changes'; }
+  if (btn) { btn.disabled=false; btn.textContent=' Save Changes'; }
 }
 function _editUser(btn) {
   openEditUserModal(btn.getAttribute('data-em'), btn.getAttribute('data-ro'));
@@ -1092,7 +1092,7 @@ async function showUsers() {
   ];
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Users</div>' +
-      '<div class="page-sub">'+us.length+' user'+(us.length!==1?'s':'')+' · role-based access control</div></div>' +
+      '<div class="page-sub">'+us.length+' user'+(us.length!==1?'s':'')+' . role-based access control</div></div>' +
       '<div class="page-actions"><button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button></div></div>' +
 
     '<div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">' +
@@ -1110,13 +1110,13 @@ async function showUsers() {
           '<td>'+badge(u.active?'Active':'Inactive')+'</td>' +
           '<td><button class="btn btn-ghost btn-xs" data-em="'+u.email+'" data-ro="'+u.role+'" onclick="_editUser(this)">Edit</button></td>' +
         '</tr>';
-      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--g400)">No users yet — add one above</td></tr>') +
+      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--g400)">No users yet -- add one above</td></tr>') +
       '</tbody></table></div>' +
     '</div>' +
 
     // RBAC reference card
     '<div class="card" style="position:sticky;top:60px">' +
-      '<div class="card-hdr"><span class="card-ttl">🔐 Role Reference</span></div>' +
+      '<div class="card-hdr"><span class="card-ttl"> Role Reference</span></div>' +
       '<div style="padding:0">' +
       rbac.map(function(r) {
         return '<div style="padding:10px 14px;border-bottom:1px solid var(--g100)">' +
@@ -1142,7 +1142,7 @@ var _billLines = [];
 var _currentInvoicePayId = null;
 var _currentBillPayId    = null;
 var _currentClientId     = null;
-// Named close helpers — avoid quoting issues with closeModal('id') inside JS strings
+// Named close helpers -- avoid quoting issues with closeModal('id') inside JS strings
 function closeInvCreate() { closeModal('inv-create'); }
 function closeInvPay()    { closeModal('inv-pay');    }
 function closeClCreate()  { closeModal('cl-create');  }
@@ -1165,7 +1165,7 @@ function _doDelSup() { if (_pendingDeleteSupplierId) deleteSupplierConfirmed(_pe
 function saveCurrentInvoicePayment() { if (_currentInvoicePayId) saveInvoicePayment(_currentInvoicePayId); }
 function saveCurrentBillPayment()    { if (_currentBillPayId)    saveBillPayment(_currentBillPayId);       }
 function saveCurrentClient()         { saveClient(_currentClientId); }
-// ── COA account caches for line item selectors ───────────────────────────────
+// -- COA account caches for line item selectors -------------------------------
 var _coaRevenue  = [];  // 4xxx income accounts
 var _coaExpenses = [];  // 5xxx-8xxx expense accounts
 
@@ -1300,12 +1300,12 @@ function openCreateInvoiceModal() {
     '</table>' +
     '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addInvLine()">+ Add Line</button>' +
     '<div style="text-align:right;margin-top:10px;padding-top:10px;border-top:1px solid var(--g200)">' +
-      '<span style="font-size:13px;color:var(--g500)">Subtotal: </span><strong class="mono" id="ic-sub">£0.00</strong>&emsp;' +
-      '<span style="font-size:13px;color:var(--g500)">VAT: </span><strong class="mono" id="ic-vat">£0.00</strong>&emsp;' +
-      '<span style="font-size:14px;font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="ic-total">£0.00</strong>' +
+      '<span style="font-size:13px;color:var(--g500)">Subtotal: </span><strong class="mono" id="ic-sub">&pound;0.00</strong>&emsp;' +
+      '<span style="font-size:13px;color:var(--g500)">VAT: </span><strong class="mono" id="ic-vat">&pound;0.00</strong>&emsp;' +
+      '<span style="font-size:14px;font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="ic-total">&pound;0.00</strong>' +
     '</div>' +
     '<div class="form-group" style="margin-top:14px"><label class="form-label">Notes (internal)</label>' +
-      '<textarea class="form-textarea" id="ic-notes" rows="2" placeholder="Internal notes only — not shown on PDF"></textarea></div>',
+      '<textarea class="form-textarea" id="ic-notes" rows="2" placeholder="Internal notes only -- not shown on PDF"></textarea></div>',
     '<button class="btn btn-secondary" onclick="closeInvCreate()">Cancel</button>' +
     '<button class="btn btn-primary" id="ic-save" onclick="saveInvoice()">Create Invoice</button>',
     'modal-lg'
@@ -1341,7 +1341,7 @@ function renderInvLines() {
       '<td style="padding:3px">'+vatSel+'</td>' +
       '<td style="padding:3px">'+_coaSelect(_coaRevenue, l.accountCode, i, 'revenue')+'</td>' +
       '<td style="padding:3px;text-align:right"><span class="mono" style="font-size:12px">'+fmt(tot)+'</span></td>' +
-      '<td style="padding:3px;text-align:center"><button onclick="removeInvLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:1px 4px">×</button></td>' +
+      '<td style="padding:3px;text-align:center"><button onclick="removeInvLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:1px 4px">x</button></td>' +
     '</tr>';
   }).join('');
   updateInvTotals();
@@ -1416,10 +1416,10 @@ async function openRecordPaymentModal(invoiceId) {
   if (!inv) { toast('Invoice not found', 'error'); return; }
   var accounts = App.data.bankAccounts || [];
   var baOpts = accounts.map(function(a) {
-    return '<option value="' + a.accountId + '">' + a.accountName + ' (' + a.bankName + ') — ' + fmt(a.currentBalance) + '</option>';
+    return '<option value="' + a.accountId + '">' + a.accountName + ' (' + a.bankName + ') -- ' + fmt(a.currentBalance) + '</option>';
   }).join('');
   var today = new Date().toISOString().split('T')[0];
-  openModal('inv-pay', 'Record Payment — ' + inv.invoiceNumber,
+  openModal('inv-pay', 'Record Payment -- ' + inv.invoiceNumber,
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">' +
       '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Client</div><div style="font-weight:600">' + inv.clientName + '</div></div>' +
       '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Invoice Total</div><div class="stat-value" style="font-size:18px">' + fmt(inv.total) + '</div></div>' +
@@ -1585,9 +1585,9 @@ function openCreateBillModal() {
     '</table>' +
     '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addBillLine()">+ Add Line</button>' +
     '<div style="text-align:right;margin-top:12px;padding-top:10px;border-top:1px solid var(--g200)">' +
-      '<span style="font-size:13px;color:var(--g500)">Subtotal: </span><strong class="mono" id="bl-sub">£0.00</strong>&nbsp;&nbsp;' +
-      '<span style="font-size:13px;color:var(--g500)">VAT: </span><strong class="mono" id="bl-vat">£0.00</strong>&nbsp;&nbsp;' +
-      '<span style="font-size:14px;font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="bl-total">£0.00</strong>' +
+      '<span style="font-size:13px;color:var(--g500)">Subtotal: </span><strong class="mono" id="bl-sub">&pound;0.00</strong>&nbsp;&nbsp;' +
+      '<span style="font-size:13px;color:var(--g500)">VAT: </span><strong class="mono" id="bl-vat">&pound;0.00</strong>&nbsp;&nbsp;' +
+      '<span style="font-size:14px;font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="bl-total">&pound;0.00</strong>' +
     '</div>' +
     '<div class="form-group" style="margin-top:14px"><label class="form-label">Notes</label>' +
       '<textarea class="form-textarea" id="bl-notes" rows="2" placeholder="Internal notes..."></textarea></div>',
@@ -1617,7 +1617,7 @@ function renderBillLines() {
       '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0" max="100" step="0.01" value="'+(l.vatRate!==undefined?l.vatRate:_defaultVatRate())+'" oninput="_billLines['+i+'].vatRate=this.value;updateBillTotals()"></td>' +
       '<td style="padding:3px">'+_coaSelect(_coaExpenses, l.accountCode, i, 'expense')+'</td>' +
       '<td style="padding:4px;text-align:right"><span class="mono" style="font-size:13px">'+fmt(tot)+'</span></td>' +
-      '<td style="padding:4px 2px;text-align:center"><button onclick="removeBillLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px">×</button></td>' +
+      '<td style="padding:4px 2px;text-align:center"><button onclick="removeBillLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px">x</button></td>' +
     '</tr>';
   }).join('');
   updateBillTotals();
@@ -1669,12 +1669,12 @@ async function openBillPaymentModal(billId) {
   if (!bill) { toast('Bill not found', 'error'); return; }
   var accounts = App.data.bankAccounts || [];
   var baOpts = accounts.map(function(a) {
-    return '<option value="'+a.accountId+'">'+a.accountName+' ('+a.bankName+') — '+fmt(a.currentBalance)+'</option>';
+    return '<option value="'+a.accountId+'">'+a.accountName+' ('+a.bankName+') -- '+fmt(a.currentBalance)+'</option>';
   }).join('');
   var today = new Date().toISOString().split('T')[0];
-  openModal('bl-pay', 'Pay Bill — ' + bill.billNumber,
+  openModal('bl-pay', 'Pay Bill -- ' + bill.billNumber,
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">' +
-      '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Supplier</div><div style="font-weight:600">'+(bill.supplierName||'—')+'</div></div>' +
+      '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Supplier</div><div style="font-weight:600">'+(bill.supplierName||'--')+'</div></div>' +
       '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Bill Total</div><div class="stat-value" style="font-size:18px">'+fmt(bill.total)+'</div></div>' +
       '<div class="stat-card" style="padding:12px 14px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+fmt(bill.amountDue)+'</div></div>' +
     '</div>' +
@@ -1825,7 +1825,7 @@ function openCreateCreditNoteModal(invoiceId) {
   });
   var invOpts = invoices.map(function(i) {
     return '<option value="' + i.invoiceId + '"' + (invoiceId===i.invoiceId?' selected':'') + '>' +
-      i.invoiceNumber + ' — ' + i.clientName + ' (' + fmt(i.total) + ')</option>';
+      i.invoiceNumber + ' -- ' + i.clientName + ' (' + fmt(i.total) + ')</option>';
   }).join('');
   var today = new Date().toISOString().split('T')[0];
   openModal('cn-create', 'New Credit Note',
@@ -1866,7 +1866,7 @@ async function saveCreditNote() {
     toast('Error: ' + (r ? r.message||r.error : 'unknown'), 'error');
   }
 }
-// PURCHASE ORDERS — Create + workflow actions
+// PURCHASE ORDERS -- Create + workflow actions
 var _poLines = [];
 var _currentPOId = null;
 function closePoCreate() { closeModal('po-create'); }
@@ -1897,7 +1897,7 @@ function openCreatePOModal() {
     '</table>' +
     '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addPOLine()">+ Add Line</button>' +
     '<div style="text-align:right;margin-top:10px;padding-top:10px;border-top:1px solid var(--g200)">' +
-      '<span style="font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="po-total">£0.00</strong>' +
+      '<span style="font-weight:700">Total: </span><strong class="mono" style="font-size:16px" id="po-total">&pound;0.00</strong>' +
     '</div>' +
     '<div class="form-group" style="margin-top:12px"><label class="form-label">Notes</label><textarea class="form-textarea" id="po-notes" rows="2"></textarea></div>',
     '<button class="btn btn-secondary" onclick="closePoCreate()">Cancel</button>' +
@@ -1918,7 +1918,7 @@ function renderPOLines() {
       '<td style="padding:4px"><input class="form-input" style="padding:6px 8px;font-size:13px;text-align:right" type="number" min="0" step="0.01" value="'+(l.unitPrice||0)+'" oninput="_poLines['+i+'].unitPrice=this.value;updatePOTotal()"></td>' +
       '<td style="padding:3px">'+_coaSelect(_coaExpenses, l.accountCode||'6000', i, 'po')+'</td>' +
       '<td style="padding:4px;text-align:right"><span class="mono" style="font-size:13px">'+fmt(tot)+'</span></td>' +
-      '<td style="padding:4px 2px;text-align:center"><button onclick="removePOLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px">×</button></td>' +
+      '<td style="padding:4px 2px;text-align:center"><button onclick="removePOLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px">x</button></td>' +
     '</tr>';
   }).join('');
   updatePOTotal();
@@ -1969,21 +1969,21 @@ async function receivePO(poId) {
   if (r && r.success) { toast('PO marked as received', 'success'); showPurchaseOrders(); }
   else toast('Error: ' + (r ? r.message||r.error : 'unknown'), 'error');
 }
-// BANKING — Spend / Receive / Transfer / Import / Reconcile
+// BANKING -- Spend / Receive / Transfer / Import / Reconcile
 function closeBankModal(id) { closeModal(id); }
-// BANKING MODALS — Spend / Receive / Transfer / Import / Reconcile
+// BANKING MODALS -- Spend / Receive / Transfer / Import / Reconcile
 function _baOptions(selId) {
   return (App.data.bankAccounts||[]).map(function(a){
     var sel = a.accountId === (selId || App.data.selectedAccount) ? ' selected' : '';
-    return '<option value="'+a.accountId+'"'+sel+'>'+a.accountName+' ('+a.bankName+') — '+fmt(a.currentBalance)+'</option>';
+    return '<option value="'+a.accountId+'"'+sel+'>'+a.accountName+' ('+a.bankName+') -- '+fmt(a.currentBalance)+'</option>';
   }).join('');
 }
-// COA dropdown — uses cached App.data._coaAccounts if available, else filters from accounts call
+// COA dropdown -- uses cached App.data._coaAccounts if available, else filters from accounts call
 function _coaOpts(types) {
   var src = App.data._coaAccounts || [];
   var filtered = types ? src.filter(function(a){ return types.indexOf(a.accountType) >= 0; }) : src;
   return '<option value="">Select account...</option>' +
-    filtered.map(function(a){ return '<option value="'+a.accountCode+'">'+a.accountCode+' — '+a.accountName+'</option>'; }).join('');
+    filtered.map(function(a){ return '<option value="'+a.accountCode+'">'+a.accountCode+' -- '+a.accountName+'</option>'; }).join('');
 }
 async function _ensureCOA() {
   if (App.data._coaAccounts && App.data._coaAccounts.length) return;
@@ -2206,13 +2206,13 @@ function openCreateBankAccountModal() {
         '<input type="text" class="form-input" id="bca-sort" placeholder="XX-XX-XX" maxlength="8"></div>' +
       '<div class="form-group"><label class="form-label">Account Number</label>' +
         '<input type="text" class="form-input" id="bca-number" placeholder="8 digits" maxlength="8"></div>' +
-      '<div class="form-group"><label class="form-label">Opening Balance (£)</label>' +
+      '<div class="form-group"><label class="form-label">Opening Balance (&pound;)</label>' +
         '<input type="number" class="form-input" id="bca-balance" value="0" step="0.01"></div>' +
       '<div class="form-group" style="grid-column:1/-1"><label class="form-label">COA Nominal Code</label>' +
         '<select class="form-select" id="bca-nominal">' +
-          '<option value="1000">1000 — Business Current Account</option>' +
-          '<option value="1010">1010 — Business Savings Account</option>' +
-          '<option value="1020">1020 — Petty Cash</option>' +
+          '<option value="1000">1000 -- Business Current Account</option>' +
+          '<option value="1010">1010 -- Business Savings Account</option>' +
+          '<option value="1020">1020 -- Petty Cash</option>' +
           '<option value="">Other (leave blank)</option>' +
         '</select>' +
         '<p style="font-size:11px;color:var(--g400);margin-top:4px">Links this account to the Chart of Accounts.</p></div>' +

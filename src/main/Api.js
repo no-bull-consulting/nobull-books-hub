@@ -1,6 +1,6 @@
 /**
- * NO~BULL BOOKS — API LAYER
- * ──────────────────────────────────────────────────────────────────────────────
+ * NO~BULL BOOKS -- API LAYER
+ * ------------------------------------------------------------------------------
  * Single entry point: handleApiCall(action, paramsJson)
  * Called via google.script.run.handleApiCall() from the frontend.
  */
@@ -27,13 +27,13 @@ function handleApiCall(action, paramsJson) {
 }
 
 /**
- * _route — maps action strings to module functions.
+ * _route -- maps action strings to module functions.
  * params is always passed through so _sheetId reaches every data function.
  */
 function _route(action, params, ctx) {
   switch (action) {
 
-    // ── STARTUP ──────────────────────────────────────────────────────────────
+    // -- STARTUP --------------------------------------------------------------
     case 'getStartupData': {
       var _inv = [], _bil = [], _settings = {}, _ba = [], _cli = [], _sup = [],
           _cn  = [], _po  = [], _bd  = [];
@@ -74,13 +74,13 @@ function _route(action, params, ctx) {
         recurringInvoices: _safe(function(){ return getAllRecurringInvoices(params); }).recurringInvoices || []
       };
 
-    // ── AUTH / USERS ──────────────────────────────────────────────────────────
+    // -- AUTH / USERS ----------------------------------------------------------
     case 'getCurrentUser':  return { success: true, email: ctx.email, role: ctx.role };
     case 'getAllUsers':      _auth('users.view', params); return getAllUsers(params);
     case 'manageUser':      _auth('users.manage', params); return manageUser(params.action, params.email, params.role, params.notes, params);
     case 'runInitialSetup': return checkAndInitSheet(params);
 
-    // ── SETTINGS ─────────────────────────────────────────────────────────────
+    // -- SETTINGS -------------------------------------------------------------
     case 'getSettings':      return { success: true, settings: getSettings(params) };
     case 'updateSettings':   _auth('settings.write', params); return updateSettings(params, params);
     case 'uploadLogo':       _auth('settings.write', params); return uploadLogo(params);
@@ -88,7 +88,7 @@ function _route(action, params, ctx) {
     case 'getIntegrityStatus': _auth('maintenance.run', params); return getIntegrityStatus(params);
     case 'getAuditLog':      _auth('reports.read', params); return getAuditLog(params);
 
-    // ── CLIENTS ───────────────────────────────────────────────────────────────
+    // -- CLIENTS ---------------------------------------------------------------
     case 'getAllClients':     return getAllClients(params);
     case 'createClient':     _auth('clients.write', params); return createClient(params);
     case 'updateClient':     _auth('clients.write', params); return updateClient(params.clientId, params);
@@ -97,7 +97,7 @@ function _route(action, params, ctx) {
     case 'exportClientData': _auth('clients.read',  params); return exportClientData(params.clientId);
     case 'generateClientStatement': _auth('invoices.read', params); return generateClientStatement(params.clientId, params.startDate, params.endDate, params);
 
-    // ── INVOICES ──────────────────────────────────────────────────────────────
+    // -- INVOICES --------------------------------------------------------------
     case 'getAllInvoices':    return getAllInvoices(params);
     case 'createInvoice':    _auth('invoices.write', params); return createInvoice(params.clientId, params.lines, params.dueDate, params.notes, params.currency, params.exchangeRate, params.issueDate, params);
     case 'editInvoice':      _auth('invoices.write', params); return editInvoice(params.invoiceId, params, params);
@@ -118,7 +118,7 @@ function _route(action, params, ctx) {
     case 'getWhatsAppLink':  _auth('invoices.read', params); return getWhatsAppLink(params);
     case 'sendInvoiceWhatsApp': _auth('invoices.write', params); return sendInvoiceWhatsApp(params);
 
-    // ── RECURRING INVOICES ────────────────────────────────────────────────────
+    // -- RECURRING INVOICES ----------------------------------------------------
     case 'getAllRecurring':           return getAllRecurringInvoices(params);
     case 'createRecurring':           _auth('invoices.write', params); return createRecurringInvoice(params);
     case 'updateRecurring':           _auth('invoices.write', params); return updateRecurringInvoice(params.recurringId, params);
@@ -126,19 +126,19 @@ function _route(action, params, ctx) {
     case 'processRecurringInvoices':  _auth('invoices.write', params); return processRecurringInvoices(params);
     case 'installRecurringTrigger':   _auth('maintenance.run', params); return installRecurringTrigger();
 
-    // ── CREDIT NOTES ──────────────────────────────────────────────────────────
+    // -- CREDIT NOTES ----------------------------------------------------------
     case 'getCreditNotes':   return getCreditNotes(params);
     case 'createCreditNote': _auth('invoices.write', params); return createCreditNote(params.invoiceId, params.lines, params.reason, params.issueDate, params);
     case 'applyCreditNote':  _auth('invoices.write', params); return applyCreditNote(params.cnId, params.invoiceId, params);
     case 'voidCreditNote':   _auth('invoices.write', params); return voidCreditNote(params.cnId, params);
 
-    // ── SUPPLIERS ─────────────────────────────────────────────────────────────
+    // -- SUPPLIERS -------------------------------------------------------------
     case 'getAllSuppliers':   return getAllSuppliers(params);
     case 'createSupplier':   _auth('suppliers.write', params); return createSupplier(params);
     case 'updateSupplier':   _auth('suppliers.write', params); return updateSupplier(params.supplierId, params);
     case 'deleteSupplier':   _auth('suppliers.write', params); return deleteSupplier(params.supplierId, params);
 
-    // ── BILLS ─────────────────────────────────────────────────────────────────
+    // -- BILLS -----------------------------------------------------------------
     case 'getAllBills':       return getAllBills(params);
     case 'createBill':       _auth('bills.write', params); return createBill(params.supplierId, params.lines, params.issueDate, params.dueDate, params.notes, params);
     case 'getBillLines':     return getBillLines(params.billId, params);
@@ -153,7 +153,7 @@ function _route(action, params, ctx) {
     case 'deleteBillFile':   _auth('bills.write', params); return deleteBillFile(params);
     case 'generateRemittanceAdvice': _auth('bills.read', params); return generateRemittanceAdvice(params.billIds, params);
 
-    // ── PURCHASE ORDERS ───────────────────────────────────────────────────────
+    // -- PURCHASE ORDERS -------------------------------------------------------
     case 'getPurchaseOrders':            return getPurchaseOrders(params.statusFilter, params);
     case 'getPurchaseOrderLines':        return getPurchaseOrderLines(params.poId, params);
     case 'createPurchaseOrder':          _auth('purchaseorders.write', params); return createPurchaseOrder(params.supplierId, params.lines, params.expectedDelivery, params.notes, params);
@@ -164,11 +164,11 @@ function _route(action, params, ctx) {
     case 'receivePurchaseOrder':         _auth('purchaseorders.write', params); return receivePurchaseOrder(params.poId, params);
     case 'cancelPurchaseOrder':          _auth('purchaseorders.write', params); return cancelPurchaseOrder(params.poId, params);
 
-    // ── BAD DEBTS ─────────────────────────────────────────────────────────────
+    // -- BAD DEBTS -------------------------------------------------------------
     case 'getBadDebts':      return getBadDebts(params);
     case 'checkBadDebtVATEligibility': return checkBadDebtVATEligibility(params.invoiceId, params);
 
-    // ── BANKING ───────────────────────────────────────────────────────────────
+    // -- BANKING ---------------------------------------------------------------
     case 'getBankAccounts':             return getBankAccounts(params);
     case 'createBankAccount':           _auth('banking.write', params); return createBankAccount(params, params);
     case 'updateBankAccount':           _auth('banking.write', params); return updateBankAccount(params.accountId, params, params);
@@ -187,7 +187,7 @@ function _route(action, params, ctx) {
     case 'quickMarkReconciled':         _auth('banking.reconcile', params); return quickMarkReconciled(params.transactionId, params);
     case 'matchSelected':               _auth('banking.reconcile', params); return matchSelected(params);
 
-    // ── CHART OF ACCOUNTS ─────────────────────────────────────────────────────
+    // -- CHART OF ACCOUNTS -----------------------------------------------------
     case 'getAccounts':      return getAccounts(params.filters, params);
     case 'getAccountTypes':  return getAccountTypes(params);
     case 'getGeneralLedger': return getGeneralLedger(params.filters, params);
@@ -197,7 +197,7 @@ function _route(action, params, ctx) {
     case 'deleteAccount':    _auth('coa.write', params); return deleteAccount(params.accountCode, params);
     case 'seedCOA':          _auth('coa.write', params); return seedUKChartOfAccounts(params);
 
-    // ── REPORTS ───────────────────────────────────────────────────────────────
+    // -- REPORTS ---------------------------------------------------------------
     case 'generateProfitLoss':   _auth('reports.read', params); return generateProfitLoss(params.startDate, params.endDate, params);
     case 'generateBalanceSheet': _auth('reports.read', params); return generateBalanceSheet(params);
     case 'generateCashFlow':     _auth('reports.read', params); return generateCashFlow(params.startDate, params.endDate, params);
@@ -206,7 +206,7 @@ function _route(action, params, ctx) {
     case 'getAvailableRates':    return getAvailableRates(params);
     case 'getExchangeRates':     return getExchangeRates(params);
 
-    // ── VAT / MTD ─────────────────────────────────────────────────────────────
+    // -- VAT / MTD -------------------------------------------------------------
     case 'calculateVATReturn':  Logger.log('ROUTE calculateVATReturn _sheetId=' + params._sheetId + ' keys=' + Object.keys(params).join(',')); return calculateVATReturn(params.periodStart||params.fromDate, params.periodEnd||params.toDate, params);
     case 'saveVATReturn':       _auth('reports.tax', params); return saveVATReturn(params);
     case 'getVATReturns':       _auth('reports.tax', params); return getVATReturns(params);
@@ -222,27 +222,30 @@ function _route(action, params, ctx) {
     case 'exchangeHMRCCode':    _auth('credentials.manage', params); return exchangeHMRCCode(params.code, params);
     case 'testHMRCConnection':  return testHMRCConnection(params);
 
-    // ── SA103 / SELF ASSESSMENT ───────────────────────────────────────────────
+    // -- SA103 / SELF ASSESSMENT -----------------------------------------------
     case 'getSA103Data':           _auth('reports.tax', params); return getSA103Data(params);
     case 'getCapitalAllowances':   _auth('reports.tax', params); return getCapitalAllowances(params);
     case 'saveCapitalAllowance':   _auth('reports.tax', params); return saveCapitalAllowance(params);
     case 'deleteCapitalAllowance': _auth('reports.tax', params); return deleteCapitalAllowance(params);
     case 'saveSATaxAdjustments':   _auth('reports.tax', params); return saveSATaxAdjustments(params);
 
-    // ── ITSA ──────────────────────────────────────────────────────────────────
+    // -- ITSA ------------------------------------------------------------------
     case 'getITSAObligationsFromSheet': return getITSAObligationsFromSheet(params);
     case 'getITSASubmissions':          return getITSASubmissions(params);
     case 'submitITSAQuarterlyUpdate':   _auth('mtd.submit', params); return submitQuarterlyUpdate(params.nino||'', params.businessId||'', params.taxYear, params.quarter, { turnover:params.turnover, expenses:params.expenses }, params);
     case 'triggerITSACalculation':      _auth('mtd.submit', params); return triggerAndGetCalculation(params.nino||'', params.taxYear||'', params);
 
-    // ── FINANCIAL YEAR ────────────────────────────────────────────────────────
+    // -- FINANCIAL YEAR --------------------------------------------------------
     case 'getFinancialYears':       return getFinancialYears(params);
     case 'runPreCloseChecks':       _auth('settings.write', params); return runPreCloseChecks(params.yearEndDate, params);
+    case 'calculateCT600':         return calculateCT600(params);
+    case 'saveCT600Draft':          return saveCT600Draft(params);
+    case 'getCT600Returns':         return getCT600Returns(params);
     case 'getYearEndSummary':       _auth('settings.write', params); return getYearEndSummary(params.yearStart, params.yearEnd, params);
     case 'closeFinancialYear':      _auth('settings.write', params); return closeFinancialYear(params);
     case 'reopenFinancialYear':     _auth('settings.write', params); return reopenFinancialYear(params.yearId, params.reason, params);
 
-    // ── FIXED ASSETS ──────────────────────────────────────────────────────────
+    // -- FIXED ASSETS ----------------------------------------------------------
     case 'getAllFixedAssets':        return getAllFixedAssets(params);
     case 'createFixedAsset':         _auth('coa.write', params); return createFixedAsset(params);
     case 'updateFixedAsset':         _auth('coa.write', params); return updateFixedAsset(params.assetId, params);
@@ -251,7 +254,7 @@ function _route(action, params, ctx) {
     case 'getDepreciationSchedule':  return getDepreciationSchedule(params.assetId, params);
     case 'getDepreciationRuns':      return getDepreciationRuns(params);
 
-    // ── MAINTENANCE ───────────────────────────────────────────────────────────
+    // -- MAINTENANCE -----------------------------------------------------------
     case 'createBackup':          _auth('maintenance.run', params); return createBackup(params);
     case 'verifyIntegrity':       _auth('maintenance.run', params); return verifyIntegrity(params);
     case 'diagnoseSheets':        _auth('maintenance.run', params); return diagnoseSheets(params);
@@ -266,7 +269,7 @@ function _route(action, params, ctx) {
     case 'getAllInstances':        return getAllInstances(params);
     case 'getAdminStats':         return getInstanceMeta(params);
 
-    // ── REGISTRY / ADMIN ──────────────────────────────────────────────────────
+    // -- REGISTRY / ADMIN ------------------------------------------------------
     case 'getAllRegistryClients':   return getAllRegistryClients(params);
     case 'registerClient':          _auth('settings.write', params); return registerClient(params, params);
     case 'updateRegistryClient':    _auth('settings.write', params); return updateRegistryClient(params.registryId, params, params);
@@ -275,11 +278,11 @@ function _route(action, params, ctx) {
     case 'activateClient':          _auth('settings.write', params); return activateClient(params.registryId, params);
     case 'getAdminStats':           return getAdminStats(params);
 
-    // ── WHATSAPP ──────────────────────────────────────────────────────────────
+    // -- WHATSAPP --------------------------------------------------------------
     case 'getWhatsAppStatus':   return getWhatsAppStatus(params);
     case 'getTwilioStatus':     return getWhatsAppStatus(params);
 
-    // ── VOID LOG ──────────────────────────────────────────────────────────────
+    // -- VOID LOG --------------------------------------------------------------
     case 'getVoidLog':       return getVoidLog(params);
 
     default:
@@ -288,7 +291,7 @@ function _route(action, params, ctx) {
 }
 
 /**
- * _buildPermissions — builds the permissions object from user context
+ * _buildPermissions -- builds the permissions object from user context
  */
 function _buildPermissions(ctx) {
   return {
@@ -309,7 +312,7 @@ function _buildPermissions(ctx) {
 }
 
 /**
- * _safe — calls a function and returns empty object on error
+ * _safe -- calls a function and returns empty object on error
  */
 function _safe(fn) {
   try { return fn() || {}; } catch(e) { Logger.log('_safe: ' + e); return {}; }

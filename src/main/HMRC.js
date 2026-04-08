@@ -1,18 +1,18 @@
 /**
- * NO~BULL BOOKS — HMRC MTD INTEGRATION
+ * NO~BULL BOOKS -- HMRC MTD INTEGRATION
  * OAuth token management, VAT obligations, submission, liabilities, payments.
  *
  * HMRC credentials (clientID, clientSecret, accessToken, tokenExpiry) are
- * stored in Script Properties — never in the spreadsheet.
+ * stored in Script Properties -- never in the spreadsheet.
  *
  * MTD OAuth flow:
- *  1. User clicks Connect → getHMRCManualAuthUrl() → opens browser popup
+ *  1. User clicks Connect -> getHMRCManualAuthUrl() -> opens browser popup
  *  2. User signs in to HMRC, copies auth code from redirect URL
- *  3. User pastes code → exchangeHMRCCode(code) → stores access token
- * ─────────────────────────────────────────────────────────────────────────────
+ *  3. User pastes code -> exchangeHMRCCode(code) -> stores access token
+ * -----------------------------------------------------------------------------
  */
 
-// ── Script Property keys (same as Settings.gs HMRC_PROP_KEYS) ────────────────
+// -- Script Property keys (same as Settings.gs HMRC_PROP_KEYS) ----------------
 var _HMRC_KEYS = {
   CLIENT_ID:     'hmrc_client_id',
   CLIENT_SECRET: 'hmrc_client_secret',
@@ -30,9 +30,9 @@ function _getHMRCToken() {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // AUTH STATUS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getHMRCAuthStatus(params) {
   try {
@@ -66,9 +66,9 @@ function getHMRCAuthStatus(params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// OAUTH — MANUAL FLOW (copy-paste code)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// OAUTH -- MANUAL FLOW (copy-paste code)
+// -----------------------------------------------------------------------------
 
 function getHMRCManualAuthUrl(params) {
   try {
@@ -77,7 +77,7 @@ function getHMRCManualAuthUrl(params) {
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.clientId) {
-      return { success: false, message: 'HMRC Client ID not set — add it in Settings → HMRC/MTD.' };
+      return { success: false, message: 'HMRC Client ID not set -- add it in Settings -> HMRC/MTD.' };
     }
 
     var baseUrl   = testMode
@@ -153,7 +153,7 @@ function testHMRCConnection(params) {
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.accessToken) {
-      return { success: false, message: 'Not connected — no access token stored.' };
+      return { success: false, message: 'Not connected -- no access token stored.' };
     }
 
     var baseUrl = testMode
@@ -175,16 +175,16 @@ function testHMRCConnection(params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// VAT MTD — OBLIGATIONS, SUBMISSION, LIABILITIES, PAYMENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// VAT MTD -- OBLIGATIONS, SUBMISSION, LIABILITIES, PAYMENTS
+// -----------------------------------------------------------------------------
 
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // FRAUD PREVENTION HEADERS (required by law for all MTD API calls)
 // WEB_APP_VIA_SERVER connection method
 // https://developer.service.hmrc.gov.uk/guides/fraud-prevention/
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 /**
  * _getFraudHeaders(params)

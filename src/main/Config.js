@@ -1,19 +1,19 @@
 /**
- * NO~BULL BOOKS — CONFIG
+ * NO~BULL BOOKS -- CONFIG
  * Global constants: spreadsheet ID, sheet names, roles & permissions
- * ─────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  */
 
 // ============================================
 // SPREADSHEET
 // ============================================
 
-// Fallback only — each client request carries _sheetId in params.
+// Fallback only -- each client request carries _sheetId in params.
 var DEFAULT_SPREADSHEET_ID = '1V71QyGO6IFvU8_JBlc7FVybYq3Z80I3c0nd5gVqsw0M';
 
 /**
  * _ss(params)
- * Smart spreadsheet selector — used by functions that don't receive params
+ * Smart spreadsheet selector -- used by functions that don't receive params
  * directly (e.g. legacy module-level helpers).
  * Prefer getDb(params) wherever params is available.
  */
@@ -32,7 +32,7 @@ function _ss(params) {
   try {
     return SpreadsheetApp.getActiveSpreadsheet();
   } catch(e) {
-    // Last resort — hub default (dev/debug only)
+    // Last resort -- hub default (dev/debug only)
     return SpreadsheetApp.openById(DEFAULT_SPREADSHEET_ID);
   }
 }
@@ -183,7 +183,7 @@ var STATUS = {
 };
 
 // ============================================
-// ACL / RBAC — ROLES & PERMISSIONS
+// ACL / RBAC -- ROLES & PERMISSIONS
 // ============================================
 var ROLE_PERMISSIONS = {
   'Owner':      ['invoices.*','clients.*','suppliers.*','bills.*','banking.*',
@@ -206,11 +206,11 @@ var ROLE_PERMISSIONS = {
                  'creditnotes.read','purchaseorders.read']
 };
 
-// ── Instance Registry ─────────────────────────────────────────────────────────
+// -- Instance Registry ---------------------------------------------------------
 var REGISTRY_URL = '';
 
-// ── Superuser ─────────────────────────────────────────────────────────────────
-// Platform superuser — edward@nobull.consulting.
+// -- Superuser -----------------------------------------------------------------
+// Platform superuser -- edward@nobull.consulting.
 // Full system access across ALL deployed instances.
 var SUPERUSER_EMAIL = (function() {
   try {
@@ -226,10 +226,10 @@ function setSuperuserEmail(email) {
   return { success: true, email: email };
 }
 
-// ── Application version ───────────────────────────────────────────────────────
+// -- Application version -------------------------------------------------------
 var APP_VERSION = '2.0.0';
 
-// ── Google Identity Services — OAuth Client ID ────────────────────────────────
+// -- Google Identity Services -- OAuth Client ID --------------------------------
 // Used for client-side Sign in with Google (verifies user identity in hub model)
-// Created at console.cloud.google.com → APIs & Services → Credentials
+// Created at console.cloud.google.com -> APIs & Services -> Credentials
 var OAUTH_CLIENT_ID = '490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com';

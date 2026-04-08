@@ -1,10 +1,10 @@
 /**
- * NO~BULL BOOKS — REPORTS
+ * NO~BULL BOOKS -- REPORTS
  * P&L, balance sheet, VAT return, transactions, cash flow, currency breakdown
  *
  * KEY FIX: params threaded through every function so getDb(params) can
  * target the correct client spreadsheet in the hub model.
- * ─────────────────────────────────────────────────────────────────────────────
+ * -----------------------------------------------------------------------------
  */
 
 function generateProfitLoss(startDate, endDate, params) {
@@ -120,7 +120,7 @@ function generateVATReturn(startDate, endDate, params) {
     var totalSales     = 0;
     var totalPurchases = 0;
 
-    // Only Approved/Sent/Paid/Partial — Draft (Pro-Forma) excluded from VAT
+    // Only Approved/Sent/Paid/Partial -- Draft (Pro-Forma) excluded from VAT
     var vatableStatuses = ['Approved', 'Sent', 'Paid', 'Partial', 'Overdue'];
     invoicesResult.invoices.forEach(function(inv) {
       var issueDate = new Date(inv.issueDate);
@@ -221,7 +221,7 @@ function generateCashFlow(startDate, endDate, params) {
     var expenses2 = Object.keys(pl.expenses || {}).reduce(function(s,k){ return s + (pl.expenses[k].amount || 0); }, 0);
     var netProfit = revenue - expenses2;
 
-    // ── Operating activities ───────────────────────────────────────────────
+    // -- Operating activities -----------------------------------------------
     var depreciation = txns
       .filter(function(t){ return t.accountDebit && String(t.accountDebit).match(/^81/); })
       .reduce(function(s,t){ return s + t.amount; }, 0);
@@ -240,7 +240,7 @@ function generateCashFlow(startDate, endDate, params) {
 
     var operating = netProfit + depreciation - debtorMovement + creditorMovement;
 
-    // ── Investing activities ───────────────────────────────────────────────
+    // -- Investing activities -----------------------------------------------
     var assetPurchases = txns
       .filter(function(t){ return t.accountDebit && String(t.accountDebit).match(/^0/); })
       .reduce(function(s,t){ return s + t.amount; }, 0);
@@ -251,7 +251,7 @@ function generateCashFlow(startDate, endDate, params) {
 
     var investing = assetDisposals - assetPurchases;
 
-    // ── Financing activities ───────────────────────────────────────────────
+    // -- Financing activities -----------------------------------------------
     var drawings = txns
       .filter(function(t){ return t.accountDebit && String(t.accountDebit).match(/^3/) && t.type !== 'YearEndClose'; })
       .reduce(function(s,t){ return s + t.amount; }, 0);
@@ -304,7 +304,7 @@ function getCurrencyBreakdown(startDate, endDate, params) {
 
     var result = {};
 
-    // ── Invoices ────────────────────────────────────────────────────────────
+    // -- Invoices ------------------------------------------------------------
     var invSheet = ss.getSheetByName(SHEETS.INVOICES);
     if (invSheet && invSheet.getLastRow() > 1) {
       var invData = invSheet.getDataRange().getValues();
@@ -331,7 +331,7 @@ function getCurrencyBreakdown(startDate, endDate, params) {
       }
     }
 
-    // ── Bills ───────────────────────────────────────────────────────────────
+    // -- Bills ---------------------------------------------------------------
     var bilSheet = ss.getSheetByName(SHEETS.BILLS);
     if (bilSheet && bilSheet.getLastRow() > 1) {
       var bilData = bilSheet.getDataRange().getValues();

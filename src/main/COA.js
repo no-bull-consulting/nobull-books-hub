@@ -1,10 +1,10 @@
 /**
- * NO~BULL BOOKS — CHART OF ACCOUNTS
+ * NO~BULL BOOKS -- CHART OF ACCOUNTS
  * Account management, general ledger, trial balance
  *
  * KEY FIX: SPREADSHEET_ID removed everywhere; getDb(params) used throughout.
  * params threaded through every public function signature.
- * ─────────────────────────────────────────────────────────────────────────────
+ * -----------------------------------------------------------------------------
  */
 
 function getAccounts(filters, params) {
@@ -80,9 +80,9 @@ function getAccountTypes(params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // GENERAL LEDGER
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getGeneralLedger(filters, params) {
   try {
@@ -218,9 +218,9 @@ function getGeneralLedger(filters, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // TRIAL BALANCE
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getTrialBalance(dateFrom, dateTo, params) {
   try {
@@ -322,9 +322,9 @@ function getTrialBalance(dateFrom, dateTo, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // ACCOUNT WRITE OPERATIONS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function createAccount(accountData, params) {
   try {
@@ -359,7 +359,7 @@ function createAccount(accountData, params) {
     logAudit('CREATE', 'Account', accountData.accountCode, { name: accountData.accountName });
     return {
       success:       true,
-      message:       'Account ' + accountData.accountCode + ' — ' + accountData.accountName + ' created.' +
+      message:       'Account ' + accountData.accountCode + ' -- ' + accountData.accountName + ' created.' +
                      (isBankAccount ? ' Bank account record also created.' : ''),
       isBankAccount: isBankAccount
     };
@@ -428,14 +428,14 @@ function deleteAccount(accountCode, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // INTERNAL HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 /**
  * _syncCOABankAccount
  * Keeps BankAccounts sheet in sync when a bank-type COA account is created/updated.
- * ss is already the correct spreadsheet — no SPREADSHEET_ID needed.
+ * ss is already the correct spreadsheet -- no SPREADSHEET_ID needed.
  */
 function _syncCOABankAccount(ss, accountData, action) {
   try {

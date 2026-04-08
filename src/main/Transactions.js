@@ -1,12 +1,12 @@
 /**
- * NO~BULL BOOKS — TRANSACTIONS
+ * NO~BULL BOOKS -- TRANSACTIONS
  * Bills, Credit Notes, Purchase Orders, File Attachments, Bad Debts,
  * VAT calculations, Exchange Rates, WhatsApp, Remittance.
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // BILLS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function createBill(supplierId, lines, issueDate, dueDate, notes, params, currency, exchangeRate) {
   try {
@@ -233,7 +233,7 @@ function deleteBill(billId, params) {
         if (amountPaid > 0) {
           return { success: false, message: 'Cannot delete a bill with payments recorded. Void it instead.' };
         }
-        // Block delete of Approved/Paid bills — must void first
+        // Block delete of Approved/Paid bills -- must void first
         if (status === 'Approved' || status === 'Paid') {
           return { success: false, message: 'Cannot delete an '+status+' bill. Void it first.' };
         }
@@ -308,9 +308,9 @@ function adjustInvoiceBalance(invoiceId, amount, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // CREDIT NOTES
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function createCreditNote(invoiceId, lines, reason, issueDate, params) {
   try {
@@ -412,9 +412,9 @@ function voidCreditNote(cnId, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // PURCHASE ORDERS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function createPurchaseOrder(supplierId, lines, expectedDelivery, notes, params) {
   try {
@@ -562,9 +562,9 @@ function receivePurchaseOrder(poId, params) {
   return _updatePOStatus(poId, 'Received', params);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FILE ATTACHMENTS — Invoices and Bills
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// FILE ATTACHMENTS -- Invoices and Bills
+// -----------------------------------------------------------------------------
 
 function _getFileSheet(type, params) {
   var sheetName = type === 'invoice' ? SHEETS.INVOICE_FILES : SHEETS.BILL_FILES;
@@ -668,7 +668,7 @@ function _uploadFile(type, parentId, params) {
   var fileName = params.fileName || 'attachment';
   var fileType = params.fileType || 'application/octet-stream';
   var blob     = Utilities.newBlob(Utilities.base64Decode(params.base64Data), fileType, fileName);
-  var folder   = getOrCreateFolder('no~bull books — Attachments');
+  var folder   = getOrCreateFolder('no~bull books -- Attachments');
   var file     = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   var fileId   = file.getId();
@@ -701,9 +701,9 @@ function _deleteFile(type, fileId, params) {
   return { success: false, message: 'File not found' };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // BAD DEBTS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function writeOffBadDebt(invoiceId, reason, params) {
   try {
@@ -775,20 +775,20 @@ function checkBadDebtVATEligibility(invoiceId, params) {
         : 0,
       message: eligible
         ? 'Eligible for VAT bad debt relief'
-        : 'Not yet eligible — must be 6+ months overdue and VAT registered'
+        : 'Not yet eligible -- must be 6+ months overdue and VAT registered'
     };
   } catch(e) {
     return { success: false, message: e.toString() };
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // VAT CALCULATION
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function calculateVATReturn(fromDate, toDate, params) {
   try {
-    // Ensure params has _sheetId — fall back to active spreadsheet
+    // Ensure params has _sheetId -- fall back to active spreadsheet
     params = params || {};
     Logger.log('calculateVATReturn: _sheetId=' + params._sheetId + ' fromDate=' + fromDate + ' toDate=' + toDate);
     var ss = getDb(params);
@@ -856,9 +856,9 @@ function calculateVATReturn(fromDate, toDate, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // EXCHANGE RATES
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getExchangeRates(params) {
   try {
@@ -894,9 +894,9 @@ function getAvailableRates(params) {
   return getExchangeRates(params);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // REMITTANCE ADVICE
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function generateRemittanceAdvice(billIds, params) {
   try {
@@ -939,9 +939,9 @@ function generateRemittanceAdvice(billIds, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SA103 / CAPITAL ALLOWANCES (stubs — full implementation in roadmap)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// SA103 / CAPITAL ALLOWANCES (stubs -- full implementation in roadmap)
+// -----------------------------------------------------------------------------
 
 function getSA103Data(params) {
   return { success: true, data: {}, message: 'SA103 module coming soon' };
@@ -963,14 +963,14 @@ function deleteCapitalAllowance(params) {
   return { success: true, message: 'Capital allowance deleted (stub)' };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WHATSAPP (stubs — credentials set via GAS editor)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// WHATSAPP (stubs -- credentials set via GAS editor)
+// -----------------------------------------------------------------------------
 
 function getWhatsAppLink(params) {
   return { success: false, message: 'WhatsApp not configured' };
 }
 
 function sendInvoiceWhatsApp(params) {
-  return { success: false, message: 'WhatsApp delivery not yet configured. Set up credentials in Settings → WhatsApp.' };
+  return { success: false, message: 'WhatsApp delivery not yet configured. Set up credentials in Settings -> WhatsApp.' };
 }

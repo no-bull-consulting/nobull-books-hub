@@ -1,13 +1,13 @@
 /**
- * NO~BULL BOOKS — INVOICES
+ * NO~BULL BOOKS -- INVOICES
  * Invoice creation, updates, payment recording, PDF, history
- * ─────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  */
 
 /**
  * _parseLocalDate(dateStr)
  * Parses a date string (YYYY-MM-DD) as LOCAL time to avoid UTC timezone shift.
- * e.g. "2026-03-31" parsed as UTC becomes Mar 30 in UK timezone — this fixes that.
+ * e.g. "2026-03-31" parsed as UTC becomes Mar 30 in UK timezone -- this fixes that.
  */
 function _parseLocalDate(dateStr) {
   if (!dateStr) return new Date();
@@ -28,7 +28,7 @@ function getAllInvoices(params) {
     var sheet = ss.getSheetByName(SHEETS.INVOICES);
     
     if (!sheet) {
-      Logger.log('❌ Invoices sheet not found');
+      Logger.log('? Invoices sheet not found');
       return { success: false, message: 'Invoices sheet not found', invoices: [] };
     }
     
@@ -58,12 +58,12 @@ function getAllInvoices(params) {
           clientAddress: row[5] ? row[5].toString() : '',
           issueDate: row[6] ? safeSerializeDate(row[6]) : '',
           dueDate: row[7] ? safeSerializeDate(row[7]) : '',
-          subtotal: parseFloat(String(row[8]).replace(/[£,]/g, '')) || 0,
+          subtotal: parseFloat(String(row[8]).replace(/[GBP ,]/g, '')) || 0,
           vatRate: parseFloat(row[9]) || 0,
-          vat: parseFloat(String(row[10]).replace(/[£,]/g, '')) || 0,
-          total: parseFloat(String(row[11]).replace(/[£,]/g, '')) || 0,
-          amountPaid: parseFloat(String(row[12]).replace(/[£,]/g, '')) || 0,
-          amountDue: parseFloat(String(row[13]).replace(/[£,]/g, '')) || 0,
+          vat: parseFloat(String(row[10]).replace(/[GBP ,]/g, '')) || 0,
+          total: parseFloat(String(row[11]).replace(/[GBP ,]/g, '')) || 0,
+          amountPaid: parseFloat(String(row[12]).replace(/[GBP ,]/g, '')) || 0,
+          amountDue: parseFloat(String(row[13]).replace(/[GBP ,]/g, '')) || 0,
           status: row[14] ? row[14].toString() : 'Draft',
           paymentDate: row[15] ? safeSerializeDate(row[15]) : '',
           notes: row[16] ? row[16].toString() : '',
@@ -77,11 +77,11 @@ function getAllInvoices(params) {
         
         invoices.push(invoice);
       } catch (e) {
-        Logger.log('⚠️ Error processing row ' + i + ': ' + e.toString());
+        Logger.log('?? Error processing row ' + i + ': ' + e.toString());
       }
     }
     
-    Logger.log('✅ Successfully loaded ' + invoices.length + ' invoices');
+    Logger.log('? Successfully loaded ' + invoices.length + ' invoices');
     
     return { 
       success: true, 
@@ -90,7 +90,7 @@ function getAllInvoices(params) {
     };
     
   } catch (e) {
-    Logger.log('❌ Error in getAllInvoices: ' + e.toString());
+    Logger.log('? Error in getAllInvoices: ' + e.toString());
     return { success: false, message: e.toString(), invoices: [] };
   }
 }
@@ -111,12 +111,12 @@ function getInvoiceById(invoiceId, params) {
           clientAddress: data[i][5] || '',
           issueDate: safeSerializeDate(data[i][6]),
           dueDate: safeSerializeDate(data[i][7]),
-          subtotal: parseFloat(String(data[i][8]).replace(/[£,]/g, '')) || 0,
+          subtotal: parseFloat(String(data[i][8]).replace(/[GBP ,]/g, '')) || 0,
           vatRate: parseFloat(data[i][9]) || 0,
-          vat: parseFloat(String(data[i][10]).replace(/[£,]/g, '')) || 0,
-          total: parseFloat(String(data[i][11]).replace(/[£,]/g, '')) || 0,
-          amountPaid: parseFloat(String(data[i][12]).replace(/[£,]/g, '')) || 0,
-          amountDue: parseFloat(String(data[i][13]).replace(/[£,]/g, '')) || 0,
+          vat: parseFloat(String(data[i][10]).replace(/[GBP ,]/g, '')) || 0,
+          total: parseFloat(String(data[i][11]).replace(/[GBP ,]/g, '')) || 0,
+          amountPaid: parseFloat(String(data[i][12]).replace(/[GBP ,]/g, '')) || 0,
+          amountDue: parseFloat(String(data[i][13]).replace(/[GBP ,]/g, '')) || 0,
           status: data[i][14] || 'Draft',
           paymentDate: safeSerializeDate(data[i][15]),
           notes: data[i][16] || '',
@@ -334,21 +334,21 @@ function updateInvoiceStatus(invoiceId, newStatus, params) {
 
 /**
  * approveInvoice(invoiceId)
- * Transitions invoice from Draft (Pro-Forma) → Approved (Tax Invoice).
+ * Transitions invoice from Draft (Pro-Forma) -> Approved (Tax Invoice).
  * From this point the invoice is included in VAT returns.
  */
 /**
  * editInvoice(invoiceId, updates)
  * Updates editable invoice fields based on current status rules:
- *   Draft     → all fields editable (client, dates, lines, reference, notes)
- *   Approved  → dueDate, reference, notes only
- *   Sent      → dueDate, notes only
- *   Paid/Void → read-only, returns error
+ *   Draft     -> all fields editable (client, dates, lines, reference, notes)
+ *   Approved  -> dueDate, reference, notes only
+ *   Sent      -> dueDate, notes only
+ *   Paid/Void -> read-only, returns error
  */
 /**
  * deleteInvoice(invoiceId)
  * Hard-deletes a DRAFT invoice and its lines.
- * Only Draft invoices can be deleted — Approved+ must be Voided instead.
+ * Only Draft invoices can be deleted -- Approved+ must be Voided instead.
  */
 function deleteInvoice(invoiceId, params) {
   try {
@@ -372,7 +372,7 @@ function deleteInvoice(invoiceId, params) {
             if (lineData[j][1] === invoiceId) lineSheet.deleteRow(j + 1);
           }
         }
-        // Decrement invoice counter — re-read remaining invoices to find highest number
+        // Decrement invoice counter -- re-read remaining invoices to find highest number
         try {
           var settings = getSettings(params);
           var remaining = sheet.getLastRow() > 1 ? sheet.getRange(2, 2, sheet.getLastRow()-1, 1).getValues() : [];
@@ -462,19 +462,19 @@ function editInvoice(invoiceId, updates, params) {
       changes.push('notes');
     }
 
-    // Force status transition (e.g. revert Approved → Draft for correction)
+    // Force status transition (e.g. revert Approved -> Draft for correction)
     if (canForceStatus && updates.forceStatus) {
       var allowed = { 'Approved':['Draft'], 'Sent':['Approved','Draft'] };
       var permitted = allowed[status] || [];
       if (permitted.indexOf(updates.forceStatus) >= 0) {
         sheet.getRange(rowNum, 15).setValue(updates.forceStatus);
-        changes.push('status:'+status+'→'+updates.forceStatus);
+        changes.push('status:'+status+'->'+updates.forceStatus);
       } else {
         return { success:false, message:'Cannot revert from '+status+' to '+updates.forceStatus };
       }
     }
 
-    // Line items (Draft only) — rebuild lines
+    // Line items (Draft only) -- rebuild lines
     if (canEditLines && updates.lines && updates.lines.length) {
       var lineSheet = ss.getSheetByName(SHEETS.INVOICE_LINES);
       if (lineSheet) {
@@ -533,7 +533,7 @@ function approveInvoice(invoiceId, params) {
         if (current !== 'Draft') return { success:false, message:'Only Draft invoices can be approved (current: '+current+')' };
         try { _checkPeriodLock(data[i][6], params); } catch(lockErr) { return { success:false, message:lockErr.message }; }
         sheet.getRange(i+1, INV_COLS.STATUS).setValue('Approved');
-        addInvoiceHistory(invoiceId,'StatusChange','status','Draft','Approved','Invoice approved — now a Tax Invoice');
+        addInvoiceHistory(invoiceId,'StatusChange','status','Draft','Approved','Invoice approved -- now a Tax Invoice');
         return { success:true, message:'Invoice approved' };
       }
     }
@@ -546,7 +546,7 @@ function approveInvoice(invoiceId, params) {
 
 /**
  * markInvoiceSent(invoiceId)
- * Transitions Approved → Sent.
+ * Transitions Approved -> Sent.
  */
 function markInvoiceSent(invoiceId, params) {
   try {
@@ -596,7 +596,7 @@ function _recordPayment(invoiceId, amount, paymentDate, notes, params) {
         
         if (notes && notes.trim() !== '') {
           var existingNotes = data[i][INV_COLS.NOTES-1] || '';
-          var paymentNote = '\n[Payment ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy') + ']: £' + amount + ' - ' + notes;
+          var paymentNote = '\n[Payment ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy') + ']: GBP ' + amount + ' - ' + notes;
           sheet.getRange(rowNum, INV_COLS.NOTES).setValue(existingNotes + paymentNote);
         }
         
@@ -683,7 +683,7 @@ function updateInvoice(invoiceId, updates, params) {
         var paymentNote = '\n[Payment Update ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') + 
                          '] Bank: ' + bankInfo + 
                          (updates.paymentRef ? ' Ref: ' + updates.paymentRef : '') +
-                         (updates.amountPaid ? ' Amount: £' + updates.amountPaid : '');
+                         (updates.amountPaid ? ' Amount: GBP ' + updates.amountPaid : '');
         newNotes = existingNotes + paymentNote;
       }
       sheet.getRange(rowNum, 17).setValue(newNotes); // Notes column
@@ -888,12 +888,12 @@ function diagnoseInvoiceColumns() {
   var sheet = ss.getSheetByName(SHEETS.INVOICES);
   
   if (!sheet) {
-    Logger.log('❌ Invoices sheet not found');
+    Logger.log('? Invoices sheet not found');
     return;
   }
   
   var lastCol = sheet.getLastColumn();
-  Logger.log('📊 Invoices sheet has ' + lastCol + ' columns');
+  Logger.log('? Invoices sheet has ' + lastCol + ' columns');
   
   var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
   Logger.log('Headers:');
@@ -990,8 +990,8 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
     }
 
     var tz         = Session.getScriptTimeZone();
-    var issueStr   = invoice.issueDate ? Utilities.formatDate(new Date(invoice.issueDate), tz, 'dd MMM yyyy') : '—';
-    var dueStr     = invoice.dueDate   ? Utilities.formatDate(new Date(invoice.dueDate),   tz, 'dd MMM yyyy') : '—';
+    var issueStr   = invoice.issueDate ? Utilities.formatDate(new Date(invoice.issueDate), tz, 'dd MMM yyyy') : '--';
+    var dueStr     = invoice.dueDate   ? Utilities.formatDate(new Date(invoice.dueDate),   tz, 'dd MMM yyyy') : '--';
     var subtotal   = parseFloat(invoice.subtotal)  || 0;
     var vatAmt     = parseFloat(invoice.vatAmount) || 0;
     var total      = parseFloat(invoice.total)     || 0;
@@ -1006,8 +1006,8 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
       var n = parseFloat(r);
       return (n && n > 0.001 && n < 10000) ? n : 1;
     })(invoice.exchangeRate);
-    var currSymbol = { GBP:'£', EUR:'€', USD:'$', CHF:'Fr', SEK:'kr', NOK:'kr', DKK:'kr', JPY:'¥', CAD:'$', AUD:'$' }[invCurr] || invCurr+' ';
-    var baseSymbol = { GBP:'£', EUR:'€', USD:'$' }[baseCurr] || baseCurr+' ';
+    var currSymbol = { GBP:'GBP ', EUR:'?', USD:'$', CHF:'Fr', SEK:'kr', NOK:'kr', DKK:'kr', JPY:'?', CAD:'$', AUD:'$' }[invCurr] || invCurr+' ';
+    var baseSymbol = { GBP:'GBP ', EUR:'?', USD:'$' }[baseCurr] || baseCurr+' ';
     var invoiceLabel = isDraft
       ? (isVATReg ? 'PROFORMA INVOICE' : 'INVOICE')
       : (isVATReg ? 'TAX INVOICE' : 'INVOICE');
@@ -1057,7 +1057,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
       '.divider{border:none;border-top:1px solid #e8edf3;margin:28px 0}' +
       '</style></head><body>';
 
-    // ── Header ──────────────────────────────────────────────────────────────
+    // -- Header --------------------------------------------------------------
     html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px">';
 
     // Company block
@@ -1091,7 +1091,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
     html += '</div>';
     html += '</div>';
 
-    // ── Bill To ──────────────────────────────────────────────────────────────
+    // -- Bill To --------------------------------------------------------------
     html += '<div style="display:flex;gap:48px;margin-bottom:28px">';
     html += '<div><div class="label">Bill To</div>' +
       '<div style="font-size:13px;font-weight:700;margin-top:4px">' + escapeHtml(invoice.clientName||'') + '</div>';
@@ -1102,7 +1102,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
     }
     html += '</div>';
 
-    // ── Line Items ────────────────────────────────────────────────────────────
+    // -- Line Items ------------------------------------------------------------
     html += '<table class="lines">' +
       '<thead><tr>' +
       '<th>Description</th><th style="text-align:center">Qty</th>' +
@@ -1111,7 +1111,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
       '<th style="text-align:right">Amount</th>' +
       '</tr></thead><tbody>' + linesHTML + '</tbody></table>';
 
-    // ── Totals ────────────────────────────────────────────────────────────────
+    // -- Totals ----------------------------------------------------------------
     // Build VAT breakdown by rate
     var vatBreakdown = {};
     for (var vi = 0; vi < lines.length; vi++) {
@@ -1125,7 +1125,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
       '<table class="totals-table">';
     html += '<tr><td style="color:#555">Subtotal</td><td>'+currSymbol + subtotal.toFixed(2) + '</td></tr>';
     if (isVATReg) {
-      // Always show VAT row on VAT-registered invoices (even if £0)
+      // Always show VAT row on VAT-registered invoices (even if GBP 0)
       var vatRates = Object.keys(vatBreakdown).sort();
       if (vatRates.length > 0) {
         vatRates.forEach(function(rate) {
@@ -1133,7 +1133,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
           html += '<tr><td style="color:#555">VAT ' + rate + '%</td><td>'+currSymbol + va.toFixed(2) + '</td></tr>';
         });
       } else {
-        // No lines yet or all zero — show blank VAT row
+        // No lines yet or all zero -- show blank VAT row
         html += '<tr><td style="color:#555">VAT</td><td>'+currSymbol+'0.00</td></tr>';
       }
     }
@@ -1148,7 +1148,7 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
     html += '<tr class="amount-due-row"><td>Amount Due</td><td>'+currSymbol + amountDue.toFixed(2) + '</td></tr>';
     html += '</table></div>';
 
-    // ── Bank Details ──────────────────────────────────────────────────────────
+    // -- Bank Details ----------------------------------------------------------
     var hasBankDetails = settings && (settings.bankName || settings.accountName || settings.sortCode || settings.accountNumber);
     if (hasBankDetails) {
       html += '<hr class="divider">' +
@@ -1161,8 +1161,8 @@ function generateInvoiceHTML(invoice, lines, settings, params) {
       html += '</div></div>';
     }
 
-    // ── Notes / Footer ────────────────────────────────────────────────────────
-    // Notes intentionally excluded from PDF — internal use only
+    // -- Notes / Footer --------------------------------------------------------
+    // Notes intentionally excluded from PDF -- internal use only
 
     if (settings.invoiceFooter) {
       html += '<hr class="divider"><div style="text-align:center;color:#94a3b8;font-size:11px">' + escapeHtml(settings.invoiceFooter) + '</div>';
@@ -1196,7 +1196,7 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
     
     var pdfFile = DriveApp.getFileById(pdfResult.fileId);
     
-    // ── Build payment details string ─────────────────────────────────────────
+    // -- Build payment details string -----------------------------------------
     var paymentDetails = '';
     if (settings.bankName) {
       paymentDetails = 'Bank: ' + (settings.bankName||'') +
@@ -1205,7 +1205,7 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
         '\nAccount Number: '+ (settings.accountNumber||'');
     }
 
-    // ── Apply email template from Settings, fall back to default ─────────────
+    // -- Apply email template from Settings, fall back to default -------------
     var defaultSubject = 'Invoice {{invoiceNumber}} from {{companyName}}';
     var defaultBody    =
       'Dear {{clientName}},\n\n' +
@@ -1219,14 +1219,14 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
     var bodyTpl    = (settings.emailBody && settings.emailBody.trim())
       ? settings.emailBody    : defaultBody;
 
-    // ── Substitute template variables ─────────────────────────────────────────
+    // -- Substitute template variables -----------------------------------------
     function applyTemplate(tpl) {
       return tpl
         .replace(/\{\{invoiceNumber\}\}/g, invoice.invoiceNumber || '')
         .replace(/\{\{clientName\}\}/g,    invoice.clientName    || '')
-        .replace(/\{\{total\}\}/g,         '£' + (invoice.total||0).toFixed(2))
+        .replace(/\{\{total\}\}/g,         'GBP ' + (invoice.total||0).toFixed(2))
         .replace(/\{\{dueDate\}\}/g,       invoice.dueDate ? Utilities.formatDate(new Date(invoice.dueDate), Session.getScriptTimeZone(), 'dd MMM yyyy') : '')
-        .replace(/\{\{amountDue\}\}/g,     '£' + (invoice.amountDue||0).toFixed(2))
+        .replace(/\{\{amountDue\}\}/g,     'GBP ' + (invoice.amountDue||0).toFixed(2))
         .replace(/\{\{companyName\}\}/g,   settings.companyName  || '')
         .replace(/\{\{paymentDetails\}\}/g,paymentDetails);
     }
@@ -1289,8 +1289,8 @@ function generateClientStatement(clientId, startDate, endDate, params) {
 
     var client    = { clientName: invs[0].clientName, clientEmail: invs[0].clientEmail, clientAddress: invs[0].clientAddress };
     var tz        = Session.getScriptTimeZone();
-    var fmtDate2  = function(d){ return d ? Utilities.formatDate(new Date(d),tz,'dd MMM yyyy') : '—'; };
-    var fmtAmt2   = function(n){ return '£'+(parseFloat(n)||0).toFixed(2); };
+    var fmtDate2  = function(d){ return d ? Utilities.formatDate(new Date(d),tz,'dd MMM yyyy') : '--'; };
+    var fmtAmt2   = function(n){ return 'GBP '+(parseFloat(n)||0).toFixed(2); };
 
     var totalBilled  = invs.reduce(function(s,i){ return s+(parseFloat(i.total)||0); }, 0);
     var totalPaid    = invs.reduce(function(s,i){ return s+((parseFloat(i.total)||0)-(parseFloat(i.amountDue)||0)); }, 0);
@@ -1302,7 +1302,7 @@ function generateClientStatement(clientId, startDate, endDate, params) {
       return '<tr style="border-bottom:1px solid #e8edf3">' +
         '<td style="padding:8px 10px">'+fmtDate2(i.issueDate)+'</td>' +
         '<td style="padding:8px 10px;font-weight:600;font-family:monospace">'+i.invoiceNumber+'</td>' +
-        '<td style="padding:8px 10px">'+(i.reference||'—')+'</td>' +
+        '<td style="padding:8px 10px">'+(i.reference||'--')+'</td>' +
         '<td style="padding:8px 10px;text-align:right">'+fmtAmt2(i.total)+'</td>' +
         '<td style="padding:8px 10px;text-align:right;color:#22c55e">'+fmtAmt2((parseFloat(i.total)||0)-(parseFloat(i.amountDue)||0))+'</td>' +
         '<td style="padding:8px 10px;text-align:right;color:'+(parseFloat(i.amountDue)>0?'#ef4444':'#22c55e')+'">'+fmtAmt2(i.amountDue)+'</td>' +
@@ -1328,7 +1328,7 @@ function generateClientStatement(clientId, startDate, endDate, params) {
           '<div style="font-size:13px;font-weight:700">'+escapeHtml(settings.companyName||'')+'</div>' +
           (settings.companyAddress?'<div style="color:#555">'+escapeHtml(settings.companyAddress)+'</div>':'') +
           (settings.companyEmail?'<div style="color:#555">'+escapeHtml(settings.companyEmail)+'</div>':'') +
-          '<div style="margin-top:6px;font-size:11px;color:#94a3b8">Statement period: '+fmtDate2(startDate)+' – '+fmtDate2(endDate)+'</div>' +
+          '<div style="margin-top:6px;font-size:11px;color:#94a3b8">Statement period: '+fmtDate2(startDate)+' - '+fmtDate2(endDate)+'</div>' +
           '<div style="font-size:11px;color:#94a3b8">Printed: '+fmtDate2(new Date().toISOString())+'</div>' +
         '</div>' +
       '</div>' +
@@ -1358,9 +1358,9 @@ function generateClientStatement(clientId, startDate, endDate, params) {
     return { success:false, message:e.toString() };
   }
 }
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // VOID INVOICE
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function voidInvoice(invoiceId, reason, params) {
   try {
@@ -1427,9 +1427,9 @@ function voidInvoice(invoiceId, reason, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // WRITE OFF AS BAD DEBT
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function writeOffInvoice(invoiceId, writeOffDate, reason, params) {
   try {
@@ -1454,7 +1454,7 @@ function writeOffInvoice(invoiceId, writeOffDate, reason, params) {
         sheet.getRange(rowNum, 14).setValue(0);         // AmountDue = 0
         sheet.getRange(rowNum, 15).setValue('Bad Debt'); // Status
         var existNotes = data[i][16] ? data[i][16].toString() : '';
-        sheet.getRange(rowNum, 17).setValue(existNotes + '\n[Bad Debt: ' + writeOffDate + ' — ' + reason + ']');
+        sheet.getRange(rowNum, 17).setValue(existNotes + '\n[Bad Debt: ' + writeOffDate + ' -- ' + reason + ']');
 
         // Double-entry: Dr Bad Debts (7800), Cr Trade Debtors (1100)
         try {
@@ -1467,7 +1467,7 @@ function writeOffInvoice(invoiceId, writeOffDate, reason, params) {
           );
         } catch(te) { Logger.log('writeOffInvoice double-entry: ' + te); }
 
-        // VAT element — eligible for bad debt relief after 6 months
+        // VAT element -- eligible for bad debt relief after 6 months
         var isVATReg = false;
         try {
           var sett = getSettings(params);
@@ -1508,9 +1508,9 @@ function writeOffInvoice(invoiceId, writeOffDate, reason, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // VOID BILL (mirrors voidInvoice for bills)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function voidBill(billId, reason, params) {
   try {
@@ -1573,9 +1573,9 @@ function voidBill(billId, reason, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // HELPER: escapeHtml (used by generateInvoiceHTML / generateClientStatement)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function escapeHtml(str) {
   return (str || '').toString()
@@ -1586,9 +1586,9 @@ function escapeHtml(str) {
     .replace(/'/g,  '&#39;');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER: getOrCreateFolder — used by PDF generation
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// HELPER: getOrCreateFolder -- used by PDF generation
+// -----------------------------------------------------------------------------
 
 function getOrCreateFolder(folderName) {
   var folders = DriveApp.getFoldersByName(folderName);
@@ -1596,10 +1596,10 @@ function getOrCreateFolder(folderName) {
   return DriveApp.createFolder(folderName);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPER: _checkPeriodLock — prevent writes into closed financial periods
-// Safe stub — update with real period lock logic if needed.
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// HELPER: _checkPeriodLock -- prevent writes into closed financial periods
+// Safe stub -- update with real period lock logic if needed.
+// -----------------------------------------------------------------------------
 
 function _checkPeriodLock(date, params) {
   try {
@@ -1616,9 +1616,9 @@ function _checkPeriodLock(date, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // VAT BAD DEBT RELIEF
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function markBadDebtVATClaimed(badDebtId, claimDate, params) {
   try {
@@ -1641,8 +1641,8 @@ function markBadDebtVATClaimed(badDebtId, claimDate, params) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // DELETE CLIENT
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 // deleteClient moved to Contacts.gs

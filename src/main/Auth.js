@@ -1,10 +1,10 @@
 /**
- * NO~BULL BOOKS — AUTH / RBAC
+ * NO~BULL BOOKS -- AUTH / RBAC
  * Permission engine, user context, user management.
  *
- * KEY CHANGE (hub model): every function now accepts optional 'params'
+ * KEY CHANGE (hub model): every function now accepts optional `params`
  * so the correct client spreadsheet (_sheetId) is used for Users lookups.
- * ─────────────────────────────────────────────────────────────────────────────
+ * -----------------------------------------------------------------------------
  */
 
 /**
@@ -17,9 +17,9 @@ function apiError(userMessage, internalError) {
   return { success: false, message: userMessage };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // PERMISSION ENGINE
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function _canDoPermission(role, action) {
   var perms = ROLE_PERMISSIONS[role] || [];
@@ -49,14 +49,14 @@ function _canDoPermission(role, action) {
 function _getCurrentUserContext(params) {
   var email = '';
 
-  // ── Identity: read owner email stored in Settings sheet ───────────────────
+  // -- Identity: read owner email stored in Settings sheet -------------------
   // Since the hub runs as USER_DEPLOYING (always edward), we cannot use
   // Session.getActiveUser() to identify the real client. Instead, the client's
   // email is stored in their Settings sheet during onboarding by SetupService,
   // and read here on every request.
   //
   // Security model: knowing the ?id=SHEET_ID URL = authorised access.
-  // The sheet ID is a 44-character random string — effectively a private key.
+  // The sheet ID is a 44-character random string -- effectively a private key.
   if (params && params._sheetId) {
     try {
       var ss       = getDb(params);
@@ -76,7 +76,7 @@ function _getCurrentUserContext(params) {
     }
   }
 
-  // ── Fallback: GAS session (works for edward's own instances) ──────────────
+  // -- Fallback: GAS session (works for edward's own instances) --------------
   if (!email) {
     try {
       email = Session.getActiveUser().getEmail();
@@ -96,7 +96,7 @@ function _getCurrentUserContext(params) {
 
   if (!email) return makeCtx('', 'ReadOnly');
 
-  // ── Superuser override ────────────────────────────────────────────────────
+  // -- Superuser override ----------------------------------------------------
   // Check 1: the resolved identity email matches the superuser email
   if (typeof SUPERUSER_EMAIL !== 'undefined' &&
       email && email.toLowerCase() === SUPERUSER_EMAIL.toLowerCase()) {
@@ -123,12 +123,12 @@ function _getCurrentUserContext(params) {
     var ss    = getDb(params || {});
     var sheet = ss.getSheetByName(SHEETS.USERS);
 
-    // First deploy — no Users sheet yet → grant Owner
+    // First deploy -- no Users sheet yet -> grant Owner
     if (!sheet) return makeCtx(email, 'Owner');
 
-    // Sheet exists but empty — deny (security: accidental deletion)
+    // Sheet exists but empty -- deny (security: accidental deletion)
     if (sheet.getLastRow() < 2) {
-      Logger.log('SECURITY: Users sheet empty — access denied for ' + email);
+      Logger.log('SECURITY: Users sheet empty -- access denied for ' + email);
       return makeCtx(email, null);
     }
 
@@ -164,7 +164,7 @@ function _auth(action, params) {
   if (ctx.role === null) {
     throw new Error(
       'Access denied: your account (' + ctx.email + ') is not registered in this system. ' +
-      'Ask the Owner to add you in Settings → Users.'
+      'Ask the Owner to add you in Settings -> Users.'
     );
   }
   if (!ctx.canDo(action)) {
@@ -176,9 +176,9 @@ function _auth(action, params) {
   return ctx;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // USER MANAGEMENT
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 /**
  * getCurrentUserWithRole(params)
@@ -249,9 +249,9 @@ function getAllUsers(params) {
  * Requires users.manage (Owner only per ROLE_PERMISSIONS).
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // USER INVITATION EMAIL
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 /**
  * _sendUserInvitation(email, role, invitedBy, settings, params)
@@ -262,73 +262,31 @@ function _sendUserInvitation(email, role, invitedBy, settings, params) {
     var companyName = (settings && settings.companyName) ? settings.companyName : 'your company';
     var sheetId     = params && params._sheetId ? params._sheetId : '';
     var appUrl      = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=' + sheetId;
-
-    var subject = 'You have been invited to no~bull books — ' + companyName;
-
-    var nl   = '\n';
-    var body = 'Hi,' + nl + nl +
+    var nl          = '\n';
+    var subject     = 'You have been invited to no~bull books - ' + companyName;
+    var body =
+      'Hi,' + nl + nl +
       'You have been invited to access no~bull books for ' + companyName + '.' + nl + nl +
-      'Your details:' + nl +
-      '  Email:    ' + email + nl +
-      '  Role:     ' + role + nl +
-      '  Added by: ' + invitedBy + nl + nl +
+      'Email:    ' + email + nl +
+      'Role:     ' + role + nl +
+      'Added by: ' + invitedBy + nl + nl +
       'HOW TO ACCESS' + nl +
       'no~bull books uses your Google account for secure login.' + nl + nl +
-      '1. Click the link below to open no~bull books:' + nl +
-      '   ' + appUrl + nl + nl +
+      '1. Open no~bull books: ' + appUrl + nl + nl +
       '2. Sign in with your Google account (' + email + ').' + nl +
-      '   If your email is not a Gmail address, you can create a free' + nl +
-      '   Google account linked to it at:' + nl +
-      '   https://accounts.google.com/signup/v2/createaccount' + nl +
-      '   (Choose "Use my current email address instead" on the signup page)' + nl + nl +
-      '3. Once signed in, you will have ' + role + ' access to the books.' + nl + nl +
-      'If you have any questions, please contact ' + invitedBy + '.' + nl + nl +
+      '   If not a Gmail address, create a Google account at accounts.google.com' + nl +
+      '   and choose Use my current email address instead.' + nl + nl +
+      'Questions? Contact ' + invitedBy + nl + nl +
       'Best regards,' + nl +
       'no~bull books' + nl +
-      'nobull.consulting' + nl;
-
-    var htmlBody =
-      '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto">' +
-      '<div style="background:#14213D;padding:24px 32px;border-radius:8px 8px 0 0">' +
-        '<p style="color:#fff;font-size:20px;margin:0">🐂 <strong>no~bull</strong> <span style="color:#14A8AE">books</span></p>' +
-      '</div>' +
-      '<div style="background:#fff;border:1px solid #e2e8f0;border-top:none;padding:32px;border-radius:0 0 8px 8px">' +
-        '<h2 style="color:#14213D;margin:0 0 8px">You have been invited!</h2>' +
-        '<p style="color:#64748b;margin:0 0 24px">You now have access to <strong>' + companyName + '</strong> on no~bull books.</p>' +
-        '<table style="width:100%;border-collapse:collapse;margin-bottom:24px">' +
-          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D;width:120px">Email</td>' +
-              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + email + '</td></tr>' +
-          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D">Role</td>' +
-              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + role + '</td></tr>' +
-          '<tr><td style="padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;font-weight:600;color:#14213D">Invited by</td>' +
-              '<td style="padding:10px 12px;border:1px solid #e2e8f0;color:#475569">' + invitedBy + '</td></tr>' +
-        '</table>' +
-        '<a href="' + appUrl + '" style="display:inline-block;background:#0D7377;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;margin-bottom:28px">Open no~bull books →</a>' +
-        '<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">' +
-        '<h3 style="color:#14213D;margin:0 0 12px;font-size:15px">How to sign in</h3>' +
-        '<p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 12px">' +
-          'no~bull books uses your <strong>Google account</strong> for secure login. Simply click the button above and sign in with <strong>' + email + '</strong>.' +
-        '</p>' +
-        '<p style="color:#64748b;font-size:14px;line-height:1.7;margin:0 0 24px">' +
-          'If your email is not a Gmail address, you can create a free Google account linked to it. On the Google sign-in page, click <em>"Create account"</em> and choose <em>"Use my current email address instead"</em>.' +
-        '</p>' +
-        '<p style="color:#94a3b8;font-size:12px;margin:0">This invitation was sent by ' + invitedBy + ' · <a href="https://nobull.consulting" style="color:#0D7377">nobull.consulting</a></p>' +
-      '</div>' +
-      '</div>';
-
-    MailApp.sendEmail({
-      to:       email,
-      subject:  subject,
-      body:     body,
-      htmlBody: htmlBody
-    });
-
+      'nobull.consulting';
+    MailApp.sendEmail({ to: email, subject: subject, body: body });
     Logger.log('Invitation sent to: ' + email);
   } catch(e) {
     Logger.log('_sendUserInvitation error: ' + e.toString());
-    // Non-fatal — user is still added even if email fails
   }
 }
+
 
 function manageUser(action, email, role, notes, params) {
   try {
@@ -338,7 +296,7 @@ function manageUser(action, email, role, notes, params) {
 
     var ss    = getDb(params || {});
     var sheet = ss.getSheetByName(SHEETS.USERS);
-    if (!sheet) throw new Error('Users sheet not found — run Settings → Initialise System first.');
+    if (!sheet) throw new Error('Users sheet not found -- run Settings -> Initialise System first.');
 
     var ctx  = _getCurrentUserContext(params);
     var rows = sheet.getLastRow() >= 2 ? sheet.getDataRange().getValues() : [[]];

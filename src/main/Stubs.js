@@ -1,13 +1,19 @@
 /**
- * NO~BULL BOOKS — STUBS & SUPPLEMENTARY FUNCTIONS
+ * NO~BULL BOOKS -- STUBS & SUPPLEMENTARY FUNCTIONS
  * Functions routed in Api.gs that need concrete implementations.
- * These are functional stubs — expand each as needed.
- * ─────────────────────────────────────────────────────────────────────────────
+ * These are functional stubs -- expand each as needed.
+ * -----------------------------------------------------------------------------
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // FIXED ASSETS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+
+function _checkLicence(sheetId) {
+  // Licence check — returns status object
+  // In production this will verify against the registry
+  return { valid: true, status: 'Active', plan: 'Trial', daysLeft: 14 };
+}
 
 function getAllFixedAssets(params) {
   try {
@@ -180,7 +186,7 @@ function runDepreciationRun(periodEndDate, periodMonths, postToLedger, params) {
       success:           true,
       assetsProcessed:   processed,
       totalDepreciation: Math.round(totalDepr * 100) / 100,
-      message:           processed + ' asset(s) depreciated. Total: £' + (Math.round(totalDepr * 100) / 100).toFixed(2)
+      message:           processed + ' asset(s) depreciated. Total: GBP ' + (Math.round(totalDepr * 100) / 100).toFixed(2)
     };
   } catch(e) {
     Logger.log('runDepreciationRun error: ' + e.toString());
@@ -258,9 +264,9 @@ function initFixedAssetSheets(params) {
   return { success: true, message: 'Fixed asset sheets initialised by Initializer.gs.' };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // FINANCIAL YEARS
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getFinancialYears(params) {
   try {
@@ -382,9 +388,9 @@ function initFinancialYearSheets(params) {
   return { success: true, message: 'Financial year sheets initialised by Initializer.gs.' };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // RECURRING INVOICES
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getAllRecurring(params) {
   try {
@@ -545,9 +551,9 @@ function installRecurringTrigger() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // MISC STUBS (routed in Api.gs, safe defaults)
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function getSecurityStatus()           { return { success: true, status: 'OK' }; }
 function getAuditLog(params) {
@@ -584,12 +590,12 @@ function getAllInstances(params) {
   try {
     var r = getAllRegistryClients(params);
     if (!r.success) return { success: true, instances: [] };
-    // Return the full client object — _rowToClient already has all fields
+    // Return the full client object -- _rowToClient already has all fields
     var instances = (r.clients || []).map(function(c) {
       return {
         registryId:    c.registryId    || '',
-        companyName:   c.companyName   || '—',
-        companyEmail:  c.contactEmail  || c.email || '—',
+        companyName:   c.companyName   || '--',
+        companyEmail:  c.contactEmail  || c.email || '--',
         contactEmail:  c.contactEmail  || '',
         plan:          c.plan          || 'Trial',
         status:        c.status        || 'Trial',
@@ -600,7 +606,7 @@ function getAllInstances(params) {
         invoiceCount:  c.invoiceCount  || 0,
         clientCount:   c.clientCount   || 0,
         billCount:     c.billCount     || 0,
-        version:       c.version       || '—',
+        version:       c.version       || '--',
         sheetId:       c.sheetId       || '',
         spreadsheetUrl: c.sheetLink    || (c.sheetId ? 'https://docs.google.com/spreadsheets/d/' + c.sheetId : ''),
         appLink:       c.appLink       || ''
@@ -625,8 +631,8 @@ function getInstanceMeta(params) {
     return {
       success: true,
       meta: {
-        companyName:       settings.companyName || '—',
-        companyEmail:      settings.companyEmail || '—',
+        companyName:       settings.companyName || '--',
+        companyEmail:      settings.companyEmail || '--',
         scriptId:          ScriptApp.getScriptId(),
         spreadsheetId:     ss.getId(),
         spreadsheetUrl:    ss.getUrl(),

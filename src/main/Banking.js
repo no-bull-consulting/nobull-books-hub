@@ -1,7 +1,7 @@
-﻿/**
- * NO~BULL BOOKS — BANKING
+/**
+ * NO~BULL BOOKS -- BANKING
  * Bank accounts, transactions, reconciliation, double-entry ledger
- * ─────────────────────────────────────────────────────────────
+ * -------------------------------------------------------------
  */
 
 
@@ -92,7 +92,7 @@ function createBankAccount(accountData, params) {
           true,
           'Auto-created with bank account'
         ]);
-        Logger.log('Auto-created COA entry: ' + nominalCode + ' — ' + accountData.accountName);
+        Logger.log('Auto-created COA entry: ' + nominalCode + ' -- ' + accountData.accountName);
       }
     }
 
@@ -153,7 +153,7 @@ function deleteBankAccount(accountId, params) {
       if (data[i][0] && data[i][0].toString() === accountId) {
         var balance = parseFloat(data[i][7]) || 0;
         if (Math.abs(balance) > 0.01) {
-          return { success: false, message: 'Cannot delete account with non-zero balance (£' + balance.toFixed(2) + '). Clear balance first.' };
+          return { success: false, message: 'Cannot delete account with non-zero balance (GBP ' + balance.toFixed(2) + '). Clear balance first.' };
         }
         sheet.deleteRow(i + 1);
         logAudit('DELETE', 'BankAccount', accountId, {});
@@ -210,7 +210,7 @@ function recalcBookBalance(accountId, params) {
       var notes    = String(row[BANK_TX_COLS.NOTES - 1] || '');
       if (account !== accountId) continue;
 
-      // Skip statement import lines — they are not book movements
+      // Skip statement import lines -- they are not book movements
       if (type === 'Statement' || category === 'Statement' ||
           notes.indexOf('Imported from bank statement') >= 0) continue;
 
@@ -222,7 +222,7 @@ function recalcBookBalance(accountId, params) {
     for (var j = 1; j < accData.length; j++) {
       if (accData[j][0] === accountId) {
         accSheet.getRange(j + 1, 8).setValue(Math.round(balance * 100) / 100);
-        Logger.log('recalcBookBalance: ' + accountId + ' = £' + balance.toFixed(2));
+        Logger.log('recalcBookBalance: ' + accountId + ' = GBP ' + balance.toFixed(2));
         return Math.round(balance * 100) / 100;
       }
     }
@@ -368,7 +368,7 @@ function importBankStatement(accountId, csvData, params) {
       var exists = checkDuplicateTransaction(accountId, date, amount, description);
       if (exists) { skipped++; continue; }
 
-      // Write directly — do NOT call updateBankBalance
+      // Write directly -- do NOT call updateBankBalance
       // Statement lines are pending items; balance only moves on reconciliation
       var txId = generateId('BTX');
       sheet.appendRow([
@@ -377,8 +377,8 @@ function importBankStatement(accountId, csvData, params) {
         description,
         reference,
         amount,
-        'Statement',            // Type — keeps statement lines out of balance calcs
-        'Statement',            // category — identifies imported lines
+        'Statement',            // Type -- keeps statement lines out of balance calcs
+        'Statement',            // category -- identifies imported lines
         accountId,
         'Unreconciled',
         '', '', '',
@@ -512,13 +512,13 @@ function getUnallocatedBills(supplierId, params) {
  * Reconcile a bank transaction.
  *
  * Three allocation types:
- *   'invoice' / 'Invoice' — mark an invoice payment as confirmed
- *   'bill'    / 'Bill'    — mark a bill payment as confirmed
- *   'booked'              — match a statement line to an existing book entry:
+ *   'invoice' / 'Invoice' -- mark an invoice payment as confirmed
+ *   'bill'    / 'Bill'    -- mark a bill payment as confirmed
+ *   'booked'              -- match a statement line to an existing book entry:
  *                           marks both as Reconciled, no double-entry (already posted)
  *
  * Statement lines (category='Statement') are marked Reconciled but do NOT
- * create new double-entry postings — the book entry already did that.
+ * create new double-entry postings -- the book entry already did that.
  */
 function reconcileTransaction(transactionId, allocations, params) {
   try {
@@ -528,7 +528,7 @@ function reconcileTransaction(transactionId, allocations, params) {
     var txSheet = ss.getSheetByName(SHEETS.BANK_TRANSACTIONS);
     var txData  = txSheet.getDataRange().getValues();
 
-    // ── Find the statement/transaction row ─────────────────────────────────
+    // -- Find the statement/transaction row ---------------------------------
     var tx = null, txRowNum = -1;
     for (var i = 1; i < txData.length; i++) {
       if (txData[i][0] === transactionId) {
@@ -583,7 +583,7 @@ function reconcileTransaction(transactionId, allocations, params) {
       var amount  = parseFloat(alloc.amount) || Math.abs(tx.amount);
 
       if (docType === 'booked') {
-        // ── Match statement line to book entry ───────────────────────────
+        // -- Match statement line to book entry ---------------------------
         // Mark the book entry as Reconciled
         for (var k = 1; k < txData.length; k++) {
           if (txData[k][0] === docId) {
@@ -599,10 +599,10 @@ function reconcileTransaction(transactionId, allocations, params) {
         txSheet.getRange(txRowNum, BANK_TX_COLS.RECONCILED_DATE).setValue(new Date());
         txSheet.getRange(txRowNum, BANK_TX_COLS.MATCH_ID).setValue(docId);
         txSheet.getRange(txRowNum, BANK_TX_COLS.MATCH_TYPE).setValue('StatementMatch');
-        // No double-entry — book entry already posted it
+        // No double-entry -- book entry already posted it
 
       } else if (docType === 'invoice' || docType === 'Invoice') {
-        // ── Match to invoice ────────────────────────────────────────────
+        // -- Match to invoice --------------------------------------------
         if (!isStatementLine) {
           // Only post double-entry if not already posted by a book entry
           recordPayment(docId, amount, tx.date, alloc.notes || 'Reconciled');
@@ -613,7 +613,7 @@ function reconcileTransaction(transactionId, allocations, params) {
         txSheet.getRange(txRowNum, BANK_TX_COLS.MATCH_TYPE).setValue('Invoice');
 
       } else if (docType === 'bill' || docType === 'Bill') {
-        // ── Match to bill ───────────────────────────────────────────────
+        // -- Match to bill -----------------------------------------------
         if (!isStatementLine) {
           recordBillPayment(docId, amount, tx.date, 'Bank', alloc.notes || 'Reconciled');
         }
@@ -624,7 +624,7 @@ function reconcileTransaction(transactionId, allocations, params) {
       }
     }
 
-    // ── Update LastReconciled date on the BankAccounts sheet ────────────────
+    // -- Update LastReconciled date on the BankAccounts sheet ----------------
     if (tx.bankAccount) {
       try {
         var baSheet = ss.getSheetByName(SHEETS.BANK_ACCOUNTS);
@@ -662,7 +662,7 @@ function getReconciliationSummary(accountId, params) {
     var allUnrecon  = txResult.transactions || [];
 
     // Separate statement lines from book entries
-    // Statement lines are pending matching markers — they do NOT affect the balance
+    // Statement lines are pending matching markers -- they do NOT affect the balance
     var bookEntries    = allUnrecon.filter(function(tx) {
       return tx.category !== 'Statement' &&
              !(tx.notes && tx.notes.indexOf('Imported') >= 0);
@@ -952,7 +952,7 @@ function _createDoubleEntry(date, type, reference, debitAccount, creditAccount, 
   }
 }
 
-// ── Public aliases so cross-module callers resolve correctly ─────────────────
+// -- Public aliases so cross-module callers resolve correctly -----------------
 // All modules call createDoubleEntry() with no prefix. Banking uses _createDoubleEntry().
 // Both route to the same implementation.
 function createDoubleEntry(date, type, reference, debitAccount, creditAccount, amount, description, invoiceId, billId, params) {
@@ -1046,7 +1046,7 @@ function _addBillHistory(billId, changeType, fieldChanged, oldValue, newValue, n
   }
 }
 
-// ── Public aliases for history helpers (cross-module callers use no prefix) ──
+// -- Public aliases for history helpers (cross-module callers use no prefix) --
 function addInvoiceHistory(invoiceId, changeType, fieldChanged, oldValue, newValue, notes, params) {
   return _addInvoiceHistory(invoiceId, changeType, fieldChanged, oldValue, newValue, notes);
 }
@@ -1065,7 +1065,7 @@ function recordPaymentWithBank(invoiceId, amount, paymentDate, bankAccountId, no
 
     _auth('invoices.write', params);    Logger.log('=== RECORD PAYMENT WITH BANK ===');
     Logger.log('Invoice ID: ' + invoiceId);
-    Logger.log('Amount: £' + amount);
+    Logger.log('Amount: GBP ' + amount);
     Logger.log('Payment Date: ' + paymentDate);
     Logger.log('Bank Account: ' + bankAccountId);
     
@@ -1107,7 +1107,7 @@ function recordPaymentWithBank(invoiceId, amount, paymentDate, bankAccountId, no
           }
           
           var paymentNote = '\n[Payment ' + Utilities.formatDate(dateObj, Session.getScriptTimeZone(), 'dd/MM/yyyy') + 
-                           ']: £' + amount + bankInfo + (notes ? ' - ' + notes : '');
+                           ']: GBP ' + amount + bankInfo + (notes ? ' - ' + notes : '');
           sheet.getRange(rowNum, INV_COLS.NOTES).setValue(existingNotes + paymentNote);
         }
         
@@ -1169,7 +1169,7 @@ function recordBillPaymentWithBank(billId, amount, paymentDate, bankAccountId, n
 
     _auth('bills.write', params);    Logger.log('=== RECORD BILL PAYMENT WITH BANK ===');
     Logger.log('Bill ID: ' + billId);
-    Logger.log('Amount: £' + amount);
+    Logger.log('Amount: GBP ' + amount);
     Logger.log('Payment Date: ' + paymentDate);
     Logger.log('Bank Account: ' + bankAccountId);
     
@@ -1211,7 +1211,7 @@ function recordBillPaymentWithBank(billId, amount, paymentDate, bankAccountId, n
           }
           
           var paymentNote = '\n[Payment ' + Utilities.formatDate(dateObj, Session.getScriptTimeZone(), 'dd/MM/yyyy') + 
-                           ']: £' + amount + bankInfo + (notes ? ' - ' + notes : '');
+                           ']: GBP ' + amount + bankInfo + (notes ? ' - ' + notes : '');
           sheet.getRange(rowNum, BILL_COLS.NOTES).setValue(existingNotes + paymentNote);
         }
         
@@ -1287,7 +1287,7 @@ function getBankAccountCode(accountId, params) {
     var bankAccount = getBankAccountById(accountId, params);
     if (!bankAccount) return '1000';
 
-    // Use the stored nominal code if set (preferred — explicit link to COA)
+    // Use the stored nominal code if set (preferred -- explicit link to COA)
     if (bankAccount.nominalCode && bankAccount.nominalCode.trim()) {
       return bankAccount.nominalCode.trim();
     }
@@ -1301,7 +1301,7 @@ function getBankAccountCode(accountId, params) {
       return a.accountType === 'Asset' && a.accountName.toLowerCase().trim() === bankName;
     })[0];
     if (exact) return exact.accountCode;
-    // Partial match — only use if account is in Bank Accounts category
+    // Partial match -- only use if account is in Bank Accounts category
     var partial = coaResult.accounts.filter(function(a) {
       return a.accountType === 'Asset' &&
              (a.accountCategory === 'Bank Accounts' || a.accountCategory === 'Bank') &&
@@ -1506,4 +1506,10 @@ function createReconAdjustment(params) {
     Logger.log('createReconAdjustment error: ' + e.toString());
     return { success: false, message: e.toString() };
   }
+}
+
+function _testHtml() {
+  try { Logger.log('Index: ' + typeof showDashboard); } catch(e) { Logger.log('Index FAIL: ' + e); }
+  try { Logger.log('Code2: ' + typeof showBanking); } catch(e) { Logger.log('Code2 FAIL: ' + e); }
+  try { Logger.log('Code3: ' + typeof showVAT); } catch(e) { Logger.log('Code3 FAIL: ' + e); }
 }

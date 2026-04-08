@@ -1,9 +1,9 @@
 /**
- * NO~BULL BOOKS — UK STANDARD CHART OF ACCOUNTS SEEDER
+ * NO~BULL BOOKS -- UK STANDARD CHART OF ACCOUNTS SEEDER
  *
  * Installs a complete UK HMRC-compliant double-entry COA.
  * Account codes follow the standard UK nominal ledger convention.
- * Safe to run on new instances — skips accounts that already exist.
+ * Safe to run on new instances -- skips accounts that already exist.
  *
  * Account code ranges:
  *   0000-0999  Fixed Assets
@@ -22,18 +22,18 @@
  */
 
 var UK_COA = [
-  // ── Fixed Assets ────────────────────────────────────────────────────────
+  // -- Fixed Assets --------------------------------------------------------
   ['0010', 'Land & Buildings',             'Asset',   'Fixed Assets',          0],
   ['0020', 'Plant & Machinery',            'Asset',   'Fixed Assets',          0],
   ['0030', 'Office Equipment',             'Asset',   'Fixed Assets',          0],
   ['0040', 'Computer Equipment',           'Asset',   'Fixed Assets',          0],
   ['0050', 'Motor Vehicles',              'Asset',   'Fixed Assets',          0],
   ['0060', 'Furniture & Fittings',        'Asset',   'Fixed Assets',          0],
-  ['0100', 'Accumulated Depreciation — Plant',     'Asset', 'Fixed Assets',   0],
-  ['0110', 'Accumulated Depreciation — Equipment', 'Asset', 'Fixed Assets',   0],
-  ['0120', 'Accumulated Depreciation — Vehicles',  'Asset', 'Fixed Assets',   0],
+  ['0100', 'Accumulated Depreciation -- Plant',     'Asset', 'Fixed Assets',   0],
+  ['0110', 'Accumulated Depreciation -- Equipment', 'Asset', 'Fixed Assets',   0],
+  ['0120', 'Accumulated Depreciation -- Vehicles',  'Asset', 'Fixed Assets',   0],
 
-  // ── Current Assets ───────────────────────────────────────────────────────
+  // -- Current Assets -------------------------------------------------------
   ['1000', 'Business Current Account',    'Asset',   'Bank Accounts',         0],
   ['1010', 'Business Savings Account',    'Asset',   'Bank Accounts',         0],
   ['1020', 'Petty Cash',                  'Asset',   'Bank Accounts',         0],
@@ -47,7 +47,7 @@ var UK_COA = [
   ['1500', 'PAYE/NI Recoverable',         'Asset',   'Current Assets',        0],
   ['1600', 'Director\'s Loan Account',   'Asset',   'Current Assets',        0],
 
-  // ── Current Liabilities ──────────────────────────────────────────────────
+  // -- Current Liabilities --------------------------------------------------
   ['2100', 'Trade Creditors (Payables)',  'Liability','Current Liabilities',  0],
   ['2101', 'Other Creditors',             'Liability','Current Liabilities',  0],
   ['2200', 'VAT Control Account',         'Liability','Current Liabilities',  0],
@@ -63,23 +63,23 @@ var UK_COA = [
   ['2500', 'Bank Loan (Current)',         'Liability','Current Liabilities',  0],
   ['2600', 'Hire Purchase (Current)',     'Liability','Current Liabilities',  0],
 
-  // ── Long-term Liabilities ────────────────────────────────────────────────
+  // -- Long-term Liabilities ------------------------------------------------
   ['2700', 'Bank Loan (Long-term)',        'Liability','Long-term Liabilities',0],
   ['2710', 'Hire Purchase (Long-term)',    'Liability','Long-term Liabilities',0],
   ['2800', 'Director\'s Loan (Long-term)','Liability','Long-term Liabilities',0],
 
-  // ── Equity / Capital ─────────────────────────────────────────────────────
+  // -- Equity / Capital -----------------------------------------------------
   ['3000', 'Share Capital / Capital Introduced', 'Equity','Capital',          0],
   ['3010', 'Retained Earnings',           'Equity',  'Retained Earnings',     0],
   ['3020', 'Profit & Loss Account',       'Equity',  'Retained Earnings',     0],
   ['3100', 'Drawings',                    'Equity',  'Capital',               0],
   ['3200', 'Dividends Paid',              'Equity',  'Capital',               0],
 
-  // ── Sales Revenue ────────────────────────────────────────────────────────
-  ['4000', 'Sales — Standard Rated (20%)','Revenue', 'Sales Revenue',        0],
-  ['4001', 'Sales — Reduced Rate (5%)',   'Revenue', 'Sales Revenue',        0],
-  ['4002', 'Sales — Zero Rated',          'Revenue', 'Sales Revenue',        0],
-  ['4003', 'Sales — Exempt',              'Revenue', 'Sales Revenue',        0],
+  // -- Sales Revenue --------------------------------------------------------
+  ['4000', 'Sales -- Standard Rated (20%)','Revenue', 'Sales Revenue',        0],
+  ['4001', 'Sales -- Reduced Rate (5%)',   'Revenue', 'Sales Revenue',        0],
+  ['4002', 'Sales -- Zero Rated',          'Revenue', 'Sales Revenue',        0],
+  ['4003', 'Sales -- Exempt',              'Revenue', 'Sales Revenue',        0],
   ['4010', 'Export Sales (Outside UK)',   'Revenue', 'Sales Revenue',        0],
   ['4100', 'Service Income',              'Revenue', 'Service Revenue',      0],
   ['4110', 'Consulting Fees',             'Revenue', 'Service Revenue',      0],
@@ -88,9 +88,9 @@ var UK_COA = [
   ['4400', 'Interest Received',           'Revenue', 'Other Revenue',        0],
   ['4900', 'Other Income',                'Revenue', 'Other Revenue',        0],
 
-  // ── Cost of Sales ────────────────────────────────────────────────────────
-  ['5000', 'Purchases — Standard Rated', 'Expense', 'Cost of Sales',         0],
-  ['5001', 'Purchases — Zero Rated',      'Expense', 'Cost of Sales',        0],
+  // -- Cost of Sales --------------------------------------------------------
+  ['5000', 'Purchases -- Standard Rated', 'Expense', 'Cost of Sales',         0],
+  ['5001', 'Purchases -- Zero Rated',      'Expense', 'Cost of Sales',        0],
   ['5010', 'Import Purchases',            'Expense', 'Cost of Sales',        0],
   ['5100', 'Direct Materials',            'Expense', 'Cost of Sales',        0],
   ['5110', 'Direct Labour',               'Expense', 'Cost of Sales',        0],
@@ -99,7 +99,7 @@ var UK_COA = [
   ['5210', 'Closing Stock',               'Expense', 'Cost of Sales',        0],
   ['5900', 'Other Cost of Sales',         'Expense', 'Cost of Sales',        0],
 
-  // ── Staff Costs ──────────────────────────────────────────────────────────
+  // -- Staff Costs ----------------------------------------------------------
   ['6000', 'Gross Wages & Salaries',      'Expense', 'Payroll',              0],
   ['6010', 'Employer\'s NI',             'Expense', 'Payroll',              0],
   ['6020', 'Employer\'s Pension',         'Expense', 'Payroll',              0],
@@ -107,7 +107,7 @@ var UK_COA = [
   ['6100', 'Staff Training',              'Expense', 'Payroll',              0],
   ['6200', 'Staff Recruitment',           'Expense', 'Payroll',              0],
 
-  // ── Operating Expenses ───────────────────────────────────────────────────
+  // -- Operating Expenses ---------------------------------------------------
   ['7000', 'Rent & Rates',                'Expense', 'Operating Expenses',   0],
   ['7010', 'Water, Gas & Electricity',    'Expense', 'Operating Expenses',   0],
   ['7020', 'Building Insurance',          'Expense', 'Operating Expenses',   0],
@@ -132,15 +132,15 @@ var UK_COA = [
   ['7900', 'Sundry Expenses',             'Expense', 'Operating Expenses',   0],
   ['7910', 'Other Expenses',              'Expense', 'Operating Expenses',   0],
 
-  // ── Depreciation ─────────────────────────────────────────────────────────
-  ['8000', 'Depreciation — Plant & Machinery','Expense','Operating Expenses', 0],
-  ['8010', 'Depreciation — Office Equipment', 'Expense','Operating Expenses', 0],
-  ['8020', 'Depreciation — Computer Equipment','Expense','Operating Expenses',0],
-  ['8030', 'Depreciation — Motor Vehicles',   'Expense','Operating Expenses', 0],
+  // -- Depreciation ---------------------------------------------------------
+  ['8000', 'Depreciation -- Plant & Machinery','Expense','Operating Expenses', 0],
+  ['8010', 'Depreciation -- Office Equipment', 'Expense','Operating Expenses', 0],
+  ['8020', 'Depreciation -- Computer Equipment','Expense','Operating Expenses',0],
+  ['8030', 'Depreciation -- Motor Vehicles',   'Expense','Operating Expenses', 0],
   ['8040', 'Amortisation',                    'Expense','Operating Expenses', 0],
   ['8100', 'Bad Debt Expense',                'Expense','Operating Expenses', 0],
 
-  // ── Suspense / Control ───────────────────────────────────────────────────
+  // -- Suspense / Control ---------------------------------------------------
   ['9000', 'Suspense Account',            'Asset',   'Other Assets',          0],
   ['9100', 'Rounding Account',            'Expense', 'Other Expenses',        0],
   ['9900', 'Year-End Retained Earnings',  'Equity',  'Retained Earnings',     0]

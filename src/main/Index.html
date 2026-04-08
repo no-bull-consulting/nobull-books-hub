@@ -142,7 +142,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           SA103 / Self Assessment
         </button>
-<button class="nav-dd-item" onclick="navClose('yearEnd')" data-page="yearEnd">
+        <button class="nav-dd-item" onclick="navClose('ct600')" data-page="ct600">
+          <span class="nav-icon"></span><span>Corporation Tax CT600</span>
+        </button>
+        <button class="nav-dd-item" onclick="navClose('yearEnd')" data-page="yearEnd">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Year End Close
         </button>
@@ -172,7 +175,7 @@
         <div class="nav-avatar" id="nav-avatar">?</div>
         <div>
           <div class="nav-user-name" id="nav-user-name">Loading...</div>
-          <div class="nav-user-role" id="nav-user-role">—</div>
+          <div class="nav-user-role" id="nav-user-role">--</div>
         </div>
         <svg class="nav-chevron" style="color:rgba(255,255,255,.4);margin-left:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -227,11 +230,11 @@
 
 <script>
 
-const CLIENT_CONTEXT = {
+var CLIENT_CONTEXT = {
     sheetId: (function() {
       // Try GAS template value first, fall back to URL param
       var tplVal = "<?!= clientSheetId ?>";
-      if (tplVal && tplVal.indexOf('<?') === -1) return tplVal;
+      if (tplVal && tplVal.indexOf('<' + '?') === -1) return tplVal;
       var m = window.location.search.match(/[?&]id=([^&]+)/);
       return m ? decodeURIComponent(m[1]) : '';
     })(),
@@ -265,10 +268,10 @@ async function boot() {
  * This ensures every single request includes the 'Passport' (_sheetId)
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HMRC FRAUD PREVENTION — Client-side data collection
+// -----------------------------------------------------------------------------
+// HMRC FRAUD PREVENTION -- Client-side data collection
 // Required by law for all MTD API calls
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 function _getOrCreateClientDeviceId() {
   try {
@@ -411,7 +414,7 @@ async function boot() {
           if (el) {
             el.value = _hmrcCode;
             el.style.background = 'var(--green-50)';
-            toast('HMRC authorisation code detected — click Exchange Code to complete connection', 'success', 6000);
+            toast('HMRC authorisation code detected -- click Exchange Code to complete connection', 'success', 6000);
           }
         }, 300);
       }, 1000);
@@ -419,9 +422,9 @@ async function boot() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // FIRST-RUN INIT WIZARD
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 var _wizStep = 1;
 function showInitWizard() { _wizStep=1; _renderWizStep(); }
 function _wizProg() {
@@ -606,7 +609,7 @@ function nbNav(page, params) {
     purchaseOrders:'Purchase Orders', badDebts:'Bad Debts',
     banking:'Bank Accounts', reconciliation:'Reconciliation',
     chartOfAccounts:'Chart of Accounts', reports:'Reports',
-    vat:'VAT / MTD', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
+    vat:'VAT / MTD', ct600:'Corporation Tax CT600', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
     resources:'Resources', aiAssistant:'AI Assistant', maintenance:'Maintenance', security:'Security & Audit',
     settings:'Settings', users:'Users'
 };
@@ -617,7 +620,7 @@ function nbNav(page, params) {
     purchaseOrders:showPOs, badDebts:showBadDebts,
     banking:showBanking, reconciliation:showReconciliation,
     chartOfAccounts:showCOA, reports:showReports, adminPanel:showAdminPanel, agedDebtors:showAgedDebtors, agedCreditors:showAgedCreditors,
-    vat:showVAT, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
+    vat:showVAT, ct600:showCT600, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
     resources:showResources, aiAssistant:showAIAssistant, maintenance:showMaintenance, security:showSecurity,
     settings:showSettings, users:showUsers
 };
@@ -718,7 +721,7 @@ async function _aiSend() {
   var thinkDiv = document.createElement('div');
   thinkDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start;margin-bottom:4px';
   thinkDiv.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">&#x1F916;</div>' +
-    '<div style="background:var(--g100);border-radius:2px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--g500)">Thinking…</div>';
+    '<div style="background:var(--g100);border-radius:2px 12px 12px 12px;padding:10px 14px;font-size:13px;color:var(--g500)">Thinking&#8230;</div>';
   chat.appendChild(thinkDiv);
   chat.scrollTop = chat.scrollHeight;
 
@@ -770,40 +773,40 @@ function _aiBuildContext() {
 
   // Recent invoices (last 5)
   var recentInv = inv.slice(-5).map(function(i){
-    return i.invoiceNumber + ' ' + (i.clientName||'') + ' £' + (parseFloat(i.total)||0).toFixed(2) + ' (' + i.status + ')';
+    return i.invoiceNumber + ' ' + (i.clientName||'') + ' &pound;' + (parseFloat(i.total)||0).toFixed(2) + ' (' + i.status + ')';
   }).join('; ');
 
   // Recent bills (last 5)
   var recentBil = bil.slice(-5).map(function(b){
-    return (b.billNumber||'') + ' ' + (b.supplierName||'') + ' £' + (parseFloat(b.total)||0).toFixed(2) + ' (' + b.status + ')';
+    return (b.billNumber||'') + ' ' + (b.supplierName||'') + ' &pound;' + (parseFloat(b.total)||0).toFixed(2) + ' (' + b.status + ')';
   }).join('; ');
 
   // Bank accounts
   var baList = ba.map(function(a){
-    return (a.accountName||'') + ' at ' + (a.bankName||'') + ': £' + (parseFloat(a.currentBalance)||0).toFixed(2);
+    return (a.accountName||'') + ' at ' + (a.bankName||'') + ': &pound;' + (parseFloat(a.currentBalance)||0).toFixed(2);
   }).join('; ');
 
   return [
     'COMPANY: ' + (s.companyName || 'Unknown'),
     'FINANCIAL YEAR: ' + (s.currentFinancialYear || 'Not set'),
     'VAT REGISTERED: ' + (s.vatRegistered ? 'Yes, VAT No: ' + (s.vatRegNumber || 'not set') : 'No'),
-    'BASE CURRENCY: GBP (£)',
+    'BASE CURRENCY: GBP (&pound;)',
     '',
-    'CASH POSITION: £' + cash.toFixed(2),
+    'CASH POSITION: &pound;' + cash.toFixed(2),
     'BANK ACCOUNTS: ' + (baList || 'None'),
     '',
     'INVOICES: ' + inv.length + ' total (' + paidInv.length + ' paid, ' + sentInv.length + ' outstanding, ' + draftInv.length + ' draft)',
-    'OUTSTANDING RECEIVABLE: £' + rcv.toFixed(2),
-    'OVERDUE INVOICES: ' + overdueInv.length + (overdueInv.length ? ' (£' + overdueInv.reduce(function(s,i){return s+(parseFloat(i.amountDue)||0);},0).toFixed(2) + ')' : ''),
-    'TOTAL REVENUE (paid invoices): £' + totalRevenue.toFixed(2),
+    'OUTSTANDING RECEIVABLE: &pound;' + rcv.toFixed(2),
+    'OVERDUE INVOICES: ' + overdueInv.length + (overdueInv.length ? ' (&pound;' + overdueInv.reduce(function(s,i){return s+(parseFloat(i.amountDue)||0);},0).toFixed(2) + ')' : ''),
+    'TOTAL REVENUE (paid invoices): &pound;' + totalRevenue.toFixed(2),
     'RECENT INVOICES: ' + (recentInv || 'None'),
     '',
     'BILLS: ' + bil.length + ' total (' + paidBil.length + ' paid, ' + pendingBil.length + ' pending)',
-    'OUTSTANDING PAYABLE: £' + pay.toFixed(2),
-    'TOTAL SPEND (paid bills): £' + totalSpend.toFixed(2),
+    'OUTSTANDING PAYABLE: &pound;' + pay.toFixed(2),
+    'TOTAL SPEND (paid bills): &pound;' + totalSpend.toFixed(2),
     'RECENT BILLS: ' + (recentBil || 'None'),
     '',
-    'NET POSITION: £' + (cash + rcv - pay).toFixed(2) + ' (cash + receivable - payable)',
+    'NET POSITION: &pound;' + (cash + rcv - pay).toFixed(2) + ' (cash + receivable - payable)',
   ].join('\n');
 }
 
@@ -831,7 +834,7 @@ function showResources() {
           var a=document.getElementById('faq-body-'+n);
           var ic=document.getElementById('faq-ic-'+n);
           if(a){a.style.display=a.style.display==='none'?'':'none';}
-          if(ic){ic.textContent=ic.textContent==='+'?'−':'+';}
+          if(ic){ic.textContent=ic.textContent==='+'?'-':'+';}
         };
       })(i);
     }
@@ -863,32 +866,32 @@ function _resManual() {
       '</div>'+
     '</div>'+
     '<div>'+
-      s('m-overview','📋','Overview')+
-      p('no~bull books is a Google Apps Script accounting system for UK sole traders. All data lives in your own Google Sheets — no external servers, no subscriptions.')+
+      s('m-overview','','Overview')+
+      p('no~bull books is a Google Apps Script accounting system for UK sole traders. All data lives in your own Google Sheets -- no external servers, no subscriptions.')+
       li(['Role-based access: Owner, Admin, Accountant, Staff, ReadOnly','MTD-ready VAT submission direct to HMRC','Double-entry bookkeeping','PDF invoices generated and emailed from the app'])+
 
-      s('m-invoices','🧾','Invoices')+
+      s('m-invoices','','Invoices')+
       wf(['Draft','Approved','Sent','Paid'])+
-      p('<strong>Draft</strong> — Pro-Forma only, not a VAT document, fully editable.')+
-      p('<strong>Approved</strong> — becomes a Tax Invoice, locked into VAT returns, line items locked.')+
-      p('<strong>Sent / Paid</strong> — read-only except notes and due date.')+
+      p('<strong>Draft</strong> -- Pro-Forma only, not a VAT document, fully editable.')+
+      p('<strong>Approved</strong> -- becomes a Tax Invoice, locked into VAT returns, line items locked.')+
+      p('<strong>Sent / Paid</strong> -- read-only except notes and due date.')+
       h('Creating an invoice')+
       ol(['Sales &rarr; Invoices &rarr; New Invoice','Select client, set dates','Choose VAT mode: Exclusive / Inclusive / No VAT','Add line items with individual VAT rates','Create (saves as Draft), then Approve to make Tax Invoice'])+
       h('Editing &amp; corrections')+
       p('Use Revert to move back to Draft or Approved. Draft invoices allow full line-item editing.')+
 
-      s('m-bills','📦','Bills &amp; Purchase Orders')+
+      s('m-bills','','Bills &amp; Purchase Orders')+
       wf(['Pending','Approved','Paid'])+
       p('Approve a bill to lock input VAT. PO workflow: Draft &rarr; Submitted &rarr; Approved &rarr; Sent &rarr; Received. On Received, a Bill is auto-created.')+
 
-      s('m-banking','🏦','Banking')+
+      s('m-banking','','Banking')+
       p('Use Spend / Receive / Transfer for manual entries. Import CSV statements. Reconciliation matches statement lines to book entries by amount.')+
 
-      s('m-reports','📊','Reports')+
-      li(['Profit &amp; Loss — revenue vs expenses','Balance Sheet — assets, liabilities, equity','Trial Balance — all accounts debit/credit','General Ledger — transaction detail with running balance'])+
+      s('m-reports','','Reports')+
+      li(['Profit &amp; Loss -- revenue vs expenses','Balance Sheet -- assets, liabilities, equity','Trial Balance -- all accounts debit/credit','General Ledger -- transaction detail with running balance'])+
 
-      s('m-settings','⚙️','Settings')+
-      li(['Company — name, address, logo','Invoicing — prefixes, numbering, payment terms, footer','VAT — registration, scheme, rate (hidden when not VAT registered)','HMRC/MTD — Client ID/Secret, sandbox toggle','Bank Details — shown on PDFs','Financial Year — business start date and year-end day/month'])+
+      s('m-settings','&#9881;&#65039;','Settings')+
+      li(['Company -- name, address, logo','Invoicing -- prefixes, numbering, payment terms, footer','VAT -- registration, scheme, rate (hidden when not VAT registered)','HMRC/MTD -- Client ID/Secret, sandbox toggle','Bank Details -- shown on PDFs','Financial Year -- business start date and year-end day/month'])+
 
       s('m-vat','%','VAT &amp; MTD')+
       h('Connecting')+
@@ -897,8 +900,8 @@ function _resManual() {
       ol(['VAT/MTD &rarr; Obligations &rarr; Load, click Use this period','Calculate Return &rarr; Calculate &rarr; Save Draft','Submit to HMRC, type CONFIRM'])+
       p('<strong>Note:</strong> Only Approved, Sent and Paid invoices count. Drafts are excluded.')+
 
-      s('m-sa103','📝','SA103')+
-      p('Accounting &rarr; SA103. Select tax year &rarr; Calculate. Pulls income from invoices and maps expenses to SA103 boxes. Add capital assets (AIA 100%, Main Pool 18%, Special Rate 6%). Tax estimate is indicative — verify with your accountant.')+
+      s('m-sa103','','SA103')+
+      p('Accounting &rarr; SA103. Select tax year &rarr; Calculate. Pulls income from invoices and maps expenses to SA103 boxes. Add capital assets (AIA 100%, Main Pool 18%, Special Rate 6%). Tax estimate is indicative -- verify with your accountant.')+
     '</div></div>';
 }
 function _resRef() {
@@ -911,11 +914,11 @@ function _resRef() {
       '</tbody></table></div></div>'+
     '<div class="card"><div class="card-hdr"><span class="card-ttl">UK Tax Rates 2025-26</span></div><div class="card-body">'+
       '<table class="dt"><tbody>'+
-      '<tr><td>Personal Allowance</td><td><strong>£12,570</strong></td></tr>'+
-      '<tr><td>Basic Rate 20%</td><td>Up to £50,270</td></tr>'+
-      '<tr><td>Higher Rate 40%</td><td>£50,271 – £125,140</td></tr>'+
-      '<tr><td>Class 4 NI</td><td>6% on £12,570–£50,270</td></tr>'+
-      '<tr><td>AIA</td><td>£1,000,000 / year</td></tr>'+
+      '<tr><td>Personal Allowance</td><td><strong>&pound;12,570</strong></td></tr>'+
+      '<tr><td>Basic Rate 20%</td><td>Up to &pound;50,270</td></tr>'+
+      '<tr><td>Higher Rate 40%</td><td>&pound;50,271 - &pound;125,140</td></tr>'+
+      '<tr><td>Class 4 NI</td><td>6% on &pound;12,570-&pound;50,270</td></tr>'+
+      '<tr><td>AIA</td><td>&pound;1,000,000 / year</td></tr>'+
       '</tbody></table></div></div>'+
     '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">Useful Links</span></div><div class="card-body">'+
       '<div style="display:flex;flex-wrap:wrap;gap:12px">'+
@@ -929,9 +932,9 @@ function _resRef() {
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // CONTACTS PAGE (unified clients + suppliers)
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 var _contactsFilter = 'all'; // 'all' | 'client' | 'supplier'
 var _contactSearch  = '';
 var _selectedContact = null;
@@ -952,7 +955,7 @@ function showContacts(params) {
 
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Contacts</div>' +
-      '<div class="page-sub">'+all.length+' contacts ('+clients.length+' clients · '+suppliers.length+' suppliers)</div></div>' +
+      '<div class="page-sub">'+all.length+' contacts ('+clients.length+' clients &#183; '+suppliers.length+' suppliers)</div></div>' +
       '<div class="page-actions">' +
         '<button class="btn btn-primary btn-sm" onclick="openCreateClientModal()">+ Client</button> ' +
         '<button class="btn btn-secondary btn-sm" onclick="openCreateSupplierModal()">+ Supplier</button>' +
@@ -984,7 +987,7 @@ function showContacts(params) {
               '</div>'+
               '<div style="min-width:0">'+
                 '<div style="font-size:13px;font-weight:600;color:var(--g900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c._name+'</div>'+
-                '<div style="font-size:11px;color:var(--g400)"><span class="badge '+(c._type==='client'?'badge-blue':'badge-purple')+'" style="font-size:9px">'+c._type+'</span>'+(c.email?' · '+c.email:'')+'</div>'+
+                '<div style="font-size:11px;color:var(--g400)"><span class="badge '+(c._type==='client'?'badge-blue':'badge-purple')+'" style="font-size:9px">'+c._type+'</span>'+(c.email?' &#183; '+c.email:'')+'</div>'+
               '</div>'+
             '</div>'+
           '</div>';
@@ -1052,7 +1055,7 @@ function _renderContactDetail(c) {
       '<div style="display:flex;gap:6px">' +
         (isClient
           ? '<button class="btn btn-primary btn-sm" onclick="openCreateInvoiceModal()">+ Invoice</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="openClientStatementModal(\''+c._id+'\',\''+c._name+'\')">📋 Statement</button>' +
+            '<button class="btn btn-secondary btn-sm" onclick="openClientStatementModal(\''+c._id+'\',\''+c._name+'\')"> Statement</button>' +
             '<button class="btn btn-ghost btn-sm" onclick="openEditClientModal(\''+c._id+'\',\''+c._id+'\')">Edit</button>'
           : '<button class="btn btn-primary btn-sm" onclick="openCreateBillModal()">+ Bill</button>' +
             '<button class="btn btn-ghost btn-sm" onclick="openEditSupplierModal(\''+c._id+'\')">Edit</button>'
@@ -1088,7 +1091,7 @@ function _renderContactDetail(c) {
             var isInv = isClient;
             var click = isInv ? 'viewInvoice(\''+t.invoiceId+'\')' : 'viewBill(\''+t.billId+'\')';
             return '<tr onclick="'+click+'" style="cursor:pointer">' +
-              '<td><strong class="mono">'+(t.invoiceNumber||t.billNumber||'—')+'</strong></td>' +
+              '<td><strong class="mono">'+(t.invoiceNumber||t.billNumber||'--')+'</strong></td>' +
               '<td>'+fmtDate(t.issueDate)+'</td>' +
               '<td>'+amt(t.total)+'</td>' +
               '<td>'+(parseFloat(t.amountDue)?amt(t.amountDue):'<span style="color:var(--green-600)">Paid</span>')+'</td>' +
@@ -1102,60 +1105,60 @@ function _renderContactDetail(c) {
   '</div>';
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ITSA — Making Tax Digital for Income Tax
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
+// ITSA -- Making Tax Digital for Income Tax
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 function showITSA() {
   var s = App.data.settings || App.settings || {};
   var nino = s.hmrcNINO || '';
   var busId = s.mtdBusinessId || '';
   showContent(
-    '<div class="page-hdr"><div><div class="page-title">ITSA — Making Tax Digital for Income Tax</div>' +
+    '<div class="page-hdr"><div><div class="page-title">ITSA -- Making Tax Digital for Income Tax</div>' +
       '<div class="page-sub">Quarterly updates and annual submissions via HMRC MTD API</div></div>' +
     '</div>' +
 
     // Status banner
     (!nino || !busId
       ? '<div class="alert alert-warning" style="margin-bottom:16px">' +
-          '<p>⚠ NINO and Business ID are required before using ITSA. Enter them in <strong>Settings → HMRC/MTD</strong>.</p>' +
+          '<p>&#9888; NINO and Business ID are required before using ITSA. Enter them in <strong>Settings -> HMRC/MTD</strong>.</p>' +
           '<button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="nbNav(\'settings\')">Go to Settings</button>' +
         '</div>'
       : '<div class="alert alert-success" style="margin-bottom:16px">' +
-          '<p>✓ Configured · NINO: <strong>'+nino+'</strong> · Business ID: <strong>'+busId+'</strong></p>' +
+          '<p>&#10003; Configured &#183; NINO: <strong>'+nino+'</strong> &#183; Business ID: <strong>'+busId+'</strong></p>' +
         '</div>'
     ) +
 
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
 
     // What is ITSA
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">📋 About ITSA MTD</span></div>' +
+    '<div class="card"><div class="card-hdr"><span class="card-ttl"> About ITSA MTD</span></div>' +
       '<div class="card-body">' +
         '<p style="font-size:13px;color:var(--g700);line-height:1.7;margin-bottom:10px">' +
           'Making Tax Digital for Income Tax Self Assessment (MTD ITSA) requires sole traders and landlords ' +
-          'with income over £50,000/year (from Apr 2026, £30,000 from Apr 2027) to submit quarterly updates ' +
+          'with income over &pound;50,000/year (from Apr 2026, &pound;30,000 from Apr 2027) to submit quarterly updates ' +
           'and an annual declaration directly to HMRC via software.' +
         '</p>' +
         '<table class="dt"><tbody>' +
-          '<tr><td><strong>Quarter 1</strong></td><td>Apr–Jun</td><td>Due 5 Aug</td></tr>' +
-          '<tr><td><strong>Quarter 2</strong></td><td>Jul–Sep</td><td>Due 5 Nov</td></tr>' +
-          '<tr><td><strong>Quarter 3</strong></td><td>Oct–Dec</td><td>Due 5 Feb</td></tr>' +
-          '<tr><td><strong>Quarter 4</strong></td><td>Jan–Mar</td><td>Due 5 May</td></tr>' +
+          '<tr><td><strong>Quarter 1</strong></td><td>Apr-Jun</td><td>Due 5 Aug</td></tr>' +
+          '<tr><td><strong>Quarter 2</strong></td><td>Jul-Sep</td><td>Due 5 Nov</td></tr>' +
+          '<tr><td><strong>Quarter 3</strong></td><td>Oct-Dec</td><td>Due 5 Feb</td></tr>' +
+          '<tr><td><strong>Quarter 4</strong></td><td>Jan-Mar</td><td>Due 5 May</td></tr>' +
           '<tr><td><strong>Annual</strong></td><td>Final declaration</td><td>Due 31 Jan</td></tr>' +
         '</tbody></table>' +
       '</div></div>' +
 
     // Actions
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">🚀 Actions</span></div>' +
+    '<div class="card"><div class="card-hdr"><span class="card-ttl"> Actions</span></div>' +
       '<div class="card-body">' +
         '<div style="display:flex;flex-direction:column;gap:10px">' +
-          _itsaBtn('📋','View Obligations','Load your quarterly obligations from HMRC','loadITSAObligation()',(!!nino&&!!busId)) +
-          _itsaBtn('📤','Submit Quarterly Update','Submit income and expenses for a quarter','openITSASubmitModal()',(!!nino&&!!busId)) +
-          _itsaBtn('📊','View Submissions','See all previous ITSA submissions','loadITSASubmissions()',true) +
-          _itsaBtn('💰','Trigger Calculation','Request an in-year tax calculation from HMRC','loadITSACalc()',(!!nino&&!!busId)) +
+          _itsaBtn('','View Obligations','Load your quarterly obligations from HMRC','loadITSAObligation()',(!!nino&&!!busId)) +
+          _itsaBtn('','Submit Quarterly Update','Submit income and expenses for a quarter','openITSASubmitModal()',(!!nino&&!!busId)) +
+          _itsaBtn('','View Submissions','See all previous ITSA submissions','loadITSASubmissions()',true) +
+          _itsaBtn('','Trigger Calculation','Request an in-year tax calculation from HMRC','loadITSACalc()',(!!nino&&!!busId)) +
         '</div>' +
       '</div></div>' +
 
-    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl">📊 Obligations & Submissions</span></div>' +
+    '<div class="card" style="grid-column:1/-1"><div class="card-hdr"><span class="card-ttl"> Obligations & Submissions</span></div>' +
       '<div id="itsa-content"><div style="padding:20px;text-align:center;color:var(--g400);font-size:13px">Click an action above to load data</div></div>' +
     '</div>' +
 
@@ -1180,7 +1183,7 @@ async function loadITSAObligation() {
     if (r && r.success && r.obligations && r.obligations.length) {
       el.innerHTML = '<table class="dt"><thead><tr><th>Tax Year</th><th>Quarter</th><th>Period</th><th>Due</th><th>Status</th></tr></thead><tbody>' +
         r.obligations.map(function(o){
-          return '<tr><td>'+o.taxYear+'</td><td>'+o.quarter+'</td><td>'+fmtDate(o.periodStart)+' – '+fmtDate(o.periodEnd)+'</td><td>'+fmtDate(o.dueDate)+'</td><td>'+badge(o.status)+'</td></tr>';
+          return '<tr><td>'+o.taxYear+'</td><td>'+o.quarter+'</td><td>'+fmtDate(o.periodStart)+' - '+fmtDate(o.periodEnd)+'</td><td>'+fmtDate(o.dueDate)+'</td><td>'+badge(o.status)+'</td></tr>';
         }).join('') + '</tbody></table>';
     } else {
       el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--g400);font-size:13px">'+(r&&r.message?r.message:'No obligations found. Ensure HMRC connection is established in Settings.')+'</div>';
@@ -1196,7 +1199,7 @@ async function loadITSASubmissions() {
     if (r && r.success && r.submissions && r.submissions.length) {
       el.innerHTML = '<table class="dt"><thead><tr><th>Type</th><th>Tax Year</th><th>Quarter</th><th>Status</th><th>HMRC Ref</th><th>Submitted</th></tr></thead><tbody>' +
         r.submissions.map(function(s){
-          return '<tr><td>'+badge(s.type)+'</td><td>'+s.taxYear+'</td><td>'+(s.quarter||'—')+'</td><td>'+badge(s.status)+'</td><td class="mono" style="font-size:11px">'+(s.hmrcRef||'—')+'</td><td>'+fmtDate(s.submittedAt)+'</td></tr>';
+          return '<tr><td>'+badge(s.type)+'</td><td>'+s.taxYear+'</td><td>'+(s.quarter||'--')+'</td><td>'+badge(s.status)+'</td><td class="mono" style="font-size:11px">'+(s.hmrcRef||'--')+'</td><td>'+fmtDate(s.submittedAt)+'</td></tr>';
         }).join('') + '</tbody></table>';
     } else {
       el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--g400);font-size:13px">No submissions yet.</div>';
@@ -1210,7 +1213,7 @@ async function loadITSACalc() {
   var r = await api('triggerITSACalculation', {});
   if (el) {
     el.innerHTML = r && r.success
-      ? '<div class="alert alert-success"><p>✓ Calculation triggered. '+((r.message||''))+'</p></div>'
+      ? '<div class="alert alert-success"><p>&#10003; Calculation triggered. '+((r.message||''))+'</p></div>'
       : '<div class="alert alert-error"><p>Error: '+(r?r.message||r.error:'unknown')+'</p></div>';
   }
 }
@@ -1231,9 +1234,9 @@ function openITSASubmitModal() {
         '<select class="form-select" id="itsa-quarter">'+
           ['Q1 (Apr-Jun)','Q2 (Jul-Sep)','Q3 (Oct-Dec)','Q4 (Jan-Mar)'].map(function(q,i){ return '<option value="'+(i+1)+'">'+q+'</option>'; }).join('')+
         '</select></div>'+
-      '<div class="form-group"><label class="form-label">Turnover (£)</label>'+
+      '<div class="form-group"><label class="form-label">Turnover (&pound;)</label>'+
         '<input type="number" class="form-input" id="itsa-income" step="0.01" min="0" placeholder="0.00"></div>'+
-      '<div class="form-group"><label class="form-label">Expenses (£)</label>'+
+      '<div class="form-group"><label class="form-label">Expenses (&pound;)</label>'+
         '<input type="number" class="form-input" id="itsa-expenses" step="0.01" min="0" placeholder="0.00"></div>'+
     '</div>',
     '<button class="btn btn-secondary" onclick="closeModal(\'itsa-submit\')">Cancel</button>'+
@@ -1261,9 +1264,9 @@ async function submitITSAQuarter() {
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // AGED DEBTORS & AGED CREDITORS REPORTS
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 function showAgedDebtors() {
   var inv    = App.data.invoices||[];
   var today  = new Date(); today.setHours(0,0,0,0);
@@ -1300,7 +1303,7 @@ function showAgedDebtors() {
 
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Aged Debtors</div>' +
-      '<div class="page-sub">Outstanding receivables by age · as at '+fmtDate(today.toISOString())+'</div></div></div>' +
+      '<div class="page-sub">Outstanding receivables by age &#183; as at '+fmtDate(today.toISOString())+'</div></div></div>' +
     '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">' +
       _ageKPI('Current',   tot.current,  'var(--green-600)') +
       _ageKPI('1-30 days', tot.d30,      'var(--amber-500)') +
@@ -1310,7 +1313,7 @@ function showAgedDebtors() {
     '</div>' +
     '<div class="tbl-wrap">' +
     (!rows.length
-      ? '<div class="empty"><h3>No outstanding debtors</h3><p>All invoices are paid — great work!</p></div>'
+      ? '<div class="empty"><h3>No outstanding debtors</h3><p>All invoices are paid -- great work!</p></div>'
       : '<table class="dt"><thead><tr><th>Client</th><th>Current</th><th>1-30 days</th><th>31-60 days</th><th>61-90 days</th><th>90+ days</th><th>Total Due</th></tr></thead><tbody>' +
         rows.map(function(r){
           return '<tr onclick="showContacts({filter:\'client\'})" style="cursor:pointer">' +
@@ -1364,7 +1367,7 @@ function showAgedCreditors() {
 
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Aged Creditors</div>' +
-      '<div class="page-sub">Outstanding payables by age · as at '+fmtDate(today.toISOString())+'</div></div></div>' +
+      '<div class="page-sub">Outstanding payables by age &#183; as at '+fmtDate(today.toISOString())+'</div></div></div>' +
     '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px">' +
       _ageKPI('Current',   tot.current,  'var(--green-600)') +
       _ageKPI('1-30 days', tot.d30,      'var(--amber-500)') +
@@ -1405,11 +1408,11 @@ function _ageKPI(label, val, col) {
   '</div>';
 }
 function _ageFmt(val, col) {
-  return val>0 ? '<span style="color:'+col+';font-weight:600">'+fmt(val)+'</span>' : '<span style="color:var(--g300)">—</span>';
+  return val>0 ? '<span style="color:'+col+';font-weight:600">'+fmt(val)+'</span>' : '<span style="color:var(--g300)">--</span>';
 }
 
 
-// ── Bulk Action Helpers ───────────────────────────────────────────────────────
+// -- Bulk Action Helpers -------------------------------------------------------
 function _bulkCheckAll(masterCb, cls) {
   document.querySelectorAll('.'+cls).forEach(function(cb){ cb.checked = masterCb.checked; });
 }
@@ -1421,11 +1424,11 @@ function _invBulkAction() {
   var ids = _getChecked('inv-chk');
   if (!ids.length) { toast('Select at least one invoice','warning'); return; }
   var invs = (App.data.invoices||[]).filter(function(i){ return ids.indexOf(i.invoiceId)>=0; });
-  openModal('bulk-inv','Bulk Action — '+ids.length+' invoice(s)',
+  openModal('bulk-inv','Bulk Action -- '+ids.length+' invoice(s)',
     '<div style="display:flex;flex-direction:column;gap:8px">' +
-      '<button class="btn btn-secondary" onclick="_bulkApprove()">✓ Approve (Draft invoices)</button>' +
-      '<button class="btn btn-secondary" onclick="_bulkMarkSent()">📤 Mark Sent (Approved invoices)</button>' +
-      '<button class="btn btn-danger" style="margin-top:8px" onclick="_bulkDeleteInv()">🗑 Delete (Draft invoices only)</button>' +
+      '<button class="btn btn-secondary" onclick="_bulkApprove()">&#10003; Approve (Draft invoices)</button>' +
+      '<button class="btn btn-secondary" onclick="_bulkMarkSent()"> Mark Sent (Approved invoices)</button>' +
+      '<button class="btn btn-danger" style="margin-top:8px" onclick="_bulkDeleteInv()"> Delete (Draft invoices only)</button>' +
     '</div>',
     '<button class="btn btn-ghost" onclick="closeModal(\'bulk-inv\')">Cancel</button>',
     'modal-sm'
@@ -1444,7 +1447,7 @@ async function _bulkApprove() {
     var r = await api('approveInvoice',{invoiceId:ids[i]});
     if (r&&r.success) ok++; else fail++;
   }
-  toast(ok+' approved'+(fail?' · '+fail+' failed':''),'success');
+  toast(ok+' approved'+(fail?' &#183; '+fail+' failed':''),'success');
   var fresh = await api('getAllInvoices');
   if (fresh&&fresh.success) App.data.invoices=fresh.invoices||[];
   showInvoices();
@@ -1462,7 +1465,7 @@ async function _bulkMarkSent() {
     var r = await api('markInvoiceSent',{invoiceId:ids[i]});
     if (r&&r.success) ok++; else fail++;
   }
-  toast(ok+' marked sent'+(fail?' · '+fail+' failed':''),'success');
+  toast(ok+' marked sent'+(fail?' &#183; '+fail+' failed':''),'success');
   var fresh = await api('getAllInvoices');
   if (fresh&&fresh.success) App.data.invoices=fresh.invoices||[];
   showInvoices();
@@ -1482,17 +1485,17 @@ async function _bulkDeleteInv() {
     if (r&&r.success) { ok++; App.data.invoices=App.data.invoices.filter(function(inv){return inv.invoiceId!==ids[i];}); }
     else fail++;
   }
-  toast(ok+' deleted'+(fail?' · '+fail+' failed':''),'success');
+  toast(ok+' deleted'+(fail?' &#183; '+fail+' failed':''),'success');
   showInvoices();
 }
 
 function _bilBulkAction() {
   var ids = _getChecked('bil-chk');
   if (!ids.length) { toast('Select at least one bill','warning'); return; }
-  openModal('bulk-bil','Bulk Action — '+ids.length+' bill(s)',
+  openModal('bulk-bil','Bulk Action -- '+ids.length+' bill(s)',
     '<div style="display:flex;flex-direction:column;gap:8px">' +
-      '<button class="btn btn-secondary" onclick="_bulkApproveBills()">✓ Approve (Pending bills)</button>' +
-      '<button class="btn btn-danger" style="margin-top:8px" onclick="_bulkDeleteBils()">🗑 Delete (Pending bills only)</button>' +
+      '<button class="btn btn-secondary" onclick="_bulkApproveBills()">&#10003; Approve (Pending bills)</button>' +
+      '<button class="btn btn-danger" style="margin-top:8px" onclick="_bulkDeleteBils()"> Delete (Pending bills only)</button>' +
     '</div>',
     '<button class="btn btn-ghost" onclick="closeModal(\'bulk-bil\')">Cancel</button>',
     'modal-sm'
@@ -1511,7 +1514,7 @@ async function _bulkApproveBills() {
     var r = await api('approveBill',{billId:ids[i]});
     if (r&&r.success) ok++; else fail++;
   }
-  toast(ok+' approved'+(fail?' · '+fail+' failed':''),'success');
+  toast(ok+' approved'+(fail?' &#183; '+fail+' failed':''),'success');
   var fresh = await api('getAllBills');
   if (fresh&&fresh.success) App.data.bills=fresh.bills||[];
   showBills();
@@ -1531,17 +1534,17 @@ async function _bulkDeleteBils() {
     if (r&&r.success) { ok++; App.data.bills=App.data.bills.filter(function(b){return b.billId!==ids[i];}); }
     else fail++;
   }
-  toast(ok+' deleted'+(fail?' · '+fail+' failed':''),'success');
+  toast(ok+' deleted'+(fail?' &#183; '+fail+' failed':''),'success');
   showBills();
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // MULTI-TENANT ADMIN PANEL (Superuser only)
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 
 function _editRegistryClient(registryId, companyName, status, plan) {
-  openModal('reg-edit', 'Edit — ' + companyName,
+  openModal('reg-edit', 'Edit -- ' + companyName,
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Status</label>' +
         '<select class="form-select" id="reg-status">' +
@@ -1591,23 +1594,23 @@ async function showAdminPanel() {
 
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Admin Panel</div>' +
-      '<div class="page-sub">Superuser view — instance metadata and health</div></div></div>' +
+      '<div class="page-sub">Superuser view -- instance metadata and health</div></div></div>' +
 
     '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">' +
       _adminKPI('Invoices',   fmtNum(meta.invoiceCount), 'var(--blue-600)') +
       _adminKPI('Clients',    fmtNum(meta.clientCount),  'var(--green-600)') +
       _adminKPI('Bills',      fmtNum(meta.billCount),    'var(--amber-500)') +
-      _adminKPI('Version',    meta.version||'—',          'var(--purple-600)') +
+      _adminKPI('Version',    meta.version||'--',          'var(--purple-600)') +
     '</div>' +
 
     '<div class="card" style="margin-bottom:16px"><div class="card-hdr"><span class="card-ttl">This Instance</span></div>' +
       '<div class="card-body"><div class="form-grid-2" style="font-size:13px">' +
-        _adminRow('Company',        meta.companyName||'—') +
-        _adminRow('Email',          meta.companyEmail||'—') +
-        _adminRow('Script ID',      '<code style="font-size:11px">'+(meta.scriptId||'—')+'</code>') +
+        _adminRow('Company',        meta.companyName||'--') +
+        _adminRow('Email',          meta.companyEmail||'--') +
+        _adminRow('Script ID',      '<code style="font-size:11px">'+(meta.scriptId||'--')+'</code>') +
         _adminRow('Spreadsheet',    meta.spreadsheetId ?
-          '<a href="'+meta.spreadsheetUrl+'" target="_blank" style="color:var(--blue-600);font-size:11px">Open Sheet</a>' : '—') +
-        _adminRow('Last Seen',      meta.lastSeen ? fmtDate(meta.lastSeen) : '—') +
+          '<a href="'+meta.spreadsheetUrl+'" target="_blank" style="color:var(--blue-600);font-size:11px">Open Sheet</a>' : '--') +
+        _adminRow('Last Seen',      meta.lastSeen ? fmtDate(meta.lastSeen) : '--') +
       '</div></div></div>' +
 
     '<div class="card" style="margin-bottom:14px"><div class="card-hdr"><span class="card-ttl">Automated Backup</span></div>' +
@@ -1618,8 +1621,8 @@ async function showAdminPanel() {
           _adminKPI('Retain', (backup.retainDays||30)+' days', 'var(--g500)') +
         '</div>' +
         (backup.latestBackup
-          ? '<div style="font-size:12px;color:var(--g500);margin-bottom:10px">Last backup: <strong>'+fmtDate(backup.latestBackup.createdDate)+'</strong> — '+backup.latestBackup.name+'</div>'
-          : '<div style="font-size:12px;color:var(--amber-500);margin-bottom:10px">⚠ No backups found. Install the trigger or run a manual backup.</div>') +
+          ? '<div style="font-size:12px;color:var(--g500);margin-bottom:10px">Last backup: <strong>'+fmtDate(backup.latestBackup.createdDate)+'</strong> -- '+backup.latestBackup.name+'</div>'
+          : '<div style="font-size:12px;color:var(--amber-500);margin-bottom:10px">&#9888; No backups found. Install the trigger or run a manual backup.</div>') +
         '<div style="display:flex;gap:8px">' +
           (!backup.hasTrigger ? '<button class="btn btn-primary btn-sm" onclick="_adminInstallBackup()">Install Backup Trigger</button>' : '<button class="btn btn-ghost btn-sm" onclick="_adminInstallBackup()">Reinstall Trigger</button>') +
           '<button class="btn btn-secondary btn-sm" onclick="_adminManualBackup()">Run Backup Now</button>' +
@@ -1628,7 +1631,7 @@ async function showAdminPanel() {
       '</div></div>' +
     '<div class="card" style="margin-bottom:14px"><div class="card-hdr">' +
       '<span class="card-ttl">Instance Registry</span>' +
-      (meta.registryConfigured ? '<span style="font-size:11px;color:var(--green-600)">✓ Connected · Sheet: <code>'+meta.registrySheetId+'</code></span>' : '<span style="font-size:11px;color:var(--amber-500)">Not configured — run <code>setRegistrySheetId(id)</code> from GAS editor</span>') +
+      (meta.registryConfigured ? '<span style="font-size:11px;color:var(--green-600)">&#10003; Connected &#183; Sheet: <code>'+meta.registrySheetId+'</code></span>' : '<span style="font-size:11px;color:var(--amber-500)">Not configured -- run <code>setRegistrySheetId(id)</code> from GAS editor</span>') +
     '</div><div class="card-body">' +
     (instances
       ? (instances.length
@@ -1705,7 +1708,7 @@ async function _adminSandboxTest() {
   btn.disabled=false; btn.textContent='MTD Sandbox Test';
   if (!r||!r.success&&!r.summary) { toast('Error: '+(r?r.message||r.error:'unknown'),'error'); return; }
   var results = (r.results||[]);
-  openModal('sandbox-results','MTD Sandbox Results — '+r.summary,
+  openModal('sandbox-results','MTD Sandbox Results -- '+r.summary,
     '<div style="font-family:var(--mono);font-size:12px;line-height:1.8">' +
       results.map(function(t){
         return '<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--g100)">' +
@@ -1743,7 +1746,7 @@ async function _adminRunMaintenance() {
 }
 
 
-// ── Accessibility enhancer ────────────────────────────────────────────────────
+// -- Accessibility enhancer ----------------------------------------------------
 function _enhanceAccessibility() {
   // Add aria-label to unlabelled buttons
   document.querySelectorAll('button:not([aria-label])').forEach(function(btn) {
@@ -1767,13 +1770,13 @@ function _enhanceAccessibility() {
   }
 }
 
-// ── GDPR Actions ────────────────────────────────────────────────────────────
+// -- GDPR Actions ------------------------------------------------------------
 function _gdprMenu(clientId, clientName) {
-  openModal('gdpr-menu','GDPR — '+clientName,
+  openModal('gdpr-menu','GDPR -- '+clientName,
     '<div style="display:flex;flex-direction:column;gap:10px">' +
       '<div class="alert alert-info"><p>All actions are logged in the Audit Trail.</p></div>' +
-      '<button class="btn btn-secondary" onclick="_gdprExport(\''+clientId+'\')">📦 Export All Data (Article 20)</button>' +
-      '<button class="btn btn-danger" onclick="_gdprErase(\''+clientId+'\',\''+clientName+'\')">🗑 Erase Personal Data (Article 17)</button>' +
+      '<button class="btn btn-secondary" onclick="_gdprExport(\''+clientId+'\')"> Export All Data (Article 20)</button>' +
+      '<button class="btn btn-danger" onclick="_gdprErase(\''+clientId+'\',\''+clientName+'\')"> Erase Personal Data (Article 17)</button>' +
     '</div>',
     '<button class="btn btn-ghost" onclick="closeModal(\'gdpr-menu\')">Close</button>',
     'modal-sm'
@@ -1805,13 +1808,13 @@ function showContent(h) { document.getElementById('content').innerHTML = h; }
 function showLoader()   { showContent('<div class="loader"><div class="spin"></div><span>Loading...</span></div>'); }
 function fmt(n) {
   n = parseFloat(n) || 0;
-  return '£' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
-var _CURR_SYMBOLS={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+  return '&pound;' + Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+var _CURR_SYMBOLS={'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','JPY':'&#165;','CAD':'C$','AUD':'A$'};
 function _fmtCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+Math.abs(n).toFixed(2)+(n<0?'-':'');}
 function _fmtBillCurr(n,cc){var s=_CURR_SYMBOLS[cc]||(cc+' ');return s+(Math.abs(n)||0).toFixed(2);}
 }
 function fmtDate(d) {
-  if (!d) return '—';
+  if (!d) return '--';
   var s = d.toString();
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
     var p = s.substring(0,10).split('-');
@@ -1828,7 +1831,7 @@ function badge(status) {
     'Reconciled':'badge-green','Unreconciled':'badge-grey','Received':'badge-green',
     'Cancelled':'badge-red','Claimed':'badge-green','Eligible':'badge-amber','Active':'badge-green','Inactive':'badge-grey'
 };
-  return '<span class="badge ' + (m[status]||'badge-grey') + '">' + (status||'—') + '</span>';
+  return '<span class="badge ' + (m[status]||'badge-grey') + '">' + (status||'--') + '</span>';
 }
 function amt(n, forcePos) {
   n = parseFloat(n)||0;
@@ -1878,7 +1881,7 @@ function showDashboard() {
   var today = new Date(); today.setHours(0,0,0,0);
   var mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // ── Data calculations ────────────────────────────────────────────────────
+  // -- Data calculations ----------------------------------------------------
   var activeInv = inv.filter(function(i){ return i.status!=='Paid'&&i.status!=='Void'&&i.status!=='Draft'; });
   var activeBil = bil.filter(function(b){ return b.status!=='Paid'&&b.status!=='Void'; });
   var rcv  = activeInv.reduce(function(s,i){ return s+(parseFloat(i.amountDue)||0); },0);
@@ -1894,7 +1897,7 @@ function showDashboard() {
   });
   var pendPOs = pos.filter(function(p){ return p.status!=='Received'&&p.status!=='Cancelled'; });
 
-  // ── 6-month revenue/expense data ─────────────────────────────────────────
+  // -- 6-month revenue/expense data -----------------------------------------
   var months6 = [];
   for(var m=5;m>=0;m--){
     var d=new Date(today.getFullYear(),today.getMonth()-m,1);
@@ -1913,7 +1916,7 @@ function showDashboard() {
   }
   var maxVal = Math.max.apply(null, months6.map(function(m){return Math.max(m.rev,m.exp);})) || 1;
 
-  // ── Aging buckets ────────────────────────────────────────────────────────
+  // -- Aging buckets --------------------------------------------------------
   var aging={c:0,d30:0,d60:0,d90:0};
   activeInv.forEach(function(i){
     var a=parseFloat(i.amountDue)||0; if(!a) return;
@@ -1927,19 +1930,19 @@ function showDashboard() {
   var agingTotal=aging.c+aging.d30+aging.d60+aging.d90;
   var agingDivisor=agingTotal||1; // prevent div-by-zero in donut
 
-  // ── Top 5 upcoming payables ───────────────────────────────────────────────
+  // -- Top 5 upcoming payables -----------------------------------------------
   var upcomingBils = activeBil.filter(function(b){return b.dueDate;})
     .sort(function(a,b){return new Date(a.dueDate)-new Date(b.dueDate);}).slice(0,5);
   var upcomingInvs = activeInv.filter(function(i){return i.dueDate;})
     .sort(function(a,b){return new Date(a.dueDate)-new Date(b.dueDate);}).slice(0,5);
 
-  // ── Tasks / actions needed ────────────────────────────────────────────────
+  // -- Tasks / actions needed ------------------------------------------------
   var tasks=[];
-  ovdInv.forEach(function(i){ tasks.push({icon:'🔴',text:'Invoice '+i.invoiceNumber+' overdue',amt:parseFloat(i.amountDue)||0,action:"viewInvoice('"+i.invoiceId+"')"}); });
-  ovdBil.forEach(function(b){ tasks.push({icon:'🟠',text:'Bill '+b.billNumber+' overdue',amt:parseFloat(b.amountDue)||0,action:"viewBill('"+b.billId+"')"}); });
-  soon7.forEach(function(i){ tasks.push({icon:'🟡',text:i.invoiceNumber+' due in <7 days',amt:parseFloat(i.amountDue)||0,action:"viewInvoice('"+i.invoiceId+"')"}); });
-  pendPOs.filter(function(p){return p.status==='Submitted';}).forEach(function(p){ tasks.push({icon:'📋',text:p.poNumber+' awaiting approval',amt:0,action:"viewPO('"+p.poId+"')"}); });
-  inv.filter(function(i){return i.status==='Draft';}).slice(0,3).forEach(function(i){ tasks.push({icon:'📝',text:i.invoiceNumber+' is a draft — approve to send',amt:0,action:"viewInvoice('"+i.invoiceId+"')"}); });
+  ovdInv.forEach(function(i){ tasks.push({icon:'',text:'Invoice '+i.invoiceNumber+' overdue',amt:parseFloat(i.amountDue)||0,action:"viewInvoice('"+i.invoiceId+"')"}); });
+  ovdBil.forEach(function(b){ tasks.push({icon:'',text:'Bill '+b.billNumber+' overdue',amt:parseFloat(b.amountDue)||0,action:"viewBill('"+b.billId+"')"}); });
+  soon7.forEach(function(i){ tasks.push({icon:'',text:i.invoiceNumber+' due in <7 days',amt:parseFloat(i.amountDue)||0,action:"viewInvoice('"+i.invoiceId+"')"}); });
+  pendPOs.filter(function(p){return p.status==='Submitted';}).forEach(function(p){ tasks.push({icon:'',text:p.poNumber+' awaiting approval',amt:0,action:"viewPO('"+p.poId+"')"}); });
+  inv.filter(function(i){return i.status==='Draft';}).slice(0,3).forEach(function(i){ tasks.push({icon:'',text:i.invoiceNumber+' is a draft -- approve to send',amt:0,action:"viewInvoice('"+i.invoiceId+"')"}); });
 
   // Year-end approaching / overdue
   var s = App.settings||{};
@@ -1947,21 +1950,21 @@ function showDashboard() {
     var fyEnd = new Date(s.financialYearEnd); fyEnd.setHours(0,0,0,0);
     var daysToFYE = Math.floor((fyEnd-today)/86400000);
     if (daysToFYE < 0 && !s.lockedBefore) {
-      tasks.unshift({icon:'🏁',text:'Financial year ended '+fmtDate(s.financialYearEnd)+' — close now',amt:0,action:"nbNav('yearEnd')"});
+      tasks.unshift({icon:'',text:'Financial year ended '+fmtDate(s.financialYearEnd)+' -- close now',amt:0,action:"nbNav('yearEnd')"});
     } else if (daysToFYE >= 0 && daysToFYE <= 30 && !s.lockedBefore) {
-      tasks.push({icon:'📅',text:'Year end in '+daysToFYE+' day'+(daysToFYE!==1?'s':'')+' ('+fmtDate(s.financialYearEnd)+')',amt:0,action:"nbNav('yearEnd')"});
+      tasks.push({icon:'',text:'Year end in '+daysToFYE+' day'+(daysToFYE!==1?'s':'')+' ('+fmtDate(s.financialYearEnd)+')',amt:0,action:"nbNav('yearEnd')"});
     }
   }
   tasks=tasks.slice(0,8);
 
-  // ── Recent merged activity ────────────────────────────────────────────────
+  // -- Recent merged activity ------------------------------------------------
   var activity=[];
-  inv.slice(-15).forEach(function(i){ activity.push({type:'inv',icon:'🧾',ref:i.invoiceNumber,party:i.clientName,amount:i.total,status:i.status,date:i.issueDate,id:i.invoiceId}); });
-  bil.slice(-10).forEach(function(b){ activity.push({type:'bil',icon:'📦',ref:b.billNumber,party:b.supplierName,amount:b.total,status:b.status,date:b.issueDate,id:b.billId}); });
+  inv.slice(-15).forEach(function(i){ activity.push({type:'inv',icon:'',ref:i.invoiceNumber,party:i.clientName,amount:i.total,status:i.status,date:i.issueDate,id:i.invoiceId}); });
+  bil.slice(-10).forEach(function(b){ activity.push({type:'bil',icon:'',ref:b.billNumber,party:b.supplierName,amount:b.total,status:b.status,date:b.issueDate,id:b.billId}); });
   activity.sort(function(a,b){return (b.date||'')>(a.date||'')?1:-1;});
   activity=activity.slice(0,8);
 
-  // ── Donut SVG builder ─────────────────────────────────────────────────────
+  // -- Donut SVG builder -----------------------------------------------------
   function donut(slices,cx,cy,r,stroke) {
     var total=slices.reduce(function(s,sl){return s+sl.v;},0)||1; // ||1 only for internal math
     var circumference=2*Math.PI*r;
@@ -1985,7 +1988,7 @@ function showDashboard() {
     {v:aging.d90,c:'#ef4444'}
   ].filter(function(s){return s.v>0;});
 
-  // ── Sparkline SVG builder ─────────────────────────────────────────────────
+  // -- Sparkline SVG builder -------------------------------------------------
   function sparkline(vals,w,h,color) {
     if(!vals.length) return '';
     var mx=Math.max.apply(null,vals)||1;
@@ -2000,7 +2003,7 @@ function showDashboard() {
   }
   var balHistory=ba.length?[bal*0.85,bal*0.9,bal*0.88,bal*0.95,bal*0.92,bal]:[0,0,0,0,0,0];
 
-  // ── Days overdue badge ────────────────────────────────────────────────────
+  // -- Days overdue badge ----------------------------------------------------
   function daysOverdue(dateStr) {
     if(!dateStr) return '';
     var d=Math.floor((today-new Date(dateStr))/86400000);
@@ -2009,10 +2012,10 @@ function showDashboard() {
     return '';
   }
 
-  // ── Build bar chart SVG ───────────────────────────────────────────────────
-    // Bar chart — bars + month label + £amounts all in SVG for pixel-perfect alignment
+  // -- Build bar chart SVG ---------------------------------------------------
+    // Bar chart -- bars + month label + &pound;amounts all in SVG for pixel-perfect alignment
   var bw=34, gap=8, chartH=80, svgW=(bw*2+gap)*6+gap*2;
-  function _sk(n){n=parseFloat(n)||0;return n>=1000000?'£'+(n/1000000).toFixed(1)+'M':n>=1000?'£'+(n/1000).toFixed(1)+'k':'£'+Math.round(n);}
+  function _sk(n){n=parseFloat(n)||0;return n>=1000000?'&pound;'+(n/1000000).toFixed(1)+'M':n>=1000?'&pound;'+(n/1000).toFixed(1)+'k':'&pound;'+Math.round(n);}
   var barSVG='<svg viewBox="0 0 '+svgW+' '+(chartH+34)+'" width="100%" height="'+(chartH+34)+'" style="display:block">';
   barSVG+='<line x1="0" y1="'+chartH+'" x2="'+svgW+'" y2="'+chartH+'" stroke="#e2e8f0" stroke-width="1"/>';
   months6.forEach(function(m,i){
@@ -2033,7 +2036,7 @@ function showDashboard() {
   barSVG+='</svg>';
 
   showContent(
-    // ── Hero strip ────────────────────────────────────────────────────────
+    // -- Hero strip --------------------------------------------------------
     '<div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:var(--r12);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px">' +
       '<div style="display:flex;gap:28px;flex-wrap:wrap">' +
         _heroKPI('Cash Position',fmt(bal),'#60a5fa',sparkline(balHistory,80,28,'#60a5fa')) +
@@ -2047,13 +2050,13 @@ function showDashboard() {
       '</div>' +
     '</div>' +
 
-    // ── Main grid ─────────────────────────────────────────────────────────
+    // -- Main grid ---------------------------------------------------------
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">' +
 
       // Widget: Revenue vs Expenses chart
       '<div class="card" style="grid-column:span 2">' +
         '<div class="card-hdr">' +
-          '<span class="card-ttl">Revenue vs Expenses — last 6 months</span>' +
+          '<span class="card-ttl">Revenue vs Expenses -- last 6 months</span>' +
           '<div style="display:flex;gap:10px;font-size:11px;color:var(--g400)">' +
             '<span><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:1px;margin-right:3px"></span>Revenue</span>' +
             '<span><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:1px;margin-right:3px"></span>Expenses</span>' +
@@ -2067,7 +2070,7 @@ function showDashboard() {
       '<div class="card">' +
         '<div class="card-hdr"><span class="card-ttl">Tasks</span>' +
           '<span style="font-size:11px;font-weight:700;color:'+(tasks.length?'var(--red-500)':'var(--green-600)')+'">'+
-            (tasks.length ? tasks.length+' action'+(tasks.length>1?'s':'') : '✓ All clear')+
+            (tasks.length ? tasks.length+' action'+(tasks.length>1?'s':'') : '&#10003; All clear')+
           '</span>' +
         '</div>' +
         '<div style="padding:4px 0;max-height:200px;overflow-y:auto">' +
@@ -2081,14 +2084,14 @@ function showDashboard() {
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="color:var(--g300);flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>' +
             '</div>';
           }).join('') :
-          '<div style="padding:24px 14px;text-align:center;color:var(--g400);font-size:13px">🎉 No outstanding tasks</div>'
+          '<div style="padding:24px 14px;text-align:center;color:var(--g400);font-size:13px"> No outstanding tasks</div>'
           ) +
         '</div>' +
       '</div>' +
 
     '</div>' +
 
-    // ── Second row ────────────────────────────────────────────────────────
+    // -- Second row --------------------------------------------------------
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">' +
 
       // Widget: Receivables aging donut
@@ -2102,8 +2105,8 @@ function showDashboard() {
           '</svg>' +
           '<div style="flex:1;display:flex;flex-direction:column;gap:6px">' +
             _agingRow('Current',  aging.c,   '#22c55e') +
-            _agingRow('1–30 days',aging.d30, '#fbbf24') +
-            _agingRow('31–60 days',aging.d60,'#fb923c') +
+            _agingRow('1-30 days',aging.d30, '#fbbf24') +
+            _agingRow('31-60 days',aging.d60,'#fb923c') +
             _agingRow('60+ days', aging.d90, '#ef4444') +
           '</div>' +
         '</div>' +
@@ -2117,7 +2120,7 @@ function showDashboard() {
             return '<div onclick="viewInvoice(\''+i.invoiceId+'\')" style="display:flex;align-items:center;padding:6px 14px;gap:8px;cursor:pointer;border-bottom:1px solid var(--g100)" onmouseover="this.style.background=\'var(--g50)\'" onmouseout="this.style.background=\'\'">' +
               '<div style="flex:1;min-width:0">' +
                 '<div style="font-size:12px;font-weight:600;color:var(--g800)">'+i.invoiceNumber+'</div>' +
-                '<div style="font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(i.clientName||'—')+'</div>' +
+                '<div style="font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(i.clientName||'--')+'</div>' +
               '</div>' +
               '<div style="text-align:right">' +
                 '<div style="font-size:12px;font-weight:600">'+fmt(i.amountDue)+'</div>' +
@@ -2138,7 +2141,7 @@ function showDashboard() {
             return '<div onclick="viewBill(\''+b.billId+'\')" style="display:flex;align-items:center;padding:6px 14px;gap:8px;cursor:pointer;border-bottom:1px solid var(--g100)" onmouseover="this.style.background=\'var(--g50)\'" onmouseout="this.style.background=\'\'">' +
               '<div style="flex:1;min-width:0">' +
                 '<div style="font-size:12px;font-weight:600;color:var(--g800)">'+b.billNumber+'</div>' +
-                '<div style="font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(b.supplierName||'—')+'</div>' +
+                '<div style="font-size:11px;color:var(--g400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(b.supplierName||'--')+'</div>' +
               '</div>' +
               '<div style="text-align:right">' +
                 '<div style="font-size:12px;font-weight:600">'+fmt(b.amountDue)+'</div>' +
@@ -2153,7 +2156,7 @@ function showDashboard() {
 
     '</div>' +
 
-    // ── Third row ─────────────────────────────────────────────────────────
+    // -- Third row ---------------------------------------------------------
     '<div style="display:grid;grid-template-columns:2fr 1fr;gap:14px">' +
 
       // Widget: Recent activity
@@ -2165,7 +2168,7 @@ function showDashboard() {
           return '<tr onclick="'+click+'" style="cursor:pointer">'+
             '<td style="width:28px;text-align:center">'+r.icon+'</td>'+
             '<td><strong class="mono" style="font-size:12px">'+r.ref+'</strong></td>'+
-            '<td style="color:var(--g600);font-size:12px">'+(r.party||'—')+'</td>'+
+            '<td style="color:var(--g600);font-size:12px">'+(r.party||'--')+'</td>'+
             '<td>'+amt(r.amount)+'</td>'+
             '<td style="font-size:11px;color:var(--g400)">'+fmtDate(r.date)+'</td>'+
             '<td>'+badge(r.status)+'</td>'+
@@ -2181,11 +2184,11 @@ function showDashboard() {
         '<div class="card">' +
           '<div class="card-hdr"><span class="card-ttl">Quick Actions</span></div>' +
           '<div style="padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">' +
-            _qaBtn('🧾','New Invoice','openCreateInvoiceModal()','var(--blue-50)','var(--blue-600)') +
-            _qaBtn('📦','New Bill','openCreateBillModal()','var(--amber-50)','#92400e') +
-            _qaBtn('📋','New PO','openCreatePOModal()','var(--purple-50)','var(--purple-600)') +
-            _qaBtn('⚖️','Reconcile','nbNav(\'reconciliation\')','var(--green-50)','var(--green-600)') +
-            _qaBtn('📊','Reports','nbNav(\'reports\')','var(--g50)','var(--g600)') +
+            _qaBtn('','New Invoice','openCreateInvoiceModal()','var(--blue-50)','var(--blue-600)') +
+            _qaBtn('','New Bill','openCreateBillModal()','var(--amber-50)','#92400e') +
+            _qaBtn('','New PO','openCreatePOModal()','var(--purple-50)','var(--purple-600)') +
+            _qaBtn('&#9878;&#65039;','Reconcile','nbNav(\'reconciliation\')','var(--green-50)','var(--green-600)') +
+            _qaBtn('','Reports','nbNav(\'reports\')','var(--g50)','var(--g600)') +
             _qaBtn('%','VAT / MTD','nbNav(\'vat\')','var(--g50)','var(--g600)') +
           '</div>' +
         '</div>' +
@@ -2216,9 +2219,9 @@ function showDashboard() {
 
 function _shortFmt(n) {
   n = parseFloat(n)||0;
-  if (n >= 1000000) return '£'+(n/1000000).toFixed(1)+'M';
-  if (n >= 1000)    return '£'+(n/1000).toFixed(1)+'k';
-  return '£'+Math.round(n);
+  if (n >= 1000000) return '&pound;'+(n/1000000).toFixed(1)+'M';
+  if (n >= 1000)    return '&pound;'+(n/1000).toFixed(1)+'k';
+  return '&pound;'+Math.round(n);
 }
 function _heroKPI(label, value, color, sparkSVG) {
   return '<div style="display:flex;flex-direction:column;gap:2px">' +
@@ -2270,17 +2273,17 @@ function showInvoices(params) {
     return '<button class="pill'+(f===x?' active':'')+'" onclick="showInvoices({filter:\''+x+'\'})">'+x+' ('+c+')</button>';
   }).join('');
   showContent(
-    '<div class="page-hdr"><div><div class="page-title">Invoices</div><div class="page-sub">'+filt.length+' invoices · '+fmt(due)+' outstanding</div></div>' +
+    '<div class="page-hdr"><div><div class="page-title">Invoices</div><div class="page-sub">'+filt.length+' invoices &#183; '+fmt(due)+' outstanding</div></div>' +
     '<div class="page-actions">'+(canWrite()?'<button class="btn btn-primary" onclick="openCreateInvoiceModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Invoice</button>':'')+'</div></div>' +
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
       '<div class="filter-bar" style="flex:1;margin-bottom:0">'+pills+'</div>' +
       '<div style="position:relative;flex-shrink:0">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--g400)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
-        '<input type="text" class="form-input" placeholder="Search invoices…" value="'+_invSearch+'" ' +
+        '<input type="text" class="form-input" placeholder="Search invoices&#8230;" value="'+_invSearch+'" ' +
           'style="padding-left:30px;width:220px;font-size:12px" ' +
           'oninput="showInvoices({filter:\''+f+'\',search:this.value})">' +
       '</div>' +
-      (canWrite()?'<button class="btn btn-secondary btn-sm" onclick="_invBulkAction()">Bulk Action ▾</button>':'')+
+      (canWrite()?'<button class="btn btn-secondary btn-sm" onclick="_invBulkAction()">Bulk Action &#9662;</button>':'')+
     '</div>' +
     '<div class="tbl-wrap">' +
     (!filt.length
@@ -2294,7 +2297,7 @@ function showInvoices(params) {
       return '<tr onclick="viewInvoice(\''+i.invoiceId+'\')" style="cursor:pointer">'+
       '<td onclick="event.stopPropagation()" style="width:32px"><input type="checkbox" class="inv-chk" data-id="'+i.invoiceId+'" style="cursor:pointer"></td>'+
       '<td><strong class="mono">'+i.invoiceNumber+'</strong></td><td>'+i.clientName+'</td>'+
-      '<td>'+fmtDate(i.issueDate)+'</td><td style="color:'+(od?'var(--red-500)':'inherit')+'">'+fmtDate(i.dueDate)+(od?' ⚠':'')+'</td>'+
+      '<td>'+fmtDate(i.issueDate)+'</td><td style="color:'+(od?'var(--red-500)':'inherit')+'">'+fmtDate(i.dueDate)+(od?' &#9888;':'')+'</td>'+
       '<td>'+amt(i.total)+(i.currency&&i.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:600">'+i.currency+'</span>':'')+'</td><td>'+amt(i.amountDue)+'</td><td>'+badge(i.status)+'</td>'+
       '</tr>';
       }).join('') +
@@ -2313,8 +2316,8 @@ function showClients() {
       : '<table class="dt"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Terms</th><th></th></tr></thead><tbody>' +
       cl.map(function(c){
       return '<tr><td><strong>'+c.clientName+'</strong>'+(c.contactName?'<div style="font-size:11px;color:var(--g400)">'+c.contactName+'</div>':'')+'</td>'+
-      '<td><a href="mailto:'+c.email+'" style="color:var(--blue-600)">'+c.email+'</a></td><td>'+(c.phone||'—')+'</td>'+
-      '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(c.address||'—')+'</td>'+
+      '<td><a href="mailto:'+c.email+'" style="color:var(--blue-600)">'+c.email+'</a></td><td>'+(c.phone||'--')+'</td>'+
+      '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(c.address||'--')+'</td>'+
       '<td>'+(c.paymentTerms||30)+' days</td>'+
       '<td><button class="btn btn-ghost btn-xs" onclick="openEditClientModal(\''+c.clientId+'\')">Edit</button></td></tr>';
       }).join('')+'</tbody></table><div class="tbl-foot"><span>'+cl.length+' clients</span></div>'
@@ -2347,17 +2350,17 @@ function showBills(params) {
     return '<button class="pill'+(f===x?' active':'')+'" onclick="showBills({filter:\''+x+'\'})">'+x+' ('+c+')</button>';
   }).join('');
   showContent(
-    '<div class="page-hdr"><div><div class="page-title">Bills</div><div class="page-sub">'+filt.length+' bills · '+fmt(due)+' due</div></div>' +
+    '<div class="page-hdr"><div><div class="page-title">Bills</div><div class="page-sub">'+filt.length+' bills &#183; '+fmt(due)+' due</div></div>' +
     '<div class="page-actions">'+(canWrite()?'<button class="btn btn-primary" onclick="openCreateBillModal()">+ New Bill</button>':'')+'</div></div>' +
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
       '<div class="filter-bar" style="flex:1;margin-bottom:0">'+pills+'</div>' +
       '<div style="position:relative;flex-shrink:0">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--g400)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
-        '<input type="text" class="form-input" placeholder="Search bills…" value="'+_bilSearch+'" ' +
+        '<input type="text" class="form-input" placeholder="Search bills&#8230;" value="'+_bilSearch+'" ' +
           'style="padding-left:30px;width:220px;font-size:12px" ' +
           'oninput="showBills({filter:\''+f+'\',search:this.value})">' +
       '</div>' +
-      (canWrite()?'<button class="btn btn-secondary btn-sm" onclick="_bilBulkAction()">Bulk Action ▾</button>':'')+
+      (canWrite()?'<button class="btn btn-secondary btn-sm" onclick="_bilBulkAction()">Bulk Action &#9662;</button>':'')+
     '</div>' +
     '<div class="tbl-wrap">' +
     (!filt.length
@@ -2371,11 +2374,11 @@ function showBills(params) {
         return '<tr onclick="viewBill(\''+b.billId+'\')" style="cursor:pointer">' +
           '<td onclick="event.stopPropagation()" style="width:32px"><input type="checkbox" class="bil-chk" data-id="'+b.billId+'" style="cursor:pointer"></td>' +
           '<td><strong class="mono">'+b.billNumber+'</strong></td>' +
-          '<td>'+(b.supplierName||'—')+'</td>' +
+          '<td>'+(b.supplierName||'--')+'</td>' +
           '<td>'+fmtDate(b.issueDate)+'</td>' +
           '<td>'+fmtDate(b.dueDate)+'</td>' +
-          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var sym=cc?({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A\$'}[cc]||(cc+' ')):null; return (sym?'<span class="mono '+(b.total>=0?'amt-pos':'amt-neg')+'">'+sym+(Math.abs(b.total)||0).toFixed(2)+'</span>':amt(b.total))+(cc?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:600">'+cc+'</span>':''); })()+'</td>' +
-          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var syms={'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}; return cc?'<span class="mono '+(b.amountDue>0?'amt-pos':'')+'">'+(syms[cc]||cc+' ')+(Math.abs(b.amountDue)||0).toFixed(2)+'</span>':amt(b.amountDue); })()+'</td>' +
+          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var sym=cc?({'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A\$'}[cc]||(cc+' ')):null; return (sym?'<span class="mono '+(b.total>=0?'amt-pos':'amt-neg')+'">'+sym+(Math.abs(b.total)||0).toFixed(2)+'</span>':amt(b.total))+(cc?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:600">'+cc+'</span>':''); })()+'</td>' +
+          '<td>'+(function(){ var base=(App.settings&&App.settings.baseCurrency)||'GBP'; var cc=b.currency&&b.currency!==base?b.currency:null; var syms={'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}; return cc?'<span class="mono '+(b.amountDue>0?'amt-pos':'')+'">'+(syms[cc]||cc+' ')+(Math.abs(b.amountDue)||0).toFixed(2)+'</span>':amt(b.amountDue); })()+'</td>' +
           '<td>'+badge(b.status)+'</td>' +
           '<td style="white-space:nowrap">' +
             (canWrite()&&isPend?'<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();viewBill(\''+b.billId+'\')">View</button>':'') +
@@ -2439,7 +2442,7 @@ function _renderBillFiles(files, billId, canAttach) {
     html += '<div style="margin-top:8px">' +
       '<label class="btn btn-ghost btn-sm" style="cursor:pointer">+ Attach File' +
         '<input type="file" style="display:none" onchange="attachToBill(this,&quot;' + billId + '&quot;)" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></label>' +
-      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PDF, Office, Images · up to 5MB</span>' +
+      '<span style="font-size:11px;color:var(--g400);margin-left:8px">PDF, Office, Images &#183; up to 5MB</span>' +
     '</div>';
   }
   return html;
@@ -2463,41 +2466,41 @@ function _renderBillModal(b, preloadedFiles) {
     wfHtml += '<div style="display:flex;align-items:center;flex:1;min-width:0">'+
       '<div style="display:flex;flex-direction:column;align-items:center;flex:1">'+
         '<div style="width:24px;height:24px;border-radius:50%;background:'+(done?'var(--green-600)':(act?'var(--blue-600)':'var(--g200)'))+';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:'+(done||act?'#fff':'var(--g400)')+'">'+
-          (done?'✓':(i+1))+
+          (done?'&#10003;':(i+1))+
         '</div>'+
         '<div style="font-size:10px;font-weight:'+(act?'700':'500')+';color:'+col+';margin-top:4px">'+s+'</div>'+
       '</div>'+
       (i<steps.length-1?'<div style="flex:1;height:2px;background:'+(i<cur?'var(--green-600)':'var(--g200)')+';margin:0 4px;min-width:20px"></div>':'')+
     '</div>';
   });
-  if (isVoid) wfHtml += '<div style="margin-left:8px;color:var(--g400);font-size:12px;font-weight:600">⊘ VOID</div>';
+  if (isVoid) wfHtml += '<div style="margin-left:8px;color:var(--g400);font-size:12px;font-weight:600">&#8856; VOID</div>';
   wfHtml += '</div>';
   var actions = '';
   if (cw && !isVoid && !isPaid) {
-    if (isPend) actions += '<button class="btn btn-primary btn-sm" onclick="doApproveBill()">✓ Approve</button> ';
-    if (!isPend) actions += '<button class="btn btn-success btn-sm" onclick="closeViewBill();openBillPaymentModal(\''+billId+'\')">💳 Pay Bill</button> ';
-    if (isPend)  actions += '<button class="btn btn-secondary btn-sm" onclick="openEditBillModal()">✏️ Edit</button> ';
-    if (isPend)  actions += '<button class="btn btn-danger btn-sm" onclick="confirmDeleteBill()">🗑 Delete</button> ';
+    if (isPend) actions += '<button class="btn btn-primary btn-sm" onclick="doApproveBill()">&#10003; Approve</button> ';
+    if (!isPend) actions += '<button class="btn btn-success btn-sm" onclick="closeViewBill();openBillPaymentModal(\''+billId+'\')"> Pay Bill</button> ';
+    if (isPend)  actions += '<button class="btn btn-secondary btn-sm" onclick="openEditBillModal()">&#9999;&#65039; Edit</button> ';
+    if (isPend)  actions += '<button class="btn btn-danger btn-sm" onclick="confirmDeleteBill()"> Delete</button> ';
     if (!isPend) actions += '<button class="btn btn-secondary btn-sm" onclick="openVoidBillModal(\''+billId+'\')">Void</button>';
   actions += '<button class="btn btn-ghost btn-sm" onclick="openRemittanceModal([\''+billId+'\'],\''+b.supplierName+'\')">Remittance</button>';
 }
   openModal('bill-view','Bill '+(b.billNumber||''),
     wfHtml+
     '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Supplier</div><div style="font-weight:600;font-size:13px">'+(b.supplierName||'—')+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Supplier</div><div style="font-weight:600;font-size:13px">'+(b.supplierName||'--')+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Issue Date</div><div style="font-weight:600">'+fmtDate(b.issueDate)+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Due Date</div><div style="font-weight:600;color:var(--red-500)">'+fmtDate(b.dueDate)+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Status</div><div style="margin-top:3px">'+badge(status)+'</div></div>'+
     '</div>'+
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Total '+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?'<span style="font-size:10px;background:var(--blue-50);color:var(--blue-700);padding:1px 6px;border-radius:10px;margin-left:4px">'+b.currency+'</span>':'')+'</div>' +
-        '<div class="stat-value" style="font-size:18px">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.total)||0).toFixed(2)):fmt(b.total))+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.amountDue)||0).toFixed(2)):fmt(b.amountDue))+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(amtPaid)||0).toFixed(2)):fmt(amtPaid))+'</div></div>'+
+        '<div class="stat-value" style="font-size:18px">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.total)||0).toFixed(2)):fmt(b.total))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Due</div><div class="stat-value" style="font-size:18px;color:var(--amber-500)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(b.amountDue)||0).toFixed(2)):fmt(b.amountDue))+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Paid</div><div class="stat-value" style="font-size:18px;color:var(--green-600)">'+(b.currency&&b.currency!==((App.settings&&App.settings.baseCurrency)||'GBP')?(({'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','CAD':'C$','AUD':'A$'}[b.currency]||(b.currency)+' ')+(Math.abs(amtPaid)||0).toFixed(2)):fmt(amtPaid))+'</div></div>'+
     '</div>'+
     (b.notes?'<div class="alert alert-info" style="margin-bottom:12px"><p><strong>Notes:</strong> '+b.notes+'</p></div>':'')+
     (actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+actions+'</div>':'') +
-    '<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px">📎 Attachments</div>' +
+    '<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;color:var(--g700);margin-bottom:8px"> Attachments</div>' +
     _renderBillFiles(preloadedFiles||[], billId, cw&&!isVoid) +
     '</div>',
     '<button class="btn btn-secondary" onclick="closeViewBill()">Close</button>',
@@ -2509,7 +2512,7 @@ function _delBF(btn){_delBillFile(btn.getAttribute("data-fid"),btn.getAttribute(
 async function attachToBill(input, billId) {
   var file = input.files&&input.files[0];
   if (!file) return;
-  if (file.size > 5242880) { toast('File too large — max 5MB','warning'); return; }
+  if (file.size > 5242880) { toast('File too large -- max 5MB','warning'); return; }
   var label = input.parentElement;
   if (label) { label.style.opacity='0.5'; label.style.pointerEvents='none'; }
   var reader = new FileReader();
@@ -2592,7 +2595,7 @@ async function openEditBillModal() {
   var issueVal = b.issueDate ? String(b.issueDate).substring(0,10) : '';
   var dueVal   = b.dueDate   ? String(b.dueDate).substring(0,10)   : '';
 
-  openModal('bill-edit', 'Edit Bill — '+(b.billNumber||''),
+  openModal('bill-edit', 'Edit Bill -- '+(b.billNumber||''),
     '<div class="form-grid-2" style="margin-bottom:12px">' +
       '<div class="form-group"><label class="form-label">Supplier</label>' +
         '<select class="form-select" id="ebl-supplier">'+sOpts+'</select></div>' +
@@ -2669,13 +2672,13 @@ function renderEditBillLines() {
       '<td style="padding:3px"><input class="form-input" style="padding:4px 6px;font-size:12px;text-align:right" type="number" min="0" step="any" value="'+price+'" oninput="_editBillLines['+i+'].unitPrice=parseFloat(this.value)||0;renderEditBillLines()"></td>'+
       '<td style="padding:3px">'+_billVatSel(i,l.vatRate)+'</td>'+
       '<td style="padding:3px;text-align:right"><span class="mono" style="font-size:12px">'+fmt(tot)+'</span></td>'+
-      '<td style="padding:3px;text-align:center"><button onclick="removeEditBillLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:1px 4px">×</button></td>'+
+      '<td style="padding:3px;text-align:center"><button onclick="removeEditBillLine('+i+')" style="background:none;border:none;color:var(--g400);cursor:pointer;font-size:15px;padding:1px 4px">&#215;</button></td>'+
     '</tr>';
   }).join('');
   var sub=0,vat=0;
   _editBillLines.forEach(function(l){ var n=(parseFloat(l.qty)||1)*(parseFloat(l.unitPrice)||0); sub+=n; vat+=n*(parseFloat(l.vatRate)||0)/100; });
   var curr2 = (document.getElementById('ebl-currency')||{}).value || ((App.settings&&App.settings.baseCurrency)||'GBP');
-  var _csyms = {'GBP':'£','EUR':'€','USD':'$','CHF':'Fr','JPY':'¥','CAD':'C$','AUD':'A$'};
+  var _csyms = {'GBP':'&pound;','EUR':'&#8364;','USD':'$','CHF':'Fr','JPY':'&#165;','CAD':'C$','AUD':'A$'};
   var _csym  = _csyms[curr2] || (curr2 + ' ');
   var fmtE = function(n){ return _csym + (Math.abs(n)||0).toFixed(2); };
   var s=document.getElementById('ebl-sub'),v=document.getElementById('ebl-vat'),t=document.getElementById('ebl-total');
@@ -2742,13 +2745,13 @@ function openVoidBillModal(billId) {
     '</div>' +
     '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">' +
       '<div class="stat-card" style="padding:10px"><div class="stat-label">Bill</div><div style="font-weight:700;font-size:13px;font-family:monospace">'+(bill?bill.billNumber:billId)+'</div></div>' +
-      '<div class="stat-card" style="padding:10px"><div class="stat-label">Total</div><div style="font-weight:700;font-size:16px;color:var(--g600)">'+(bill?fmt(bill.total):'—')+'</div></div>' +
+      '<div class="stat-card" style="padding:10px"><div class="stat-label">Total</div><div style="font-weight:700;font-size:16px;color:var(--g600)">'+(bill?fmt(bill.total):'--')+'</div></div>' +
     '</div>' +
     '<div class="form-group"><label class="form-label">Reason for Voiding *</label>' +
-      '<input type="text" class="form-input" id="bill-void-reason" placeholder="e.g. Duplicate bill, received in error…">' +
+      '<input type="text" class="form-input" id="bill-void-reason" placeholder="e.g. Duplicate bill, received in error&#8230;">' +
     '</div>',
     '<button class="btn btn-secondary" onclick="closeModal(\'bill-void\')">Cancel</button>' +
-    '<button class="btn btn-danger" id="bill-void-btn" onclick="doVoidBill()">⊘ Void Bill</button>',
+    '<button class="btn btn-danger" id="bill-void-btn" onclick="doVoidBill()">&#8856; Void Bill</button>',
     'modal-sm'
   );
 }
@@ -2756,7 +2759,7 @@ async function doVoidBill() {
   var reason = (document.getElementById('bill-void-reason')||{}).value||'';
   if (!reason.trim()) { toast('Please enter a reason for voiding','warning'); return; }
   var btn = document.getElementById('bill-void-btn');
-  if (btn) { btn.disabled=true; btn.textContent='Voiding…'; }
+  if (btn) { btn.disabled=true; btn.textContent='Voiding&#8230;'; }
   var r = await api('voidBill', { billId:_voidBillId, reason:reason });
   if (r && r.success) {
     closeModal('bill-void');
@@ -2768,7 +2771,7 @@ async function doVoidBill() {
     if (App.data.voidLog && r.voidEntry) App.data.voidLog.voidedBills = (App.data.voidLog.voidedBills||[]).concat(r.voidEntry);
     showBills();
   } else {
-    if (btn) { btn.disabled=false; btn.textContent='⊘ Void Bill'; }
+    if (btn) { btn.disabled=false; btn.textContent='&#8856; Void Bill'; }
     toast('Error: '+(r?r.message||r.error:'unknown'),'error');
   }
 }
@@ -2794,7 +2797,7 @@ function showPOs(params) {
         filt.map(function(p){
           return '<tr onclick="viewPO(\''+p.poId+'\')" style="cursor:pointer">'+
             '<td><strong class="mono">'+p.poNumber+'</strong></td>'+
-            '<td>'+(p.supplierName||'—')+'</td>'+
+            '<td>'+(p.supplierName||'--')+'</td>'+
             '<td>'+fmtDate(p.issueDate)+'</td>'+
             '<td>'+fmtDate(p.expectedDelivery)+'</td>'+
             '<td>'+amt(p.total)+'</td>'+
@@ -2827,38 +2830,38 @@ function _renderPOModal(p) {
     wfHtml += '<div style="display:flex;align-items:center;flex:1;min-width:0">'+
       '<div style="display:flex;flex-direction:column;align-items:center;flex:1">'+
         '<div style="width:22px;height:22px;border-radius:50%;background:'+(done?'var(--green-600)':(act?'var(--blue-600)':'var(--g200)'))+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:'+(done||act?'#fff':'var(--g400)')+'">'+
-          (done?'✓':(i+1))+
+          (done?'&#10003;':(i+1))+
         '</div>'+
         '<div style="font-size:9px;font-weight:'+(act?'700':'500')+';color:'+col+';margin-top:3px;white-space:nowrap">'+s+'</div>'+
       '</div>'+
       (i<PO_STEPS.length-1?'<div style="flex:1;height:2px;background:'+(i<cur?'var(--green-600)':'var(--g200)')+';margin:0 3px;min-width:16px"></div>':'')+
     '</div>';
   });
-  if (isCancelled) wfHtml += '<div style="margin-left:8px;color:var(--red-400);font-size:12px;font-weight:600">⊘ CANCELLED</div>';
+  if (isCancelled) wfHtml += '<div style="margin-left:8px;color:var(--red-400);font-size:12px;font-weight:600">&#8856; CANCELLED</div>';
   wfHtml += '</div>';
   var actions = '';
   if (cw && !isCancelled && !isReceived) {
-    if (isDraft)            actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'submit\')">📤 Submit</button> ';
-    if (status==='Submitted') actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'approve\')">✓ Approve</button> ';
-    if (status==='Approved')  actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'sent\')">📬 Mark Sent</button> ';
-    if (status==='Sent'||status==='Approved') actions += '<button class="btn btn-success btn-sm" onclick="openReceivePOModal()">📦 Receive</button> ';
+    if (isDraft)            actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'submit\')"> Submit</button> ';
+    if (status==='Submitted') actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'approve\')">&#10003; Approve</button> ';
+    if (status==='Approved')  actions += '<button class="btn btn-primary btn-sm" onclick="doPOAction(\'sent\')"> Mark Sent</button> ';
+    if (status==='Sent'||status==='Approved') actions += '<button class="btn btn-success btn-sm" onclick="openReceivePOModal()"> Receive</button> ';
     if (!isReceived) actions += '<button class="btn btn-danger btn-sm" onclick="openCancelPOModal()">Cancel PO</button>';
 }
   if (p.billId) actions += ' <button class="btn btn-secondary btn-sm" onclick="viewBill(\''+p.billId+'\');closeViewPO()">View Bill</button>';
   openModal('po-view','Purchase Order '+(p.poNumber||''),
     wfHtml+
     '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Supplier</div><div style="font-weight:600;font-size:13px">'+(p.supplierName||'—')+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Supplier</div><div style="font-weight:600;font-size:13px">'+(p.supplierName||'--')+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Issued</div><div style="font-weight:600">'+fmtDate(p.issueDate)+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Expected Delivery</div><div style="font-weight:600">'+fmtDate(p.expectedDelivery)+'</div></div>'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Status</div><div style="margin-top:3px">'+badge(status)+'</div></div>'+
     '</div>'+
     '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">'+
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Total</div><div class="stat-value" style="font-size:20px">'+fmt(p.total)+'</div></div>'+
-      '<div class="stat-card" style="padding:12px"><div class="stat-label">Approved By</div><div style="font-weight:600">'+(p.approvedBy||'—')+'</div></div>'+
+      '<div class="stat-card" style="padding:12px"><div class="stat-label">Approved By</div><div style="font-weight:600">'+(p.approvedBy||'--')+'</div></div>'+
     '</div>'+
     (p.notes?'<div class="alert alert-info" style="margin-bottom:12px"><p><strong>Notes:</strong> '+p.notes+'</p></div>':'')+
-    (p.billId?'<div class="alert alert-success" style="margin-bottom:12px"><p>✓ Received — Bill created: <strong>'+p.billId+'</strong></p></div>':'')+
+    (p.billId?'<div class="alert alert-success" style="margin-bottom:12px"><p>&#10003; Received -- Bill created: <strong>'+p.billId+'</strong></p></div>':'')+
     (actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+actions+'</div>':''),
     '<button class="btn btn-secondary" onclick="closeViewPO()">Close</button>',
     'modal-lg'
@@ -2907,7 +2910,7 @@ async function doReceivePO() {
   var r = await api('receivePO', { poId:_viewPOId, invoiceRef:ref, receiptDate:date, notes:notes });
   if (r&&r.success) {
     closeModal('po-receive');
-    toast('PO received — Bill created: '+(r.billId||r.billNumber||''),'success',5000);
+    toast('PO received -- Bill created: '+(r.billId||r.billNumber||''),'success',5000);
     var [posR, billsR] = await Promise.all([
       api('getPurchaseOrders',{}),
       api('getAllBills')
@@ -2960,8 +2963,8 @@ function showSuppliers() {
       ? '<div class="empty"><h3>No suppliers</h3><p>Add suppliers to start raising bills.</p>'+(cw?'<button class="btn btn-primary" onclick="openCreateSupplierModal()">Add Supplier</button>':'')+'</div>'
       : '<table class="dt"><thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Terms</th><th></th></tr></thead><tbody>' +
       sup.map(function(s){
-      return '<tr><td><strong>'+s.supplierName+'</strong></td><td>'+(s.contactName||'—')+'</td>'+
-      '<td>'+(s.email||'—')+'</td><td>'+(s.phone||'—')+'</td>'+
+      return '<tr><td><strong>'+s.supplierName+'</strong></td><td>'+(s.contactName||'--')+'</td>'+
+      '<td>'+(s.email||'--')+'</td><td>'+(s.phone||'--')+'</td>'+
       '<td>'+(s.paymentTerms||30)+' days</td>'+
       '<td><button class="btn btn-ghost btn-xs" onclick="openEditSupplierModal(\''+s.supplierId+'\')">Edit</button><button class="btn btn-ghost btn-xs" onclick="confirmDeleteSupplier(\''+s.supplierId+'\')">Delete</button></td></tr>';
       }).join('')+'</tbody></table><div class="tbl-foot"><span>'+sup.length+' suppliers</span></div>'
@@ -2975,7 +2978,7 @@ function openEditBankAccountModal() {
   var selId = App.data.selectedAccount;
   var acct  = accts.find(function(a){ return a.accountId === selId; }) || accts[0];
   if (!acct) { toast('No account selected', 'warning'); return; }
-  openModal('edit-bank-acct', 'Edit — ' + acct.accountName,
+  openModal('edit-bank-acct', 'Edit -- ' + acct.accountName,
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Account Name *</label><input type="text" class="form-input" id="eba-name" value="' + (acct.accountName||'') + '"></div>' +
       '<div class="form-group"><label class="form-label">Bank Name *</label><input type="text" class="form-input" id="eba-bank" value="' + (acct.bankName||'') + '"></div>' +
@@ -3044,7 +3047,7 @@ function openAddBankAccountModal() {
           '<option value="PayPal">PayPal</option>' +
           '<option value="Other">Other</option>' +
         '</select></div>' +
-      '<div class="form-group"><label class="form-label">Opening Balance (£)</label><input type="number" class="form-input" id="ba-balance" value="0" step="0.01"></div>' +
+      '<div class="form-group"><label class="form-label">Opening Balance (&pound;)</label><input type="number" class="form-input" id="ba-balance" value="0" step="0.01"></div>' +
     '</div>' +
     '<div class="form-grid-2">' +
       '<div class="form-group"><label class="form-label">Sort Code</label><input type="text" class="form-input" id="ba-sort" placeholder="00-00-00"></div>' +
@@ -3113,7 +3116,7 @@ function showBanking() {
       'style="border:2px solid '+(isSel?'var(--blue-600)':'var(--g200)')+';cursor:pointer;padding:16px">' +
       '<div style="font-weight:700;font-size:14px;margin-bottom:2px">'+a.accountName+'</div>' +
       '<div style="font-size:11px;color:var(--g500);margin-bottom:8px">'+a.bankName+
-        (a.sortCode?' · '+a.sortCode:'')+(a.accountNumber?' · '+a.accountNumber:'')+'</div>' +
+        (a.sortCode?' &#183; '+a.sortCode:'')+(a.accountNumber?' &#183; '+a.accountNumber:'')+'</div>' +
       '<div style="font-size:20px;font-weight:800;color:'+(bal>=0?'var(--g800)':'var(--red-500)')+'">'+fmt(bal)+'</div>' +
       '<div style="margin-top:8px;min-height:20px"><span id="unrec-'+a.accountId+'"></span></div>' +
     '</div>';
@@ -3126,11 +3129,11 @@ function showBanking() {
     '</div>' +
     '<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:18px">' + cards + '</div>' +
     '<div class="page-actions" style="margin-bottom:16px">' +
-      '<button class="btn btn-secondary btn-sm" onclick="openSpendMoneyModal()">💸 Spend</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openReceiveMoneyModal()">💰 Receive</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openTransferMoneyModal()">🔄 Transfer</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">📤 Import Statement</button>' +
-      '<button class="btn btn-primary btn-sm" onclick="showReconciliation()">⚖️ Reconcile</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openSpendMoneyModal()"> Spend</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openReceiveMoneyModal()"> Receive</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openTransferMoneyModal()"> Transfer</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()"> Import Statement</button>' +
+      '<button class="btn btn-primary btn-sm" onclick="showReconciliation()">&#9878;&#65039; Reconcile</button>' +
       '<button class="btn btn-ghost btn-sm" onclick="openEditBankAccountModal()">&#9881; Edit Account</button>' +
     '</div>' +
     '<div class="tbl-wrap">' +
@@ -3229,7 +3232,7 @@ function renderCN(r) {
   var totalApplied = cns.filter(function(c){return c.status==='Applied';}).reduce(function(s,c){return s+c.total;},0);
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Credit Notes</div>' +
-      '<div class="page-sub">'+cns.length+' credit notes · '+fmt(totalIssued)+' issued</div></div>' +
+      '<div class="page-sub">'+cns.length+' credit notes &#183; '+fmt(totalIssued)+' issued</div></div>' +
       '<div class="page-actions">'+(cw?'<button class="btn btn-primary" onclick="openCreateCreditNoteModal()">+ New Credit Note</button>':'')+'</div></div>' +
     (cns.length ? '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">' +
       '<div class="stat-card"><div class="stat-label">Total Issued</div><div class="stat-value">'+fmt(totalIssued)+'</div></div>' +
@@ -3245,9 +3248,9 @@ function renderCN(r) {
         '</tr></thead><tbody>' +
         cns.map(function(c){
           return '<tr data-cnid="'+c.cnId+'" onclick="_openCNView(this)" style="cursor:pointer">' +
-            '<td class="mono"><strong>'+(c.cnNumber||'—')+'</strong></td>' +
-            '<td class="mono" style="color:var(--blue-600)">'+(c.invoiceNumber||'—')+'</td>' +
-            '<td>'+(c.clientName||'—')+'</td>' +
+            '<td class="mono"><strong>'+(c.cnNumber||'--')+'</strong></td>' +
+            '<td class="mono" style="color:var(--blue-600)">'+(c.invoiceNumber||'--')+'</td>' +
+            '<td>'+(c.clientName||'--')+'</td>' +
             '<td>'+fmtDate(c.issueDate)+'</td>' +
             '<td>'+amt(c.total)+'</td>' +
             '<td style="color:var(--g500)">'+amt(c.vat)+'</td>' +
@@ -3260,12 +3263,12 @@ function renderCN(r) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // RECURRING INVOICES MODULE (Ported from Code2.html)
-// ═══════════════════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 // RECURRING INVOICES MODULE
-// ═══════════════════════════════════════════════════════════════════════════
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 var _recurringData = [];
 var _delRecId = null;
 
@@ -3282,9 +3285,9 @@ async function showRecurring() {
   var paused = _recurringData.filter(function(r){return r.status==='Paused';});
   
   var html = '<div class="page-hdr"><div><div class="page-title">Recurring Invoices</div>' +
-             '<div class="page-sub">'+active.length+' active · '+paused.length+' paused</div></div>' +
+             '<div class="page-sub">'+active.length+' active &#183; '+paused.length+' paused</div></div>' +
              '<div class="page-actions">' +
-             (cw?'<button class="btn btn-secondary btn-sm" onclick="runRecurringNow()">▶ Run Now</button> ':'')+
+             (cw?'<button class="btn btn-secondary btn-sm" onclick="runRecurringNow()">&#9654; Run Now</button> ':'')+
              (cw?'<button class="btn btn-primary" onclick="openRecCreateModal()">+ New Schedule</button>':'')+
              '</div></div>' +
              '<div class="alert alert-info"><p>Recurring invoices are created automatically via daily trigger.</p></div>' +
@@ -3336,7 +3339,7 @@ async function viewCreditNote(cnId) {
     }
   }
 
-  openModal('cn-view', cn.cnNumber + ' — ' + cn.clientName,
+  openModal('cn-view', cn.cnNumber + ' -- ' + cn.clientName,
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Subtotal</div><div style="font-weight:700;font-size:16px">'+fmt(cn.subtotal)+'</div></div>' +
       '<div class="stat-card" style="padding:12px"><div class="stat-label">VAT</div><div style="font-weight:700;font-size:16px">'+fmt(cn.vat)+'</div></div>' +
@@ -3371,7 +3374,7 @@ async function viewCreditNote(cnId) {
   }
 }
 
-// ── Issue ─────────────────────────────────────────────────────────────────────
+// -- Issue ---------------------------------------------------------------------
 var _cnActionId = null;
 async function _cnIssue(cnId) {
   _cnActionId = cnId;
@@ -3389,7 +3392,7 @@ async function _cnIssue(cnId) {
   }
 }
 
-// ── Void modal ────────────────────────────────────────────────────────────────
+// -- Void modal ----------------------------------------------------------------
 function _cnVoidModal(cnId) {
   _cnActionId = cnId;
   openModal('cn-void','Void Credit Note',
@@ -3417,7 +3420,7 @@ async function _doCNVoid() {
   }
 }
 
-// ── Apply modal ───────────────────────────────────────────────────────────────
+// -- Apply modal ---------------------------------------------------------------
 function _cnApplyModal(cnId) {
   _cnActionId = cnId;
   var cn = _cnData.find(function(x){return x.cnId===cnId;});
@@ -3427,19 +3430,19 @@ function _cnApplyModal(cnId) {
   var sameInv = (App.data.invoices||[]).find(function(i){ return i.invoiceId===cn.invoiceId; });
   var invOpts = '';
   if (sameInv && sameInv.status!=='Paid' && sameInv.status!=='Void') {
-    invOpts += '<option value="'+sameInv.invoiceId+'">'+sameInv.invoiceNumber+' (original) — balance: '+fmt(sameInv.amountDue)+'</option>';
+    invOpts += '<option value="'+sameInv.invoiceId+'">'+sameInv.invoiceNumber+' (original) -- balance: '+fmt(sameInv.amountDue)+'</option>';
   }
   outstanding.forEach(function(i){
-    invOpts += '<option value="'+i.invoiceId+'">'+i.invoiceNumber+' — '+fmt(i.amountDue)+' outstanding</option>';
+    invOpts += '<option value="'+i.invoiceId+'">'+i.invoiceNumber+' -- '+fmt(i.amountDue)+' outstanding</option>';
   });
-  openModal('cn-apply','Apply Credit Note — '+cn.cnNumber,
+  openModal('cn-apply','Apply Credit Note -- '+cn.cnNumber,
     '<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">' +
       '<div class="stat-card" style="padding:10px"><div class="stat-label">Credit Note Value</div><div style="font-weight:700;font-size:16px;color:var(--blue-600)">'+fmt(cn.total)+'</div></div>' +
       '<div class="stat-card" style="padding:10px"><div class="stat-label">Client</div><div style="font-weight:600">'+cn.clientName+'</div></div>' +
     '</div>' +
     '<div class="form-group"><label class="form-label">Apply to Invoice *</label>' +
       '<select class="form-select" id="cn-apply-inv">' +
-        (invOpts||'<option value="">— No outstanding invoices —</option>') +
+        (invOpts||'<option value="">-- No outstanding invoices --</option>') +
       '</select></div>' +
     '<div class="alert alert-info" style="margin-top:8px"><p style="font-size:11px">The credit note amount will be deducted from the selected invoice balance. If the credit exceeds the balance, the invoice will be marked as Paid.</p></div>',
     '<button class="btn btn-secondary" onclick="closeCNApply()">Cancel</button>' +
@@ -3484,7 +3487,7 @@ function _poTable(pos) {
       else if(po.status==='Submitted') act='<button class="btn btn-primary btn-xs" onclick="approvePO(\''+id+'\')">Approve</button>';
       else if(po.status==='Approved') act='<button class="btn btn-ghost btn-xs" onclick="markPOSent(\''+id+'\')">Mark Sent</button>';
       else if(po.status==='Sent') act='<button class="btn btn-success btn-xs" onclick="receivePO(\''+id+'\')">Receive</button>';
-      return '<tr onclick="viewPO(\''+id+'\')" style="cursor:pointer"><td class="mono"><strong>'+(po.poNumber||'—')+'</strong></td><td>'+(po.supplierName||'—')+'</td><td>'+fmtDate(po.issueDate)+'</td><td>'+fmtDate(po.expectedDelivery)+'</td><td>'+amt(po.total)+'</td><td>'+badge(po.status)+'</td><td onclick="event.stopPropagation()">'+act+'</td></tr>';
+      return '<tr onclick="viewPO(\''+id+'\')" style="cursor:pointer"><td class="mono"><strong>'+(po.poNumber||'--')+'</strong></td><td>'+(po.supplierName||'--')+'</td><td>'+fmtDate(po.issueDate)+'</td><td>'+fmtDate(po.expectedDelivery)+'</td><td>'+amt(po.total)+'</td><td>'+badge(po.status)+'</td><td onclick="event.stopPropagation()">'+act+'</td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 function filterPOs(btn, f) {
@@ -3503,7 +3506,7 @@ function renderBadDebts(r) {
   var vatReclaimable  = bds.filter(function(b){return b.vatReclaimStatus==='Eligible';}).reduce(function(s,b){return s+(parseFloat(b.vatElement)||0);},0);
   showContent(
     '<div class="page-hdr"><div><div class="page-title">Bad Debts</div>' +
-      '<div class="page-sub">'+bds.length+' write-offs · '+fmt(totalWrittenOff)+' written off</div></div></div>' +
+      '<div class="page-sub">'+bds.length+' write-offs &#183; '+fmt(totalWrittenOff)+' written off</div></div></div>' +
     (bds.length ?
       '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">' +
         '<div class="stat-card"><div class="stat-label">Total Written Off</div><div class="stat-value">'+fmt(totalWrittenOff)+'</div></div>' +
@@ -3516,16 +3519,16 @@ function renderBadDebts(r) {
       : '<table class="dt"><thead><tr><th>Invoice</th><th>Client</th><th>Write-Off Date</th><th>Amount</th><th>VAT Element</th><th>VAT Relief</th><th>Reason</th></tr></thead><tbody>' +
         bds.map(function(b){
           var vatCol = b.vatReclaimStatus==='Claimed'
-            ? '<span style="color:var(--green-600);font-weight:600">✓ Claimed</span>'
+            ? '<span style="color:var(--green-600);font-weight:600">&#10003; Claimed</span>'
             : b.vatReclaimStatus==='Eligible'
               ? '<button class="btn btn-ghost btn-xs" style="color:var(--amber-500)" data-id="'+b.badDebtId+'" onclick="event.stopPropagation();_claimVATRelief(this)">Claim VAT</button>'
               : badge(b.vatReclaimStatus||'N/A');
           return '<tr data-bdid="'+b.badDebtId+'" onclick="_viewBD(this)" style="cursor:pointer' +
-            '<td class="mono"><strong>'+(b.invoiceNumber||'—')+'</strong></td>' +
-            '<td>'+(b.clientName||'—')+'</td>' +
+            '<td class="mono"><strong>'+(b.invoiceNumber||'--')+'</strong></td>' +
+            '<td>'+(b.clientName||'--')+'</td>' +
             '<td>'+fmtDate(b.writeOffDate)+'</td>' +
             '<td>'+amt(b.amountWrittenOff)+'</td>' +
-            '<td>'+(parseFloat(b.vatElement)>0?amt(b.vatElement):'—')+'</td>' +
+            '<td>'+(parseFloat(b.vatElement)>0?amt(b.vatElement):'--')+'</td>' +
             '<td>'+vatCol+'</td>' +
             '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+( b.reason||'')+'</td>' +
           '</tr>';
@@ -3539,17 +3542,17 @@ function _claimVATRelief(btn) { openVATReliefModal(btn, btn.getAttribute('data-i
 function viewBadDebt(badDebtId) {
   var b = _badDebtsData.find(function(x){ return x.badDebtId===badDebtId; });
   if (!b) return;
-  openModal('bd-view','Bad Debt — '+(b.invoiceNumber||''),
+  openModal('bd-view','Bad Debt -- '+(b.invoiceNumber||''),
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">' +
       '<div class="stat-card" style="padding:12px"><div class="stat-label">Amount Written Off</div><div class="stat-value" style="font-size:18px;color:var(--red-500)">'+fmt(b.amountWrittenOff)+'</div></div>' +
       '<div class="stat-card" style="padding:12px"><div class="stat-label">VAT Element</div><div class="stat-value" style="font-size:18px">'+fmt(b.vatElement||0)+'</div></div>' +
       '<div class="stat-card" style="padding:12px"><div class="stat-label">VAT Relief Status</div><div style="margin-top:4px">'+badge(b.vatReclaimStatus||'N/A')+'</div></div>' +
     '</div>' +
     '<div class="form-grid-2">' +
-      '<div class="form-group"><label class="form-label">Client</label><div style="font-weight:600;font-size:13px">'+(b.clientName||'—')+'</div></div>' +
-      '<div class="form-group"><label class="form-label">Invoice Number</label><div class="mono" style="font-weight:600">'+(b.invoiceNumber||'—')+'</div></div>' +
+      '<div class="form-group"><label class="form-label">Client</label><div style="font-weight:600;font-size:13px">'+(b.clientName||'--')+'</div></div>' +
+      '<div class="form-group"><label class="form-label">Invoice Number</label><div class="mono" style="font-weight:600">'+(b.invoiceNumber||'--')+'</div></div>' +
       '<div class="form-group"><label class="form-label">Write-Off Date</label><div style="font-weight:600">'+fmtDate(b.writeOffDate)+'</div></div>' +
-      '<div class="form-group"><label class="form-label">Written Off By</label><div style="font-weight:600;font-size:12px">'+(b.writtenOffBy||'—')+'</div></div>' +
+      '<div class="form-group"><label class="form-label">Written Off By</label><div style="font-weight:600;font-size:12px">'+(b.writtenOffBy||'--')+'</div></div>' +
     '</div>' +
     (b.reason?'<div class="form-group"><label class="form-label">Reason</label><div style="font-size:13px;color:var(--g600)">'+b.reason+'</div></div>':'') +
     (b.vatReclaimStatus==='Eligible'?
@@ -3559,7 +3562,7 @@ function viewBadDebt(badDebtId) {
         '<button class="btn btn-primary btn-sm" style="margin-top:8px" data-bdid="'+badDebtId+'" onclick="_openVATEligModal(this.getAttribute(\'data-bdid\'))">Mark VAT Claimed</button>' +
       '</div>' : '') +
     (b.vatReclaimStatus==='Claimed'?
-      '<div class="alert alert-success" style="margin-top:10px"><p>✓ VAT relief claimed on '+fmtDate(b.vatClaimDate)+'</p></div>' : ''),
+      '<div class="alert alert-success" style="margin-top:10px"><p>&#10003; VAT relief claimed on '+fmtDate(b.vatClaimDate)+'</p></div>' : ''),
     '<button class="btn btn-secondary" onclick="closeBdView()">Close</button>' +
     '<button class="btn btn-ghost btn-sm" data-invid="'+b.invoiceId+'" onclick="_bdViewInv(this)">View Invoice</button>',
     'modal-lg'
@@ -3602,7 +3605,7 @@ function renderVoidLog(r) {
   function mkTable(rows, cols) {
     if (!rows.length) return '<div class="empty"><h3>None</h3></div>';
     return '<div class="tbl-wrap"><table class="dt"><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+
-      rows.map(function(v){return '<tr><td class="mono"><strong>'+(v.invoiceNumber||v.billNumber||'—')+'</strong></td><td>'+(v.clientName||v.supplierName||'—')+'</td><td>'+amt(v.total)+'</td><td>'+fmtDate(v.voidDate)+'</td><td style="font-size:11px">'+(v.voidedBy||'')+'</td><td>'+(v.voidReason||'')+'</td></tr>';}).join('')+
+      rows.map(function(v){return '<tr><td class="mono"><strong>'+(v.invoiceNumber||v.billNumber||'--')+'</strong></td><td>'+(v.clientName||v.supplierName||'--')+'</td><td>'+amt(v.total)+'</td><td>'+fmtDate(v.voidDate)+'</td><td style="font-size:11px">'+(v.voidedBy||'')+'</td><td>'+(v.voidReason||'')+'</td></tr>';}).join('')+
       '</tbody></table></div>';
 }
   showContent(
@@ -3691,7 +3694,7 @@ async function showReconciliation() {
     return '<tr style="cursor:pointer" onclick="selectAndReconcile(\''+a.accountId+'\')">' +
       '<td><strong>'+a.accountName+'</strong>' +
         '<div style="font-size:11px;color:var(--g500)">'+a.bankName+
-          (a.sortCode?' · '+a.sortCode:'')+(a.accountNumber?' · '+a.accountNumber:'')+'</div></td>' +
+          (a.sortCode?' &#183; '+a.sortCode:'')+(a.accountNumber?' &#183; '+a.accountNumber:'')+'</div></td>' +
       '<td class="mono">'+fmt(parseFloat(a.currentBalance)||0)+'</td>' +
       '<td>'+badge+'</td>' +
       '<td><button class="btn btn-primary btn-sm">Reconcile &#8594;</button></td>' +
@@ -3807,9 +3810,9 @@ function openCreateAccountModal() {
 function openEditAccountModal(code) {
   var accts = App.data._coaAccounts || [];
   var a = accts.find(function(x){ return x.accountCode == code; });
-  if (!a) { toast('Account not found — refresh COA first', 'warning'); return; }
+  if (!a) { toast('Account not found -- refresh COA first', 'warning'); return; }
   _currentAccountCode = code;
-  openModal('coa-edit', 'Edit Account — ' + code,
+  openModal('coa-edit', 'Edit Account -- ' + code,
     _coaModalBody(a),
     '<button class="btn btn-secondary" onclick="closeCOAEdit()">Cancel</button>' +
     '<button class="btn btn-primary" id="ca-save" onclick="saveCurrentAccount()">Save Changes</button>',
@@ -3858,8 +3861,8 @@ function openAddUserModal() {
     '<div class="form-group"><label class="form-label">Notes</label>' +
       '<input type="text" class="form-input" id="usr-notes" placeholder="Optional notes"></div>' +
     '<div class="alert alert-info" style="margin-top:8px">' +
-      '<p><strong>Roles:</strong> Owner — full access · Admin — all except maintenance · ' +
-      'Accountant — read/write financials · Staff — invoices only · ReadOnly — view only</p></div>',
+      '<p><strong>Roles:</strong> Owner -- full access &#183; Admin -- all except maintenance &#183; ' +
+      'Accountant -- read/write financials &#183; Staff -- invoices only &#183; ReadOnly -- view only</p></div>',
     '<button class="btn btn-secondary" onclick="closeUserAdd()">Cancel</button>' +
     '<button class="btn btn-primary" id="usr-save" onclick="saveCurrentUser()">Add User</button>',
     'modal-md'
@@ -3870,7 +3873,7 @@ function openEditUserModal(email, currentRole) {
   var roleOpts = _roles.map(function(r){
     return '<option value="'+r+'"'+(r===currentRole?' selected':'')+'>'+r+'</option>';
   }).join('');
-  openModal('usr-edit', 'Edit User — ' + email,
+  openModal('usr-edit', 'Edit User -- ' + email,
     '<div class="form-group"><label class="form-label">Email</label>' +
       '<input type="text" class="form-input" value="'+email+'" disabled style="background:var(--g50)"></div>' +
     '<div class="form-group"><label class="form-label">Role *</label>' +
@@ -3959,10 +3962,10 @@ async function loadCurrencyBreakdown() {
   var r = await api('getCurrencyBreakdown', { startDate: d.start, endDate: d.end });
   if (!r||!r.success) { el.innerHTML='<div class="alert alert-error"><p>'+(r?r.message:'Error')+'</p></div>'; return; }
   var base = r.baseCurrency || 'GBP';
-  var sym  = { GBP:'£', EUR:'€', USD:'$', CHF:'Fr' };
+  var sym  = { GBP:'&pound;', EUR:'&#8364;', USD:'$', CHF:'Fr' };
   var rows = r.breakdown || [];
   if (!rows.length) { el.innerHTML='<div class="empty"><h3>No multi-currency transactions in this period</h3></div>'; return; }
-  var html = '<h3 style="margin-bottom:16px">Currency Breakdown <span style="font-size:13px;color:var(--g400);font-weight:400">— all amounts converted to '+base+' at invoice date rate</span></h3>';
+  var html = '<h3 style="margin-bottom:16px">Currency Breakdown <span style="font-size:13px;color:var(--g400);font-weight:400">-- all amounts converted to '+base+' at invoice date rate</span></h3>';
   rows.forEach(function(row) {
     var cs = sym[row.currency] || row.currency+' ';
     var bs = sym[base] || base+' ';
@@ -4041,7 +4044,7 @@ async function loadPL() {
   var revenueRows  = _reportSection(_objToArr(rep.revenue  || rep.revenueBreakdown  || {}));
   var expenseRows  = _reportSection(_objToArr(rep.expenses || rep.expenseBreakdown || {}));
   el.innerHTML =
-    '<div class="card"><div class="card-hdr"><span class="card-ttl">Profit & Loss — '+d.from+' to '+d.to+'</span></div>' +
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Profit & Loss -- '+d.from+' to '+d.to+'</span></div>' +
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);padding:16px;gap:12px">' +
       '<div class="stat-card" style="padding:14px"><div class="stat-label">Total Revenue</div><div class="stat-value amt-pos">'+fmt(rep.totalRevenue)+'</div></div>' +
       '<div class="stat-card" style="padding:14px"><div class="stat-label">Total Expenses</div><div class="stat-value amt-neg">'+fmt(rep.totalExpenses)+'</div></div>' +
@@ -4118,9 +4121,9 @@ async function loadTrialBalance() {
   var balanced = r.balanced !== undefined ? r.balanced : Math.abs(totalDr-totalCr)<0.01;
   el.innerHTML =
     '<div class="card"><div class="card-hdr" style="flex-wrap:wrap;gap:8px">' +
-      '<span class="card-ttl">Trial Balance — '+d.from+' to '+d.to+'</span>' +
+      '<span class="card-ttl">Trial Balance -- '+d.from+' to '+d.to+'</span>' +
       '<span class="badge '+(balanced?'badge-green':'badge-red')+'">' +
-      (balanced ? '✓ Balanced' : '⚠ Out of balance by '+fmt(Math.abs(totalDr-totalCr))) +
+      (balanced ? '&#10003; Balanced' : '&#9888; Out of balance by '+fmt(Math.abs(totalDr-totalCr))) +
       '</span>' +
     '</div>' +
     '<table class="dt"><thead><tr>' +
@@ -4132,8 +4135,8 @@ async function loadTrialBalance() {
       '<td class="mono" style="font-size:12px">'+(a.code||a.accountCode||'')+'</td>' +
       '<td>'+(a.name||a.accountName||'')+'</td>' +
       '<td><span class="badge badge-grey" style="font-size:10px">'+(a.type||a.accountType||'')+'</span></td>' +
-      '<td style="text-align:right" class="mono">'+(a.drBalance||a.debit ? fmt(a.drBalance||a.debit) : '—')+'</td>' +
-      '<td style="text-align:right" class="mono">'+(a.crBalance||a.credit ? fmt(a.crBalance||a.credit) : '—')+'</td>' +
+      '<td style="text-align:right" class="mono">'+(a.drBalance||a.debit ? fmt(a.drBalance||a.debit) : '--')+'</td>' +
+      '<td style="text-align:right" class="mono">'+(a.crBalance||a.credit ? fmt(a.crBalance||a.credit) : '--')+'</td>' +
       '</tr>';
     }).join('') +
     '<tr style="font-weight:700;background:var(--g50)">' +
@@ -4157,7 +4160,7 @@ function _renderGLShell(d, accounts) {
   var el = document.getElementById('rpt-out'); if (!el) return;
   var acctOpts = '<option value="">All Accounts</option>' +
     accounts.map(function(a) {
-      return '<option value="'+a.accountCode+'">'+a.accountCode+' — '+a.accountName+'</option>';
+      return '<option value="'+a.accountCode+'">'+a.accountCode+' -- '+a.accountName+'</option>';
     }).join('');
   el.innerHTML =
     '<div class="card"><div class="card-hdr">' +
@@ -4208,10 +4211,10 @@ async function runGL() {
       '<td><span class="badge badge-grey" style="font-size:10px">'+(e.type||'')+'</span></td>' +
       '<td class="mono" style="font-size:11px">'+(e.reference||'')+'</td>' +
       '<td>'+(e.description||otherAcct||'')+'</td>' +
-      '<td style="text-align:right" class="mono">'+(dr?fmt(dr):'—')+'</td>' +
-      '<td style="text-align:right" class="mono">'+(cr?fmt(cr):'—')+'</td>' +
+      '<td style="text-align:right" class="mono">'+(dr?fmt(dr):'--')+'</td>' +
+      '<td style="text-align:right" class="mono">'+(cr?fmt(cr):'--')+'</td>' +
       '<td style="text-align:right" class="mono '+(rb!==null?(rb>=0?'amt-pos':'amt-neg'):'')+'">'+
-      (rb!==null ? fmt(Math.abs(rb)) : '—')+'</td>' +
+      (rb!==null ? fmt(Math.abs(rb)) : '--')+'</td>' +
       '</tr>';
     }).join('') +
     '</tbody></table>';
@@ -4244,7 +4247,7 @@ function _renderVATHistoryTab(returns) {
     '</tr></thead><tbody>' +
     returns.map(function(r) {
       return '<tr>' +
-        '<td class="mono">'+(r.periodKey||'—')+'</td>' +
+        '<td class="mono">'+(r.periodKey||'--')+'</td>' +
         '<td>'+fmtDate(r.periodStart||r.start||'')+'</td>' +
         '<td>'+fmtDate(r.periodEnd||r.end||'')+'</td>' +
         '<td>'+fmtDate(r.submittedDate||r.submitted||'')+'</td>' +
@@ -4274,7 +4277,7 @@ function _buildObligationsTable(obs) {
         '<td>'+fmtDate(ob.start||ob.periodFrom||'')+'</td>' +
         '<td>'+fmtDate(ob.end||ob.periodTo||'')+'</td>' +
         '<td>'+fmtDate(ob.due||ob.dueDate||'')+'</td>' +
-        '<td class="mono" style="font-weight:700">'+(ob.periodKey||'—')+'</td>' +
+        '<td class="mono" style="font-weight:700">'+(ob.periodKey||'--')+'</td>' +
         '<td>'+badge(isOpen?'Open':'Fulfilled')+'</td>' +
         '<td>'+(isOpen?'<button class="btn btn-primary btn-xs" data-key="'+ob.periodKey+'" data-start="'+(ob.start||ob.periodFrom||'')+'" data-end="'+(ob.end||ob.periodTo||'')+'" onclick="usePeriodKeyFromBtn(this)">Use period</button>':'')+'</td>' +
       '</tr>';
@@ -4282,6 +4285,243 @@ function _buildObligationsTable(obs) {
     '</tbody></table></div>';
 }
 
+
+// -----------------------------------------------------------------------------
+// CORPORATION TAX CT600
+// -----------------------------------------------------------------------------
+
+var _ct600State = { calculated: null, returns: [] };
+
+async function showCT600() {
+  showLoader();
+  var s       = App.data.settings || {};
+  var retsR   = await api('getCT600Returns');
+  _ct600State.returns = (retsR && retsR.success) ? retsR.returns || [] : [];
+
+  var now        = new Date();
+  var fyEnd      = s.financialYearEnd || '31 March';
+  var yearEnd    = _ct600FYEnd(now, fyEnd);
+  var yearStart  = new Date(yearEnd);
+  yearStart.setFullYear(yearStart.getFullYear() - 1);
+  yearStart.setDate(yearStart.getDate() + 1);
+
+  var pyEnd   = new Date(yearEnd);
+  pyEnd.setFullYear(pyEnd.getFullYear() - 1);
+  var pyStart = new Date(pyEnd);
+  pyStart.setFullYear(pyStart.getFullYear() - 1);
+  pyStart.setDate(pyStart.getDate() + 1);
+
+  var html =
+    '<div class="page-hdr">' +
+      '<div><div class="page-title">Corporation Tax -- CT600</div>' +
+      '<div class="page-sub">Draft computation for accountant review &#183; Not a direct HMRC submission</div></div>' +
+      '<div class="page-actions">' +
+        '<button class="btn btn-secondary btn-sm" onclick="showCT600()"> Refresh</button>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">' +
+
+    // Calculate card
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Calculate CT600</span></div><div class="card-body">' +
+      '<div class="form-grid-2">' +
+        '<div class="form-group"><label class="form-label">Period Start *</label>' +
+          '<input type="date" class="form-input" id="ct-start" value="' + yearStart.toISOString().split('T')[0] + '"></div>' +
+        '<div class="form-group"><label class="form-label">Period End *</label>' +
+          '<input type="date" class="form-input" id="ct-end" value="' + yearEnd.toISOString().split('T')[0] + '"></div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label" style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer">' +
+          '<input type="checkbox" id="ct-prior" checked style="width:16px;height:16px"> Include prior year comparison' +
+        '</label>' +
+      '</div>' +
+      '<button class="btn btn-primary" onclick="calcCT600()">Calculate</button>' +
+    '</div></div>' +
+
+    // Company details card
+    '<div class="card"><div class="card-hdr"><span class="card-ttl">Company Details</span></div><div class="card-body">' +
+      '<div class="form-group"><label class="form-label">Company Name</label>' +
+        '<input type="text" class="form-input" id="ct-company" value="' + (s.companyName||'') + '"></div>' +
+      '<div class="form-grid-2">' +
+        '<div class="form-group"><label class="form-label">Company Number</label>' +
+          '<input type="text" class="form-input" id="ct-regnum" value="' + (s.companyNumber||'') + '" placeholder="e.g. 12345678"></div>' +
+        '<div class="form-group"><label class="form-label">UTR</label>' +
+          '<input type="text" class="form-input" id="ct-utr" value="' + (s.utr||'') + '" placeholder="10 digit UTR"></div>' +
+      '</div>' +
+    '</div></div>' +
+    '</div>' +
+
+    // Result
+    '<div id="ct600-result"></div>' +
+
+    // History
+    '<div style="margin-top:20px"><div class="card-hdr" style="background:#fff;border-radius:var(--r8) var(--r8) 0 0;border:1px solid var(--g200);border-bottom:none;padding:12px 16px">' +
+      '<span class="card-ttl">Saved Drafts</span></div>' +
+      _renderCT600History(_ct600State.returns) +
+    '</div>';
+
+  showContent(html);
+}
+
+function _ct600FYEnd(now, fyEndSetting) {
+  // Parse financial year end setting like "31 March" or "31 December"
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var parts  = (fyEndSetting||'31 March').split(' ');
+  var day    = parseInt(parts[0]) || 31;
+  var month  = months.indexOf(parts[1]);
+  if (month < 0) month = 2; // default March
+  var year   = now.getFullYear();
+  var fyEnd  = new Date(year, month, day);
+  if (fyEnd > now) fyEnd.setFullYear(year - 1);
+  return fyEnd;
+}
+
+function _renderCT600History(returns) {
+  if (!returns || !returns.length) {
+    return '<div class="tbl-wrap"><table class="dt"><thead><tr><th>Period</th><th>Turnover</th><th>Taxable Profit</th><th>Tax Due</th><th>Rate</th><th>Status</th><th></th></tr></thead>' +
+      '<tbody><tr><td colspan="7" class="tbl-empty">No CT600 drafts saved yet</td></tr></tbody></table></div>';
+  }
+  return '<div class="tbl-wrap"><table class="dt"><thead><tr>' +
+    '<th>Period</th><th style="text-align:right">Turnover</th><th style="text-align:right">Taxable Profit</th>' +
+    '<th style="text-align:right">Tax Due</th><th>Rate</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' +
+    returns.map(function(r) {
+      return '<tr>' +
+        '<td>' + fmtDate(r.periodStart) + ' - ' + fmtDate(r.periodEnd) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box30_turnover) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box155_chargeable) + '</td>' +
+        '<td style="text-align:right" class="mono">' + fmt(r.box440_taxPayable) + '</td>' +
+        '<td style="font-size:12px;color:var(--g500)">' + (r.rateApplied||'--') + '</td>' +
+        '<td>' + badge(r.status) + '</td>' +
+        '<td><button class="btn btn-ghost btn-sm" onclick="viewCT600Draft(this)" data-id="' + r.returnId + '">View</button></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+async function calcCT600() {
+  var start   = document.getElementById('ct-start').value;
+  var end     = document.getElementById('ct-end').value;
+  var prior   = document.getElementById('ct-prior').checked;
+  var company = document.getElementById('ct-company').value;
+  var regnum  = document.getElementById('ct-regnum').value;
+  var utr     = document.getElementById('ct-utr').value;
+
+  if (!start || !end) { toast('Select the accounting period', 'warning'); return; }
+
+  var res = document.getElementById('ct600-result');
+  if (res) res.innerHTML = '<div class="loader"><div class="spin"></div><span>Calculating...</span></div>';
+
+  var r = await api('calculateCT600', {
+    periodStart:      start,
+    periodEnd:        end,
+    includePriorYear: prior,
+    companyName:      company,
+    companyNumber:    regnum,
+    utr:              utr
+  });
+
+  if (!r || !r.success) {
+    if (res) res.innerHTML = '<div class="alert alert-error">Could not calculate: ' + (r?r.message:'unknown') + '</div>';
+    return;
+  }
+
+  _ct600State.calculated = r.ct600;
+  if (res) res.innerHTML = _renderCT600Result(r.ct600);
+}
+
+function _renderCT600Result(d) {
+  var py   = d.priorYear;
+  var cols = py ? 'grid-template-columns:1fr 1fr' : 'grid-template-columns:1fr';
+
+  function row(label, curr, prior, money, highlight) {
+    var style = highlight ? 'font-weight:700;background:var(--blue-50)' : '';
+    var curr2 = money ? fmt(curr) : curr;
+    var prior2 = prior !== undefined ? (money ? fmt(prior) : prior) : '';
+    return '<tr style="' + style + '"><td style="font-size:13px">' + label + '</td>' +
+      '<td style="text-align:right;' + (money?'font-family:monospace':'') + '">' + curr2 + '</td>' +
+      (py ? '<td style="text-align:right;color:var(--g400);' + (money?'font-family:monospace':'') + '">' + prior2 + '</td>' : '') +
+      '</tr>';
+  }
+
+  return '<div class="card" style="margin-top:4px">' +
+    '<div class="card-hdr" style="background:var(--navy)">' +
+      '<span class="card-ttl" style="color:#fff">CT600 Draft -- ' + d.periodStart + ' to ' + d.periodEnd + '</span>' +
+      '<span style="color:rgba(255,255,255,0.6);font-size:12px">Draft only &#183; For accountant review</span>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<table class="dt" style="margin-bottom:20px">' +
+        '<thead><tr>' +
+          '<th>Description</th>' +
+          '<th style="text-align:right">Current Year</th>' +
+          (py ? '<th style="text-align:right;color:var(--g400)">Prior Year</th>' : '') +
+        '</tr></thead><tbody>' +
+
+        // Profit & Loss summary
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">Trading Account</td></tr>' +
+        row('Box 30 -- Turnover', d.box30_turnover, py&&py.box30_turnover, true) +
+        row('Less: Total expenses', d.totalExpenses, py&&py.totalExpenses, true) +
+        row('Net profit per accounts', d.box35_tradingProfit, py&&py.box35_tradingProfit, true, true) +
+
+        // Adjustments
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">Tax Adjustments</td></tr>' +
+        row('Add back: Depreciation (not allowable)', d.addBackDepreciation, py&&py.addBackDepreciation, true) +
+        row('Less: Capital allowances (AIA)', d.lessCapitalAllowances, py&&py.lessCapitalAllowances, true) +
+        row('Box 45 -- Adjusted trading profit', d.box45_adjProfit, py&&py.box45_adjProfit, true, true) +
+
+        // CT Computation
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--g50);font-weight:700;font-size:12px;color:var(--g600);letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px">CT Computation</td></tr>' +
+        row('Box 155 -- Profits chargeable to CT', d.box155_chargeable, py&&py.box155_chargeable, true, true) +
+        row('Box 185 -- CT at applicable rate', d.box185_ctMainRate, py&&py.box185_ctMainRate, true) +
+        row('Box 188 -- Less: Marginal relief', d.box188_marginalRelief, py&&py.box188_marginalRelief, true) +
+        row('Box 190 -- CT chargeable', d.box190_ctChargeable, py&&py.box190_ctChargeable, true, true) +
+        row('Rate applied', d.rateApplied, py&&py.rateApplied, false) +
+        row('Effective rate', d.effectiveRate + '%', py&&py.effectiveRate+'%', false) +
+
+        // Tax due
+        '<tr><td colspan="' + (py?3:2) + '" style="background:var(--navy);color:#fff;font-weight:700;font-size:13px;padding:10px 14px">' +
+          'Box 440 -- Corporation Tax Payable</td></tr>' +
+        '<tr style="background:var(--blue-50)"><td style="font-size:16px;font-weight:700;color:var(--navy)">Tax due</td>' +
+          '<td style="text-align:right;font-size:20px;font-weight:700;color:var(--red-500);font-family:monospace">' + fmt(d.box440_taxPayable) + '</td>' +
+          (py ? '<td style="text-align:right;color:var(--g400);font-family:monospace">' + fmt(py.box440_taxPayable) + '</td>' : '') +
+        '</tr>' +
+
+        '</tbody></table>' +
+
+      '<div class="alert alert-warning" style="margin-bottom:16px">' +
+        '<p><strong>&#9888; Draft only.</strong> This calculation is for planning purposes. Capital allowances use Annual Investment Allowance (100% of qualifying spend). ' +
+        'Please review with your accountant before filing. Disallowable expenses, R&D credits, group relief, and other adjustments are not included.</p>' +
+      '</div>' +
+
+      '<div style="display:flex;gap:8px">' +
+        '<button class="btn btn-primary" onclick="saveCT600()"> Save Draft</button>' +
+        '<button class="btn btn-secondary" onclick="exportCT600PDF()"> Export PDF</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+async function saveCT600() {
+  var d = _ct600State.calculated;
+  if (!d) { toast('Calculate first', 'warning'); return; }
+  var r = await api('saveCT600Draft', d);
+  if (r && r.success) {
+    toast('CT600 draft saved -- ' + r.returnId, 'success');
+    var retsR = await api('getCT600Returns');
+    if (retsR && retsR.success) _ct600State.returns = retsR.returns || [];
+    // Update history table
+    var hist = document.querySelector('[data-ct-history]');
+    if (hist) hist.innerHTML = _renderCT600History(_ct600State.returns);
+  } else {
+    toast('Error: ' + (r ? r.message : 'unknown'), 'error');
+  }
+}
+
+async function exportCT600PDF() {
+  toast('PDF export coming soon', 'info');
+}
+
+function viewCT600Draft(returnId) {
+  toast('View draft coming soon', 'info');
+}
 
 async function showVAT() {
   showLoader();
@@ -4302,20 +4542,20 @@ function _renderVATPage(auth, vrn) {
     ? '<div class="alert alert-success" style="margin-bottom:16px">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>' +
       '<div><strong>Connected to HMRC MTD</strong>' + (testMode?' (Sandbox mode)':'') +
-      ' · Token expires in ' + (auth.expiresIn||0) + ' min' +
-      ' · VRN: ' + (auth.vrn||'—') +
+      ' &#183; Token expires in ' + (auth.expiresIn||0) + ' min' +
+      ' &#183; VRN: ' + (auth.vrn||'--') +
       ' <button class="btn btn-ghost btn-xs" onclick="testHMRC()" style="margin-left:8px">Test connection</button>' +
       '</div></div>'
     : '<div class="alert alert-warning" style="margin-bottom:16px">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
       '<div><strong>Not connected to HMRC MTD</strong>' +
-      ' — <a href="javascript:void(0)" onclick="openHMRCConnectModal()" style="color:inherit;font-weight:600">Connect now</a>' +
+      ' -- <a href="javascript:void(0)" onclick="openHMRCConnectModal()" style="color:inherit;font-weight:600">Connect now</a>' +
       ' to load obligations and submit returns' +
       '</div></div>';
   var html =
     '<div class="page-hdr"><div class="page-title">VAT / MTD</div>' +
       '<div class="page-actions">' +
-      '<button class="btn btn-secondary btn-sm" onclick="showVAT()">🔄 Refresh</button>' +
+      '<button class="btn btn-secondary btn-sm" onclick="showVAT()"> Refresh</button>' +
       '<button class="btn btn-secondary btn-sm" onclick="loadObligations()">Load Obligations</button>' +
       '</div>' +
     '</div>' +
@@ -4383,7 +4623,7 @@ async function calcVAT() {
   _vatState.calculated.periodStart = start;
   _vatState.calculated.periodEnd   = end;
   if (body) body.innerHTML =
-    '<div class="card-hdr"><span class="card-ttl">VAT Return ' + start + ' – ' + end + '</span></div>' +
+    '<div class="card-hdr"><span class="card-ttl">VAT Return ' + start + ' - ' + end + '</span></div>' +
     '<div class="card-body">' +
       '<table class="dt" style="margin-bottom:16px">' +
       '<thead><tr><th>Box</th><th>Description</th><th style="text-align:right">Amount</th></tr></thead>' +
@@ -4400,9 +4640,9 @@ async function calcVAT() {
       '</tbody>' +
       '</table>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button class="btn btn-secondary" onclick="saveVATDraft()">💾 Save Draft</button>' +
+      '<button class="btn btn-secondary" onclick="saveVATDraft()"> Save Draft</button>' +
       (_vatState.periodKey
-      ? '<button class="btn btn-primary" onclick="openSubmitModal()">📤 Submit to HMRC</button>'
+      ? '<button class="btn btn-primary" onclick="openSubmitModal()"> Submit to HMRC</button>'
       : '<button class="btn btn-secondary" onclick="goToObligations()">Get Period Key from Obligations</button>') +
       '</div>' +
     '</div>';
@@ -4414,7 +4654,7 @@ async function calcVAT() {
   async function fetchAiInsights() {
     const box = document.getElementById('ai-response-box');
     box.style.display = 'block';
-    box.innerHTML = '<p style="font-style:italic">✨ Gemini is analyzing your data...</p>';
+    box.innerHTML = '<p style="font-style:italic">&#10024; Gemini is analyzing your data...</p>';
     
     // Assumes renderSA103 sets window.lastTaxData
     const res = await api('askGemini', { reportData: window.lastTaxData });
@@ -4429,6 +4669,7 @@ async function calcVAT() {
   }
 
 </script>
+<script>
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     var openBg = document.querySelector('.modal-bg.open');
