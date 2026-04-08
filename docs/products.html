@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="The no~bull suite - practical business software for UK sole traders and small businesses. Accounting, CRM, project management and payroll.">
+<title>Products - no~bull consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+.page-hero { background: var(--navy); padding: 160px 32px 100px; position: relative; overflow: hidden; }
+.page-hero::before { content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(13,115,119,0.2) 0%,transparent 70%); }
+.page-hero-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; }
+.page-hero h1 { font-family:var(--font-display);font-size:clamp(36px,5vw,60px);color:var(--white);line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em;max-width:640px; }
+.page-hero h1 em { color:var(--teal-light);font-style:italic; }
+.page-hero p { font-size:18px;color:rgba(255,255,255,0.62);line-height:1.75;max-width:560px; }
+
+.product-block { padding: 100px 32px; }
+.product-block:nth-child(even) { background: var(--off-white); }
+.product-block-inner { max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+.product-block-inner.reverse { direction: rtl; }
+.product-block-inner.reverse > * { direction: ltr; }
+.product-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.product-header h2 { font-family: var(--font-display); font-size: clamp(26px,3.5vw,40px); color: var(--navy); letter-spacing: -0.02em; }
+.product-lead { font-size: 17px; color: var(--grey-600); line-height: 1.8; margin-bottom: 32px; }
+.feature-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+.feature-item { display: flex; gap: 14px; align-items: flex-start; }
+.feature-check { width: 22px; height: 22px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; color: white; font-size: 11px; font-weight: 700; }
+.feature-item-text h4 { font-size: 14px; color: var(--navy); font-weight: 600; margin-bottom: 2px; }
+.feature-item-text p { font-size: 13px; color: var(--grey-500); line-height: 1.6; }
+.product-visual-box { background: var(--navy); border-radius: var(--r-lg); padding: 32px; box-shadow: var(--shadow-lg); }
+.product-visual-box.light { background: var(--grey-100); }
+.coming-soon-box { border: 2px dashed var(--grey-300); border-radius: var(--r-lg); padding: 48px; text-align: center; }
+.coming-soon-box .big-icon { font-size: 56px; margin-bottom: 20px; }
+.coming-soon-box h3 { font-size: 20px; color: var(--navy); margin-bottom: 8px; }
+.coming-soon-box p { font-size: 14px; color: var(--grey-500); line-height: 1.7; margin-bottom: 24px; }
+
+.pricing-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 56px; }
+.price-card { background: var(--white); border-radius: var(--r); border: 1px solid var(--grey-200); padding: 32px; position: relative; }
+.price-card.featured { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,115,119,0.08); }
+.featured-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--teal); color: white; font-size: 10px; font-weight: 700; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.price-plan { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-500); margin-bottom: 14px; }
+.price-amount { font-family: var(--font-display); font-size: 44px; color: var(--navy); line-height: 1; }
+.price-amount sup { font-size: 22px; vertical-align: top; margin-top: 8px; font-family: var(--font-body); }
+.price-per { font-size: 12px; color: var(--grey-400); margin-bottom: 24px; }
+.price-features { list-style: none; margin-bottom: 28px; }
+.price-features li { font-size: 13px; color: var(--grey-700); padding: 7px 0; border-bottom: 1px solid var(--grey-100); display: flex; align-items: center; gap: 10px; }
+.price-features li::before { content: '&#10003;'; color: var(--teal); font-weight: 700; }
+
+.roadmap { background: var(--navy); }
+.roadmap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-top: 48px; }
+.roadmap-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--r); padding: 28px; }
+.roadmap-item .icon { font-size: 28px; margin-bottom: 14px; }
+.roadmap-item h3 { font-size: 15px; color: var(--white); margin-bottom: 8px; font-weight: 600; }
+.roadmap-item p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.7; }
+
+.notify-form { background: var(--teal-pale); border-radius: var(--r); padding: 40px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 32px; }
+.notify-form h3 { font-size: 17px; color: var(--navy); font-weight: 600; margin: 0; flex: 1; min-width: 200px; }
+.notify-form p { font-size: 13px; color: var(--grey-600); margin: 4px 0 0; }
+.notify-input { flex: 2; min-width: 220px; }
+.notify-input input { width: 100%; padding: 12px 16px; border: 1px solid var(--grey-300); border-radius: 8px; font-size: 14px; font-family: var(--font-body); }
+.notify-input input:focus { outline: none; border-color: var(--teal); }
+
+@media(max-width:900px){
+  .product-block-inner,.product-block-inner.reverse { grid-template-columns:1fr; direction:ltr; }
+  .pricing-row,.roadmap-grid { grid-template-columns:1fr; }
+}
+@media(max-width:600px){ .pricing-row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html" class="nav-logo"><span class="bull">&#128002;</span>no<span class="tilde">~</span>bull <span style="color:var(--teal-light)">consulting</span></a>
+    <div class="nav-links">
+      <a href="/index.html">Home</a><a href="/about.html">About</a>
+      <a href="/products.html" class="active">Products</a><a href="/services.html">Services</a>
+      <a href="/contact.html">Contact</a>
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="nav-cta" target="_blank">Launch Books &#8250;</a>
+    </div>
+    <button class="nav-mobile-btn" onclick="document.getElementById('mob').classList.toggle('open')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+  <div class="nav-mobile-menu" id="mob">
+    <a href="/index.html">Home</a><a href="/about.html">About</a><a href="/products.html">Products</a><a href="/services.html">Services</a><a href="/contact.html">Contact</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="section-label" style="color:var(--teal-light)">The no~bull suite</div>
+    <h1>Every tool your business needs.<br><em>Nothing it doesn't.</em></h1>
+    <p>A growing suite of practical business applications &mdash; each one built specifically for UK sole traders, freelancers and micro-businesses, on infrastructure you already use.</p>
+  </div>
+</div>
+
+<!-- BOOKS -->
+<div class="product-block" id="books">
+  <div class="product-block-inner">
+    <div>
+      <div class="product-header">
+        <div class="product-icon" style="font-size:36px">&#128221;</div>
+        <div>
+          <span class="badge badge-green" style="margin-bottom:6px;display:inline-block">Live</span>
+          <h2>no~bull books</h2>
+        </div>
+      </div>
+      <p class="product-lead">Full-featured accounting for UK sole traders and small businesses. HMRC Making Tax Digital from day one. Your data in your own Google Sheet &mdash; owned by you, always.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>HMRC MTD VAT submission</h4><p>Connect to HMRC, retrieve obligations, calculate and submit VAT returns directly.</p></div></div>
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>Professional invoicing</h4><p>Multi-currency invoices with VAT treatment, PDF export, email delivery and payment tracking.</p></div></div>
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>Bank reconciliation</h4><p>Import statements, match transactions, reconcile in minutes not hours.</p></div></div>
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>Corporation Tax CT600</h4><p>Automated CT600 computation with prior year comparison. Draft for accountant review.</p></div></div>
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>Financial reports</h4><p>P&amp;L, Balance Sheet, Cash Flow, Trial Balance &mdash; all from your live data.</p></div></div>
+        <div class="feature-item"><div class="feature-check">&#10003;</div><div class="feature-item-text"><h4>AI financial assistant</h4><p>Ask questions about your finances in plain English. Powered by Google Gemini.</p></div></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="btn btn-primary" target="_blank">Start free trial &#8250;</a>
+        <a href="/books.html" class="btn btn-outline">Full details</a>
+      </div>
+    </div>
+    <div>
+      <!-- Pricing -->
+      <div class="pricing-row" style="grid-template-columns:1fr;gap:16px">
+        <div class="price-card">
+          <div class="price-plan">Sole Trader</div>
+          <div class="price-amount"><sup>&pound;</sup>12</div>
+          <div class="price-per">per month + VAT</div>
+          <ul class="price-features">
+            <li>Full invoicing &amp; billing</li>
+            <li>Bank reconciliation</li>
+            <li>VAT returns &amp; MTD</li>
+            <li>Financial reports</li>
+            <li>1 user</li>
+          </ul>
+          <a href="/contact.html" class="btn btn-outline" style="width:100%;justify-content:center">Get started</a>
+        </div>
+        <div class="price-card featured">
+          <div class="featured-tag">Most Popular</div>
+          <div class="price-plan">Small Business</div>
+          <div class="price-amount"><sup>&pound;</sup>24</div>
+          <div class="price-per">per month + VAT</div>
+          <ul class="price-features">
+            <li>Everything in Sole Trader</li>
+            <li>Multi-currency invoicing</li>
+            <li>AI financial assistant</li>
+            <li>Up to 3 users</li>
+          </ul>
+          <a href="/contact.html" class="btn btn-primary" style="width:100%;justify-content:center">Get started</a>
+        </div>
+        <div class="price-card">
+          <div class="price-plan">Accountant</div>
+          <div class="price-amount"><sup>&pound;</sup>49</div>
+          <div class="price-per">per month + VAT</div>
+          <ul class="price-features">
+            <li>Multiple client instances</li>
+            <li>Client management dashboard</li>
+            <li>White-label option</li>
+            <li>Unlimited users</li>
+          </ul>
+          <a href="/contact.html" class="btn btn-outline" style="width:100%;justify-content:center">Contact us</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CRM -->
+<div class="product-block" id="crm">
+  <div class="product-block-inner reverse">
+    <div>
+      <div class="product-header">
+        <div class="product-icon" style="font-size:36px">&#128101;</div>
+        <div>
+          <span class="badge badge-orange" style="margin-bottom:6px;display:inline-block">Coming Soon</span>
+          <h2>no~bull CRM</h2>
+        </div>
+      </div>
+      <p class="product-lead">Client relationship management built for consultants and freelancers. Track leads, manage relationships, log every interaction, and never miss a follow-up again.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Contact &amp; company management</h4><p>Full contact database with interaction history, notes and custom fields.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Pipeline management</h4><p>Visual sales pipeline with drag-and-drop stages. Know exactly where every deal stands.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Books integration</h4><p>Convert a won deal directly to a client in no~bull books. No double-entry.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Activity reminders</h4><p>Follow-up reminders, meeting notes, email logging. Never drop the ball on a prospect.</p></div></div>
+      </div>
+      <div class="notify-form">
+        <div><h3>Get notified at launch</h3><p>Be first to know when no~bull CRM goes live.</p></div>
+        <div class="notify-input"><input type="email" placeholder="your@email.com"></div>
+        <a href="/contact.html" class="btn btn-primary">Notify me</a>
+      </div>
+    </div>
+    <div>
+      <div class="coming-soon-box">
+        <div class="big-icon">&#128101;</div>
+        <h3>no~bull CRM</h3>
+        <p>We are building a CRM that connects directly to your books &mdash; so winning a client and invoicing them is one seamless flow, not two separate systems.</p>
+        <span class="badge badge-orange">In Development</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div class="product-block" id="projects">
+  <div class="product-block-inner">
+    <div>
+      <div class="product-header">
+        <div class="product-icon" style="font-size:36px">&#128203;</div>
+        <div>
+          <span class="badge badge-orange" style="margin-bottom:6px;display:inline-block">Coming Soon</span>
+          <h2>no~bull Projects</h2>
+        </div>
+      </div>
+      <p class="product-lead">Project management that talks to your accounts. Track time against projects, raise invoices from timesheets, and see the real profitability of every engagement.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Time tracking</h4><p>Log time against projects and tasks. Billable and non-billable hours tracked separately.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Invoice from timesheets</h4><p>One click to turn a week of billable hours into a professional invoice in no~bull books.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Project P&amp;L</h4><p>Revenue, costs and time per project. Know which clients are profitable before it's too late to act.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Milestones &amp; deliverables</h4><p>Track project milestones, manage deliverables, share progress with clients.</p></div></div>
+      </div>
+      <div class="notify-form">
+        <div><h3>Get notified at launch</h3><p>Be first to know when no~bull Projects goes live.</p></div>
+        <div class="notify-input"><input type="email" placeholder="your@email.com"></div>
+        <a href="/contact.html" class="btn btn-primary">Notify me</a>
+      </div>
+    </div>
+    <div>
+      <div class="coming-soon-box">
+        <div class="big-icon">&#128203;</div>
+        <h3>no~bull Projects</h3>
+        <p>The project management tool that makes your time visible &mdash; and billable. Connected to your books so revenue recognition is automatic.</p>
+        <span class="badge badge-orange">In Development</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYROLL -->
+<div class="product-block" id="payroll">
+  <div class="product-block-inner reverse">
+    <div>
+      <div class="product-header">
+        <div class="product-icon" style="font-size:36px">&#128176;</div>
+        <div>
+          <span class="badge badge-grey" style="margin-bottom:6px;display:inline-block">Planned</span>
+          <h2>no~bull Payroll</h2>
+        </div>
+      </div>
+      <p class="product-lead">Simple, compliant payroll for micro-businesses. PAYE calculations, payslips, RTI submissions to HMRC &mdash; integrated with your books so everything balances automatically.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>PAYE calculations</h4><p>Tax and NI calculated automatically. Employer costs tracked and posted to your books.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>RTI submissions</h4><p>Real Time Information submissions to HMRC. On time, every time.</p></div></div>
+        <div class="feature-item"><div class="feature-check" style="background:var(--grey-300)">&#10003;</div><div class="feature-item-text"><h4>Payslips</h4><p>Professional payslips emailed to employees automatically each pay run.</p></div></div>
+      </div>
+      <div class="notify-form">
+        <div><h3>Interested in no~bull Payroll?</h3><p>Let us know &mdash; it helps us prioritise the roadmap.</p></div>
+        <div class="notify-input"><input type="email" placeholder="your@email.com"></div>
+        <a href="/contact.html" class="btn btn-primary">Express interest</a>
+      </div>
+    </div>
+    <div>
+      <div class="coming-soon-box">
+        <div class="big-icon">&#128176;</div>
+        <h3>no~bull Payroll</h3>
+        <p>Payroll that posts directly to your chart of accounts. No import/export, no reconciliation headaches. Just payroll that works.</p>
+        <span class="badge badge-grey">Planned</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<section class="section roadmap">
+  <div class="container">
+    <div class="section-label" style="color:var(--teal-light)">What's coming</div>
+    <h2 class="section-title" style="color:var(--white)">The road ahead.</h2>
+    <p class="section-sub" style="color:rgba(255,255,255,0.55)">We are building the full stack a small UK business needs. Here is what is on the horizon beyond our current suite.</p>
+    <div class="roadmap-grid">
+      <div class="roadmap-item"><div class="icon">&#128178;</div><h3>Expenses</h3><p>Receipt capture, mileage tracking and expense claims. Integrated with your books.</p></div>
+      <div class="roadmap-item"><div class="icon">&#128200;</div><h3>Reporting</h3><p>Custom dashboards, KPI tracking and management accounts. Built for decision-making.</p></div>
+      <div class="roadmap-item"><div class="icon">&#128274;</div><h3>ITSA / MTD Income Tax</h3><p>Making Tax Digital for Income Tax. Quarterly updates to HMRC from your live books.</p></div>
+      <div class="roadmap-item"><div class="icon">&#128467;</div><h3>Contracts</h3><p>Proposal creation, e-signature and contract management. From proposal to invoice in one flow.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:linear-gradient(135deg,var(--teal-dark) 0%,var(--navy) 60%);text-align:center">
+  <div class="container">
+    <h2 style="font-family:var(--font-display);font-size:clamp(28px,4vw,48px);color:var(--white);margin-bottom:16px;letter-spacing:-0.02em">Start with no~bull books today.</h2>
+    <p style="font-size:18px;color:rgba(255,255,255,0.65);margin-bottom:40px">14-day free trial. No credit card. Everything you need to run your books properly.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="btn btn-white btn-lg" target="_blank">Start free trial &#8250;</a>
+      <a href="/contact.html" class="btn btn-outline-white btn-lg">Talk to us first</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand"><span class="logo">&#128002; no<span>~</span>bull <span>consulting</span></span><p>Practical business software for UK sole traders, freelancers and micro-businesses.</p><div class="tagline">No enterprise price tag. No bull.</div></div>
+    <div class="footer-col"><h4>Products</h4><a href="#books">no~bull books</a><a href="#crm">no~bull CRM</a><a href="#projects">no~bull Projects</a><a href="#payroll">no~bull Payroll</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/services.html">Services</a><a href="/contact.html">Contact</a></div>
+    <div class="footer-col"><h4>Legal</h4><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/hmrc-mtd-statement.html">HMRC Compatibility</a></div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 no~bull consulting &middot; Trading name of Edward Jenkins</span>
+    <span><a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

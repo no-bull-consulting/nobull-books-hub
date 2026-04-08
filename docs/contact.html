@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Contact no~bull consulting - get in touch about no~bull books, bespoke development, or anything else.">
+<title>Contact - no~bull consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared.css">
+<style>
+.page-hero { background: var(--navy); padding: 160px 32px 100px; position: relative; overflow: hidden; }
+.page-hero::before { content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(13,115,119,0.2) 0%,transparent 70%); }
+.page-hero-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; }
+.page-hero h1 { font-family:var(--font-display);font-size:clamp(36px,5vw,58px);color:var(--white);line-height:1.1;margin-bottom:20px;letter-spacing:-0.02em; }
+.page-hero h1 em { color:var(--teal-light);font-style:italic; }
+.page-hero p { font-size:18px;color:rgba(255,255,255,0.62);line-height:1.75;max-width:520px; }
+
+.contact-section { background: var(--off-white); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; align-items: start; }
+
+.contact-info h2 { font-family: var(--font-display); font-size: 28px; color: var(--navy); margin-bottom: 16px; letter-spacing: -0.02em; }
+.contact-info p { font-size: 15px; color: var(--grey-500); line-height: 1.8; margin-bottom: 32px; }
+.contact-method { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 24px; }
+.contact-method-icon { width: 44px; height: 44px; background: var(--teal-pale); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.contact-method h4 { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.contact-method a, .contact-method p { font-size: 15px; color: var(--teal); text-decoration: none; margin: 0; }
+.contact-method a:hover { color: var(--teal-light); }
+.response-note { background: var(--teal-pale); border-radius: var(--r); padding: 20px 24px; font-size: 13px; color: var(--teal-dark); line-height: 1.7; margin-top: 32px; }
+
+.contact-form-wrap { background: var(--white); border-radius: var(--r-lg); padding: 48px; box-shadow: var(--shadow); }
+.contact-form-wrap h2 { font-family: var(--font-display); font-size: 26px; color: var(--navy); margin-bottom: 8px; }
+.contact-form-wrap p { font-size: 14px; color: var(--grey-500); margin-bottom: 32px; }
+
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 12px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 12px 16px;
+  border: 1px solid var(--grey-200); border-radius: 8px;
+  font-size: 14px; font-family: var(--font-body); color: var(--text);
+  background: var(--white); transition: border-color var(--transition);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,115,119,0.1);
+}
+.form-textarea { min-height: 120px; resize: vertical; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-submit { width: 100%; padding: 14px; background: var(--teal); color: var(--white); border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: background var(--transition); }
+.form-submit:hover { background: var(--teal-light); }
+.form-note { font-size: 12px; color: var(--grey-400); text-align: center; margin-top: 12px; }
+.form-success { display: none; text-align: center; padding: 40px 20px; }
+.form-success .success-icon { font-size: 48px; margin-bottom: 16px; }
+.form-success h3 { font-size: 20px; color: var(--navy); margin-bottom: 8px; }
+.form-success p { font-size: 14px; color: var(--grey-500); }
+
+.faq-section { background: var(--white); }
+.faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+.faq-item { background: var(--off-white); border-radius: var(--r); padding: 28px; }
+.faq-item h4 { font-size: 15px; color: var(--navy); margin-bottom: 10px; font-weight: 600; }
+.faq-item p { font-size: 14px; color: var(--grey-500); line-height: 1.75; }
+
+@media(max-width:900px){ .contact-grid,.faq-grid { grid-template-columns:1fr; } .form-grid-2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html" class="nav-logo"><span class="bull">&#128002;</span>no<span class="tilde">~</span>bull <span style="color:var(--teal-light)">consulting</span></a>
+    <div class="nav-links">
+      <a href="/index.html">Home</a><a href="/about.html">About</a>
+      <a href="/products.html">Products</a><a href="/services.html">Services</a>
+      <a href="/contact.html" class="active">Contact</a>
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="nav-cta" target="_blank">Launch Books &#8250;</a>
+    </div>
+    <button class="nav-mobile-btn" onclick="document.getElementById('mob').classList.toggle('open')"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+  <div class="nav-mobile-menu" id="mob">
+    <a href="/index.html">Home</a><a href="/about.html">About</a><a href="/products.html">Products</a><a href="/services.html">Services</a><a href="/contact.html">Contact</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="section-label" style="color:var(--teal-light)">Get in touch</div>
+    <h1>Let's talk about<br>your <em>business.</em></h1>
+    <p>Whether you have a question about no~bull books, want to discuss a bespoke project, or just want to understand if we are the right fit &mdash; we would love to hear from you.</p>
+  </div>
+</div>
+
+<section class="section contact-section">
+  <div class="container">
+    <div class="contact-grid">
+      <!-- Contact info -->
+      <div>
+        <div class="contact-info">
+          <h2>We are easy to reach.</h2>
+          <p>No sales team, no ticketing system. You talk directly to the person building the software.</p>
+          <div class="contact-method">
+            <div class="contact-method-icon">&#128140;</div>
+            <div>
+              <h4>Email</h4>
+              <a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a>
+            </div>
+          </div>
+          <div class="contact-method">
+            <div class="contact-method-icon">&#128222;</div>
+            <div>
+              <h4>Phone</h4>
+              <p style="color:var(--grey-600)">Available on request &mdash; use the contact form and we will arrange a call.</p>
+            </div>
+          </div>
+          <div class="contact-method">
+            <div class="contact-method-icon">&#127968;</div>
+            <div>
+              <h4>Based</h4>
+              <p style="color:var(--grey-600)">Operating across UK and Europe. Remote-first, available across UK time zones.</p>
+            </div>
+          </div>
+          <div class="response-note">
+            &#128336; We aim to respond to all enquiries within one business day. For urgent support on no~bull books, please include your account email in the message.
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="contact-form-wrap">
+        <h2>Send us a message.</h2>
+        <p>Tell us a little about what you need and we will get back to you within one business day.</p>
+        <div id="contact-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">First name *</label>
+              <input type="text" class="form-input" id="cf-fname" placeholder="Jane" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last name *</label>
+              <input type="text" class="form-input" id="cf-lname" placeholder="Smith" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email address *</label>
+            <input type="email" class="form-input" id="cf-email" placeholder="jane@yourcompany.co.uk" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company / trading name</label>
+            <input type="text" class="form-input" id="cf-company" placeholder="Jane Smith Consulting">
+          </div>
+          <div class="form-group">
+            <label class="form-label">What are you enquiring about? *</label>
+            <select class="form-select" id="cf-subject" required>
+              <option value="">Please select...</option>
+              <option value="books-trial">no~bull books - starting a trial</option>
+              <option value="books-support">no~bull books - existing customer support</option>
+              <option value="books-accountant">no~bull books - accountant / multi-client</option>
+              <option value="bespoke">Bespoke application development</option>
+              <option value="customisation">Product customisation</option>
+              <option value="migration">System migration</option>
+              <option value="general">General enquiry</option>
+              <option value="other">Something else</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your message *</label>
+            <textarea class="form-textarea" id="cf-message" placeholder="Tell us a bit about your business and what you are looking for..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">How did you hear about us?</label>
+            <select class="form-select" id="cf-source">
+              <option value="">Please select...</option>
+              <option value="search">Google / search</option>
+              <option value="recommendation">Personal recommendation</option>
+              <option value="social">Social media</option>
+              <option value="hmrc">HMRC software list</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <button class="form-submit" onclick="submitContactForm()">Send message &#8250;</button>
+          <p class="form-note">We respect your privacy. Your details are used only to respond to your enquiry. See our <a href="/privacy.html" style="color:var(--teal)">Privacy Policy</a>.</p>
+        </div>
+        <div class="form-success" id="form-success">
+          <div class="success-icon">&#128236;</div>
+          <h3>Message sent!</h3>
+          <p>Thank you for getting in touch. We will respond within one business day at <span id="success-email"></span>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section">
+  <div class="container">
+    <div class="section-label">Common questions</div>
+    <h2 class="section-title">Before you get in touch.</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>Do I need a Google account to use no~bull books?</h4>
+        <p>Yes &mdash; no~bull books uses your Google account for secure login and to store your data in Google Sheets. You do not need a Gmail address; any email address can be linked to a Google account.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Can I try it before committing?</h4>
+        <p>Yes. Every new account starts with a 14-day free trial with full access to all features. No credit card required. Cancel at any time with no charge.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What happens to my data if I cancel?</h4>
+        <p>Your data is in your own Google Sheet, in your own Google account. If you cancel, you keep everything. We have no ability to delete or withhold your data.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Do you work with accountants?</h4>
+        <p>Yes &mdash; our Accountant plan is designed for practices managing multiple clients. Each client gets their own instance, and you manage all of them from a single dashboard.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Can you customise no~bull books for my specific needs?</h4>
+        <p>Yes. We offer customisation services for clients with specific workflow requirements. Get in touch to discuss what you need and we will tell you whether it is possible and what it would cost.</p>
+      </div>
+      <div class="faq-item">
+        <h4>How long does a bespoke project take?</h4>
+        <p>Most projects we build fall in the range of 4-12 weeks depending on complexity. We always agree a timeline before starting and deliver in milestones so you can see progress throughout.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand"><span class="logo">&#128002; no<span>~</span>bull <span>consulting</span></span><p>Practical business software for UK sole traders, freelancers and micro-businesses.</p><div class="tagline">No enterprise price tag. No bull.</div></div>
+    <div class="footer-col"><h4>Products</h4><a href="/books.html">no~bull books</a><a href="/products.html">All products</a></div>
+    <div class="footer-col"><h4>Company</h4><a href="/about.html">About</a><a href="/services.html">Services</a><a href="/contact.html">Contact</a></div>
+    <div class="footer-col"><h4>Legal</h4><a href="/privacy.html">Privacy Policy</a><a href="/terms.html">Terms</a><a href="/hmrc-mtd-statement.html">HMRC Compatibility</a></div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 no~bull consulting &middot; Trading name of Edward Jenkins</span>
+    <span><a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></span>
+  </div>
+</footer>
+
+<script>
+function submitContactForm() {
+  var fname   = document.getElementById('cf-fname').value.trim();
+  var lname   = document.getElementById('cf-lname').value.trim();
+  var email   = document.getElementById('cf-email').value.trim();
+  var subject = document.getElementById('cf-subject').value;
+  var message = document.getElementById('cf-message').value.trim();
+
+  if (!fname || !lname) { alert('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  if (!subject) { alert('Please select what you are enquiring about.'); return; }
+  if (!message) { alert('Please enter a message.'); return; }
+
+  // Build mailto link
+  var subjectLine = 'no~bull consulting enquiry: ' + document.getElementById('cf-subject').options[document.getElementById('cf-subject').selectedIndex].text;
+  var company = document.getElementById('cf-company').value.trim();
+  var source = document.getElementById('cf-source').value;
+
+  var body = 'Name: ' + fname + ' ' + lname + '\n' +
+    'Email: ' + email + '\n' +
+    (company ? 'Company: ' + company + '\n' : '') +
+    'Enquiry type: ' + subjectLine + '\n' +
+    (source ? 'Source: ' + source + '\n' : '') +
+    '\nMessage:\n' + message;
+
+  window.location.href = 'mailto:edward@nobull.consulting?subject=' +
+    encodeURIComponent(subjectLine) + '&body=' + encodeURIComponent(body);
+
+  // Show success state
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('success-email').textContent = email;
+  document.getElementById('form-success').style.display = 'block';
+}
+</script>
+
+</body>
+</html>

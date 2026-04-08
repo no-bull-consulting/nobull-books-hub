@@ -3,112 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="no~bull consulting — powerful business tools for UK sole traders and small businesses. Your data, your Google Sheet, no lock-in.">
-<title>no~bull consulting — business tools without the enterprise price tag</title>
+<meta name="description" content="no~bull consulting - practical business software for UK sole traders, freelancers and micro-businesses. No lock-in, no enterprise pricing, no bull.">
+<title>no~bull consulting - Business tools without the enterprise price tag</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="_shared.css">
 <style>
-/* HOME PAGE SPECIFIC */
 .hero {
-  min-height: 100vh; display: flex; align-items: center;
-  background: var(--navy);
+  min-height: 100vh; background: var(--navy);
+  display: flex; align-items: center;
   position: relative; overflow: hidden; padding: 0 32px;
 }
-.hero::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(13,115,119,0.25) 0%, transparent 70%);
+.hero-bg {
+  position: absolute; inset: 0; overflow: hidden;
 }
-.hero::after {
-  content: ''; position: absolute; top: -200px; right: -100px;
-  width: 600px; height: 600px; border-radius: 50%;
-  border: 1px solid rgba(13,115,119,0.15);
+.hero-bg::before {
+  content: ''; position: absolute;
+  width: 800px; height: 800px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,115,119,0.2) 0%, transparent 70%);
+  top: -200px; right: -200px;
 }
-.hero-inner { max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1; padding: 120px 0 80px; }
-.hero-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 24px; }
+.hero-bg::after {
+  content: ''; position: absolute;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,115,119,0.12) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+}
+.hero-grid {
+  position: absolute; inset: 0; opacity: 0.03;
+  background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-inner {
+  max-width: var(--max-w); margin: 0 auto; position: relative; z-index: 1;
+  padding: 120px 0 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+.hero-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--teal-light); margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow::before { content: ''; width: 24px; height: 2px; background: var(--teal-light); }
 .hero h1 {
-  font-family: var(--font-display); font-size: clamp(40px, 6vw, 76px);
-  color: var(--white); line-height: 1.08; margin-bottom: 28px; max-width: 720px;
+  font-family: var(--font-display); font-size: clamp(38px, 5vw, 68px);
+  color: var(--white); line-height: 1.06; margin-bottom: 28px;
+  letter-spacing: -0.02em;
 }
 .hero h1 em { color: var(--teal-light); font-style: italic; }
-.hero-sub { font-size: 19px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 540px; margin-bottom: 48px; }
-.hero-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 72px; }
-.hero-stats { display: grid; grid-template-columns: repeat(3, auto); gap: 40px; }
-.stat-val { font-family: var(--font-display); font-size: 36px; color: var(--white); }
-.stat-label { font-size: 12px; color: rgba(255,255,255,0.45); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
-.hero-scroll { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite; }
-@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+.hero-sub {
+  font-size: 18px; color: rgba(255,255,255,0.62); line-height: 1.75;
+  margin-bottom: 48px; max-width: 480px;
+}
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 64px; }
+.hero-stats { display: flex; gap: 40px; }
+.hero-stat-val {
+  font-family: var(--font-display); font-size: 32px; color: var(--white);
+  font-weight: 700; line-height: 1;
+}
+.hero-stat-lbl {
+  font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-top: 4px;
+}
+.hero-visual {
+  position: relative;
+}
+.hero-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(13,115,119,0.25);
+  border-radius: 16px; padding: 28px; backdrop-filter: blur(10px);
+}
+.hero-card-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.hero-card-dot { width: 10px; height: 10px; border-radius: 50%; }
+.hero-card-title { font-size: 13px; color: rgba(255,255,255,0.5); margin-left: 4px; }
+.mockup-stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.mockup-stat-box { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px; }
+.mockup-stat-box .val { font-size: 20px; font-weight: 700; color: var(--teal-light); }
+.mockup-stat-box .lbl { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 3px; letter-spacing: 0.05em; }
+.mockup-row { height: 32px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-bottom: 8px; }
+.mockup-row.w100 { width: 100%; }
+.mockup-row.w75 { width: 75%; }
+.mockup-row.w55 { width: 55%; }
+.hero-badge {
+  position: absolute; top: -16px; right: -16px;
+  background: var(--teal); color: var(--white); font-size: 11px; font-weight: 700;
+  padding: 8px 16px; border-radius: 20px; letter-spacing: 0.06em;
+  box-shadow: 0 4px 20px rgba(13,115,119,0.4);
+}
 
-/* TRUST BAR */
-.trust-bar { background: var(--grey-100); padding: 20px 32px; border-bottom: 1px solid var(--grey-300); }
-.trust-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; }
-.trust-item { font-size: 13px; color: var(--grey-500); font-weight: 500; display: flex; align-items: center; gap: 8px; }
-.trust-item svg { color: var(--teal); }
+.trust-strip {
+  background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 20px 32px;
+}
+.trust-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap;
+}
+.trust-item { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.trust-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
 
-/* FEATURES */
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 64px; }
-.feature-card { padding: 36px; border-radius: var(--r); border: 1px solid var(--grey-300); transition: all 0.3s; position: relative; overflow: hidden; }
-.feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--teal); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
-.feature-card:hover { border-color: var(--teal); box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-.feature-card:hover::before { transform: scaleX(1); }
-.feature-icon { width: 48px; height: 48px; background: var(--teal-pale); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 22px; }
-.feature-card h3 { font-size: 17px; color: var(--navy); margin-bottom: 10px; font-weight: 600; }
-.feature-card p { font-size: 14px; color: var(--grey-500); line-height: 1.7; }
+.problem-section { background: var(--off-white); }
+.problem-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: 56px; background: var(--grey-200); border-radius: var(--r-lg); overflow: hidden; }
+.problem-item { background: var(--white); padding: 40px 36px; }
+.problem-num { font-family: var(--font-display); font-size: 56px; color: var(--grey-100); line-height: 1; margin-bottom: 12px; }
+.problem-item h3 { font-size: 17px; color: var(--navy); margin-bottom: 10px; font-weight: 600; }
+.problem-item p { font-size: 14px; color: var(--grey-500); line-height: 1.75; }
 
-/* PRODUCT HIGHLIGHT */
-.product-section { background: var(--navy); position: relative; overflow: hidden; }
-.product-section::before { content: ''; position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(13,115,119,0.3) 0%, transparent 70%); }
-.product-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; z-index: 1; }
-.product-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-light); margin-bottom: 20px; }
-.product-inner h2 { font-family: var(--font-display); font-size: clamp(28px, 3.5vw, 44px); color: var(--white); line-height: 1.15; margin-bottom: 24px; }
-.product-inner p { font-size: 16px; color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 32px; }
-.product-checks { margin-bottom: 36px; }
-.check-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
-.check-icon { width: 20px; height: 20px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 11px; color: white; }
-.check-text { font-size: 15px; color: rgba(255,255,255,0.8); }
-.product-visual { background: rgba(255,255,255,0.04); border: 1px solid rgba(13,115,119,0.3); border-radius: 16px; padding: 32px; }
-.mockup-bar { height: 48px; background: rgba(13,115,119,0.2); border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; padding: 0 16px; gap: 8px; }
-.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
-.mockup-row { height: 36px; background: rgba(255,255,255,0.04); border-radius: 6px; margin-bottom: 10px; }
-.mockup-row.wide { width: 100%; }
-.mockup-row.med { width: 75%; }
-.mockup-row.short { width: 50%; }
-.mockup-stat { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 20px; }
-.mockup-stat-item { background: rgba(13,115,119,0.15); border-radius: 8px; padding: 16px; text-align: center; }
-.mockup-stat-val { font-size: 18px; color: var(--teal-light); font-weight: 700; }
-.mockup-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.products-preview { background: var(--navy); position: relative; overflow: hidden; }
+.products-preview::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40%;
+  background: linear-gradient(to left, rgba(13,115,119,0.15), transparent);
+}
+.products-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; margin-top: 56px; position: relative; z-index: 1; }
+.product-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r); padding: 32px; transition: all var(--transition);
+  position: relative; overflow: hidden;
+}
+.product-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--teal); transform: scaleX(0); transition: transform var(--transition);
+  transform-origin: left;
+}
+.product-card:hover { border-color: rgba(13,115,119,0.4); background: rgba(255,255,255,0.06); }
+.product-card:hover::before { transform: scaleX(1); }
+.product-card.live { border-color: rgba(13,115,119,0.3); }
+.product-icon { font-size: 32px; margin-bottom: 16px; }
+.product-card h3 { font-size: 18px; color: var(--white); margin-bottom: 8px; font-weight: 600; }
+.product-card p { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 20px; }
+.product-card .product-link { font-size: 13px; color: var(--teal-light); font-weight: 600; display: flex; align-items: center; gap: 6px; }
 
-/* PHILOSOPHY */
-.philosophy-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--grey-300); border-radius: var(--r); overflow: hidden; }
-.phil-item { background: var(--white); padding: 40px 36px; }
-.phil-num { font-family: var(--font-display); font-size: 48px; color: var(--grey-100); line-height: 1; margin-bottom: 16px; }
-.phil-item h3 { font-size: 17px; color: var(--navy); margin-bottom: 10px; }
-.phil-item p { font-size: 14px; color: var(--grey-500); line-height: 1.7; }
+.why-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; margin-top: 56px; }
+.why-item { padding: 32px; border-radius: var(--r); border: 1px solid var(--grey-200); }
+.why-icon { width: 44px; height: 44px; background: var(--teal-pale); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 18px; }
+.why-item h3 { font-size: 16px; color: var(--navy); margin-bottom: 10px; font-weight: 600; }
+.why-item p { font-size: 14px; color: var(--grey-500); line-height: 1.75; }
 
-/* PRICING */
-.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 48px; }
-.price-card { border-radius: var(--r); border: 1px solid var(--grey-300); padding: 36px; position: relative; }
-.price-card.featured { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(13,115,119,0.08); }
-.featured-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--teal); color: white; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
-.price-plan { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-500); margin-bottom: 16px; }
-.price-amount { font-family: var(--font-display); font-size: 48px; color: var(--navy); line-height: 1; margin-bottom: 4px; }
-.price-amount sup { font-size: 24px; vertical-align: top; margin-top: 8px; font-family: var(--font-body); }
-.price-per { font-size: 13px; color: var(--grey-500); margin-bottom: 28px; }
-.price-features { list-style: none; margin: 0 0 28px; }
-.price-features li { font-size: 14px; color: var(--grey-700); padding: 8px 0; border-bottom: 1px solid var(--grey-100); display: flex; align-items: center; gap: 10px; }
-.price-features li::before { content: '✓'; color: var(--teal); font-weight: 700; }
-
-/* CTA SECTION */
-.cta-section { background: linear-gradient(135deg, var(--teal) 0%, var(--navy) 100%); }
-.cta-inner { text-align: center; }
-.cta-inner h2 { font-family: var(--font-display); font-size: clamp(28px,4vw,48px); color: var(--white); margin-bottom: 16px; }
-.cta-inner p { font-size: 18px; color: rgba(255,255,255,0.75); margin-bottom: 40px; }
+.cta-section { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--navy) 60%); text-align: center; }
+.cta-section h2 { font-family: var(--font-display); font-size: clamp(28px,4vw,50px); color: var(--white); margin-bottom: 16px; letter-spacing: -0.02em; }
+.cta-section p { font-size: 18px; color: rgba(255,255,255,0.65); margin-bottom: 40px; }
+.cta-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
 @media(max-width:900px){
-  .features-grid,.philosophy-grid,.pricing-grid{grid-template-columns:1fr;}
-  .product-inner{grid-template-columns:1fr;}
-  .product-visual{display:none;}
-  .hero-stats{grid-template-columns:repeat(3,1fr);}
+  .hero-inner { grid-template-columns:1fr; gap:48px; }
+  .hero-visual { display:none; }
+  .problem-grid,.why-grid { grid-template-columns:1fr; }
+  .products-grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -116,209 +157,200 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="/" class="nav-logo"><span class="bull">🐂</span> no~bull <span>consulting</span></a>
+    <a href="/index.html" class="nav-logo">
+      <span class="bull">&#128002;</span>
+      no<span class="tilde">~</span>bull <span style="color:var(--teal-light)">consulting</span>
+    </a>
     <div class="nav-links">
-      <a href="/philosophy.html">Philosophy</a>
-      <a href="/books.html">no~bull books</a>
+      <a href="/index.html" class="active">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/products.html">Products</a>
       <a href="/services.html">Services</a>
       <a href="/contact.html">Contact</a>
-      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="nav-cta" target="_blank">Launch app →</a>
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="nav-cta" target="_blank">Launch Books &#8250;</a>
     </div>
+    <button class="nav-mobile-btn" onclick="document.getElementById('mob').classList.toggle('open')" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+  <div class="nav-mobile-menu" id="mob">
+    <a href="/index.html">Home</a><a href="/about.html">About</a>
+    <a href="/products.html">Products</a><a href="/services.html">Services</a>
+    <a href="/contact.html">Contact</a>
+    <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" style="color:var(--teal-light);font-weight:600">Launch no~bull books &#8250;</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"><div class="hero-grid"></div></div>
   <div class="hero-inner">
-    <div class="hero-eyebrow">UK Business Software · Built different</div>
-    <h1>Powerful tools.<br><em>No enterprise</em><br>price tag.</h1>
-    <p class="hero-sub">Professional-grade accounting and business software for UK sole traders and small businesses — built on Google Sheets, owned by you.</p>
-    <div class="hero-actions">
-      <a href="/books.html" class="btn btn-primary btn-lg">Explore no~bull books →</a>
-      <a href="/philosophy.html" class="btn btn-outline btn-lg" style="color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.3);">Our philosophy</a>
+    <div>
+      <div class="hero-eyebrow fade-up fade-up-1">Built for UK small business</div>
+      <h1 class="fade-up fade-up-2">
+        Business tools that<br><em>actually fit</em><br>your business.
+      </h1>
+      <p class="hero-sub fade-up fade-up-3">
+        Practical software for sole traders, freelancers and micro-businesses. Professional-grade tools at honest prices &mdash; your data, your control, no lock-in.
+      </p>
+      <div class="hero-actions fade-up fade-up-4">
+        <a href="/products.html" class="btn btn-primary btn-lg">Explore our products &#8250;</a>
+        <a href="/about.html" class="btn btn-outline-white btn-lg">Our philosophy</a>
+      </div>
+      <div class="hero-stats fade-up fade-up-4">
+        <div>
+          <div class="hero-stat-val">100%</div>
+          <div class="hero-stat-lbl">Your data</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">MTD</div>
+          <div class="hero-stat-lbl">HMRC Ready</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">&pound;0</div>
+          <div class="hero-stat-lbl">Lock-in fee</div>
+        </div>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div><div class="stat-val">£0</div><div class="stat-label">Data lock-in fee</div></div>
-      <div><div class="stat-val">MTD</div><div class="stat-label">HMRC Ready</div></div>
-      <div><div class="stat-val">100%</div><div class="stat-label">Your data</div></div>
+    <div class="hero-visual fade-up fade-up-3">
+      <div class="hero-badge">HMRC MTD Compliant</div>
+      <div class="hero-card">
+        <div class="hero-card-bar">
+          <div class="hero-card-dot" style="background:#ff5f57"></div>
+          <div class="hero-card-dot" style="background:#ffbd2e"></div>
+          <div class="hero-card-dot" style="background:#28ca41"></div>
+          <span class="hero-card-title">no~bull books &mdash; Dashboard</span>
+        </div>
+        <div class="mockup-stat-row">
+          <div class="mockup-stat-box"><div class="val">&pound;8,500</div><div class="lbl">Revenue</div></div>
+          <div class="mockup-stat-box"><div class="val">&pound;840</div><div class="lbl">VAT Due</div></div>
+          <div class="mockup-stat-box"><div class="val">3</div><div class="lbl">Invoices</div></div>
+        </div>
+        <div class="mockup-row w100"></div>
+        <div class="mockup-row w75"></div>
+        <div class="mockup-row w55"></div>
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mockup-row w100" style="height:40px"></div>
+          <div class="mockup-row w100" style="height:40px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="trust-strip">
+    <div class="trust-inner">
+      <div class="trust-item"><div class="trust-dot"></div>HMRC Making Tax Digital</div>
+      <div class="trust-item"><div class="trust-dot"></div>Google Workspace native</div>
+      <div class="trust-item"><div class="trust-dot"></div>UK VAT &amp; invoicing</div>
+      <div class="trust-item"><div class="trust-dot"></div>No vendor lock-in</div>
+      <div class="trust-item"><div class="trust-dot"></div>14-day free trial</div>
     </div>
   </div>
 </section>
 
-<!-- TRUST BAR -->
-<div class="trust-bar">
-  <div class="trust-inner">
-    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 1l2.39 4.84 5.34.78-3.87 3.77.91 5.32L10 13.27l-4.77 2.44.91-5.32L2.27 6.62l5.34-.78z"/></svg> HMRC MTD Integrated</div>
-    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l-4-4 1.41-1.41L9 9.17l7.59-7.59L18 3z"/></svg> Your data in your Google Sheet</div>
-    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm-1 11.41L5.59 10 7 8.59l2 2 4-4L14.41 8z"/></svg> No vendor lock-in</div>
-    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v2H4zm0 4h12v2H4zm0 4h8v2H4z"/></svg> UK VAT & invoicing</div>
-    <div class="trust-item"><svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 016 6c0 4.5-6 10-6 10S4 12.5 4 8a6 6 0 016-6z"/></svg> Built in Spain, for UK business</div>
-  </div>
-</div>
-
-<!-- FEATURES -->
-<section class="section" style="background:var(--off-white)">
+<!-- THE PROBLEM -->
+<section class="section problem-section">
   <div class="container">
-    <div style="text-align:center;max-width:600px;margin:0 auto 16px">
-      <span class="badge badge-teal">What we build</span>
-      <h2 style="font-family:var(--font-display);font-size:clamp(28px,4vw,44px);color:var(--navy);margin-top:16px;line-height:1.15">Software that respects your business</h2>
-      <p style="font-size:17px;color:var(--grey-500);margin-top:16px;line-height:1.7">No complex onboarding. No hidden fees. No data hostage situations. Just tools that work.</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>You own your data</h3>
-        <p>Every transaction, invoice, and report lives in your own Google Sheet. Export, share, or migrate — no permission needed from us.</p>
+    <div class="section-label">The problem we solve</div>
+    <h2 class="section-title">Small business software<br>wasn't built for <em>small</em> business.</h2>
+    <p class="section-sub">Enterprise tools retrofitted for sole traders. American products with a Union Jack sticker. Pricing that assumes you have an IT department. There is a better way.</p>
+    <div class="problem-grid">
+      <div class="problem-item">
+        <div class="problem-num">01</div>
+        <h3>Priced for enterprises, sold to everyone</h3>
+        <p>The big accounting platforms charge per-seat, gate features behind tiers, and quietly raise prices once you're dependent on them. Your data becomes a hostage.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">🇬🇧</div>
-        <h3>Built for UK compliance</h3>
-        <p>HMRC MTD VAT submission, UK VAT treatment, Making Tax Digital — compliant from day one, not bolted on as an afterthought.</p>
+      <div class="problem-item">
+        <div class="problem-num">02</div>
+        <h3>Complex beyond reason</h3>
+        <p>You shouldn't need a three-day training course to raise an invoice. Software complexity is often deliberate &mdash; it makes switching harder. We disagree.</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">💷</div>
-        <h3>Honest pricing</h3>
-        <p>No per-seat fees. No feature gating. No enterprise pricing for basic functionality. One price, all features, for the life of your subscription.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔗</div>
-        <h3>Google ecosystem native</h3>
-        <p>Built on Google Apps Script and Sheets — platforms you already use. No new accounts, no new passwords, no new systems to learn.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🤖</div>
-        <h3>AI assistant built in</h3>
-        <p>Ask questions about your finances in plain English. Get instant answers about your cash flow, VAT position, and business health.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌍</div>
-        <h3>Multi-currency ready</h3>
-        <p>Invoice in EUR, GBP, USD or any currency. Perfect for UK businesses working with European clients and suppliers.</p>
+      <div class="problem-item">
+        <div class="problem-num">03</div>
+        <h3>Built elsewhere, applied here</h3>
+        <p>Most business software was built for US or global markets. UK-specific features &mdash; MTD VAT, HMRC compliance, UK VAT rates &mdash; are always an afterthought.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PRODUCT HIGHLIGHT -->
-<section class="section product-section">
+<!-- PRODUCTS PREVIEW -->
+<section class="section products-preview">
   <div class="container">
-    <div class="product-inner">
+    <div class="section-label" style="color:var(--teal-light)">The no~bull suite</div>
+    <h2 class="section-title" style="color:var(--white)">One suite. Every tool<br>your business needs.</h2>
+    <p class="section-sub" style="color:rgba(255,255,255,0.55)">We are building a complete suite of business tools &mdash; each one practical, honest, and built specifically for UK small businesses.</p>
+    <div class="products-grid">
+      <div class="product-card live">
+        <div class="product-icon">&#128221;</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <h3 style="margin:0">no~bull books</h3>
+          <span class="badge badge-green">Live</span>
+        </div>
+        <p>Full accounting for UK sole traders. Invoicing, bills, bank reconciliation, VAT returns, HMRC MTD submission and Corporation Tax CT600. Your data in your own Google Sheet.</p>
+        <a href="/books.html" class="product-link">Learn more &#8250;</a>
+      </div>
+      <div class="product-card">
+        <div class="product-icon">&#128101;</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <h3 style="margin:0">no~bull CRM</h3>
+          <span class="badge badge-orange">Coming Soon</span>
+        </div>
+        <p>Client relationship management built for consultants and freelancers. Track leads, manage relationships, log interactions, and never lose a follow-up again.</p>
+        <a href="/products.html#crm" class="product-link" style="color:rgba(255,255,255,0.3)">Notify me &#8250;</a>
+      </div>
+      <div class="product-card">
+        <div class="product-icon">&#128203;</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <h3 style="margin:0">no~bull Projects</h3>
+          <span class="badge badge-orange">Coming Soon</span>
+        </div>
+        <p>Project management that connects directly to your books. Track time, raise invoices from timesheets, and see the real profitability of every project.</p>
+        <a href="/products.html#projects" class="product-link" style="color:rgba(255,255,255,0.3)">Notify me &#8250;</a>
+      </div>
+      <div class="product-card">
+        <div class="product-icon">&#128176;</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <h3 style="margin:0">no~bull Payroll</h3>
+          <span class="badge badge-grey">Planned</span>
+        </div>
+        <p>Simple payroll for micro-businesses. PAYE calculations, payslips, RTI submissions. Integrated with no~bull books so your books balance automatically.</p>
+        <a href="/products.html#payroll" class="product-link" style="color:rgba(255,255,255,0.3)">Notify me &#8250;</a>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:40px">
+      <a href="/products.html" class="btn btn-outline-white">View all products &#8250;</a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NO BULL -->
+<section class="section" style="background:var(--white)">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start">
       <div>
-        <div class="product-eyebrow">Our flagship product</div>
-        <h2>no~bull books — accounting that doesn't lie to you</h2>
-        <p>Full-featured accounting for UK sole traders. Invoicing, bills, bank reconciliation, VAT returns, MTD submission — everything you need, nothing you don't.</p>
-        <div class="product-checks">
-          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">HMRC Making Tax Digital VAT submission</div></div>
-          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Professional invoicing with payment tracking</div></div>
-          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Bank reconciliation and statement import</div></div>
-          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">P&L, Balance Sheet, Cash Flow reports</div></div>
-          <div class="check-item"><div class="check-icon">✓</div><div class="check-text">14-day free trial, no credit card required</div></div>
-        </div>
-        <a href="/books.html" class="btn btn-white">Learn more about no~bull books →</a>
-      </div>
-      <div class="product-visual">
-        <div class="mockup-bar">
-          <div class="mockup-dot" style="background:#ff5f57"></div>
-          <div class="mockup-dot" style="background:#ffbd2e"></div>
-          <div class="mockup-dot" style="background:#28ca41"></div>
-          <div style="margin-left:8px;font-size:12px;color:rgba(255,255,255,0.4)">no~bull books</div>
-        </div>
-        <div class="mockup-row wide"></div>
-        <div class="mockup-row med"></div>
-        <div class="mockup-row short"></div>
-        <div class="mockup-stat">
-          <div class="mockup-stat-item"><div class="mockup-stat-val">£8,500</div><div class="mockup-stat-lbl">Revenue</div></div>
-          <div class="mockup-stat-item"><div class="mockup-stat-val">£840</div><div class="mockup-stat-lbl">VAT Due</div></div>
-          <div class="mockup-stat-item"><div class="mockup-stat-val">3</div><div class="mockup-stat-lbl">Invoices</div></div>
-        </div>
-        <div style="margin-top:16px">
-          <div class="mockup-row wide" style="height:28px"></div>
-          <div class="mockup-row wide" style="height:28px;margin-top:8px"></div>
-          <div class="mockup-row wide" style="height:28px;margin-top:8px"></div>
+        <div class="section-label">Why no~bull</div>
+        <h2 class="section-title">Three principles.<br>No exceptions.</h2>
+        <p class="section-sub">Everything we build is governed by the same three commitments. They are not aspirations &mdash; they are hard constraints on every product decision we make.</p>
+        <div style="margin-top:36px">
+          <a href="/about.html" class="btn btn-primary">Our full philosophy &#8250;</a>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- PHILOSOPHY -->
-<section class="section">
-  <div class="container">
-    <div style="text-align:center;max-width:560px;margin:0 auto 48px">
-      <span class="badge badge-teal">How we think</span>
-      <h2 style="font-family:var(--font-display);font-size:clamp(26px,3.5vw,40px);color:var(--navy);margin-top:16px">Three principles. No exceptions.</h2>
-    </div>
-    <div class="philosophy-grid">
-      <div class="phil-item">
-        <div class="phil-num">01</div>
-        <h3>Transparent, not locked-in</h3>
-        <p>Your data lives in your Google Sheet, always. Cancel anytime and everything you've ever entered goes with you. We make money when you find us genuinely useful.</p>
-      </div>
-      <div class="phil-item">
-        <div class="phil-num">02</div>
-        <h3>Specific, not generic</h3>
-        <p>Built specifically for UK businesses — UK VAT rates, HMRC compliance, GBP-first. Not an American product with a Union Jack sticker on it.</p>
-      </div>
-      <div class="phil-item">
-        <div class="phil-num">03</div>
-        <h3>Simple, not complex</h3>
-        <p>No 47-step onboarding. No certification required to raise an invoice. Software should take ten minutes to learn, not ten days.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="section" style="background:var(--off-white)">
-  <div class="container">
-    <div style="text-align:center;max-width:560px;margin:0 auto 16px">
-      <span class="badge badge-teal">Pricing</span>
-      <h2 style="font-family:var(--font-display);font-size:clamp(26px,3.5vw,40px);color:var(--navy);margin-top:16px">Honest prices. All features. Always.</h2>
-      <p style="font-size:16px;color:var(--grey-500);margin-top:12px">Start with a 14-day free trial. No credit card required.</p>
-    </div>
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-plan">Sole Trader</div>
-        <div class="price-amount"><sup>£</sup>12</div>
-        <div class="price-per">per month + VAT</div>
-        <ul class="price-features">
-          <li>Full invoicing & billing</li>
-          <li>Bank reconciliation</li>
-          <li>VAT returns & MTD</li>
-          <li>Financial reports</li>
-          <li>1 user</li>
-          <li>Email support</li>
-        </ul>
-        <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-outline" style="width:100%;justify-content:center">Start free trial</a>
-      </div>
-      <div class="price-card featured">
-        <div class="featured-badge">Most Popular</div>
-        <div class="price-plan">Small Business</div>
-        <div class="price-amount"><sup>£</sup>24</div>
-        <div class="price-per">per month + VAT</div>
-        <ul class="price-features">
-          <li>Everything in Sole Trader</li>
-          <li>Multi-currency invoicing</li>
-          <li>AI financial assistant</li>
-          <li>Purchase orders</li>
-          <li>Up to 3 users</li>
-          <li>Priority support</li>
-        </ul>
-        <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-primary" style="width:100%;justify-content:center">Start free trial</a>
-      </div>
-      <div class="price-card">
-        <div class="price-plan">Accountant</div>
-        <div class="price-amount"><sup>£</sup>49</div>
-        <div class="price-per">per month + VAT</div>
-        <ul class="price-features">
-          <li>Everything in Small Business</li>
-          <li>Multiple client instances</li>
-          <li>Client management dashboard</li>
-          <li>White-label option</li>
-          <li>Unlimited users</li>
-          <li>Dedicated support</li>
-        </ul>
-        <a href="mailto:edward@nobull.consulting" class="btn btn-outline" style="width:100%;justify-content:center">Contact us</a>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div class="card" style="border-left:3px solid var(--teal)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px">01 &mdash; Transparent</div>
+          <h3 style="font-size:16px;color:var(--navy);margin-bottom:8px">Your data, always</h3>
+          <p style="font-size:14px;color:var(--grey-500);line-height:1.7">Your data lives in your Google Sheet. Cancel tomorrow and take everything with you. We make money when you find us genuinely useful, not because leaving is hard.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--teal)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px">02 &mdash; Specific</div>
+          <h3 style="font-size:16px;color:var(--navy);margin-bottom:8px">Built for UK business</h3>
+          <p style="font-size:14px;color:var(--grey-500);line-height:1.7">UK VAT rates, HMRC MTD compliance, GBP-first. Not a global product with UK tax bolted on as an afterthought.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--teal)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px">03 &mdash; Simple</div>
+          <h3 style="font-size:16px;color:var(--navy);margin-bottom:8px">No bloat, just what you need</h3>
+          <p style="font-size:14px;color:var(--grey-500);line-height:1.7">No 47-step onboarding. No certification needed to raise an invoice. Ten minutes to learn, not ten days.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -326,38 +358,46 @@
 
 <!-- CTA -->
 <section class="section cta-section">
-  <div class="container cta-inner">
+  <div class="container">
     <h2>Ready to try no~bull?</h2>
-    <p>14-day free trial. No credit card. No strings. Cancel anytime.</p>
-    <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-white btn-lg">Start your free trial →</a>
+    <p>Start with no~bull books. 14-day free trial. No credit card. No strings.</p>
+    <div class="cta-actions">
+      <a href="https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=1gIFwQUtbhGaM3HIHbFFaT7lIAU4BN3IksAOv1_uuUKg" class="btn btn-white btn-lg" target="_blank">Start free trial &#8250;</a>
+      <a href="/contact.html" class="btn btn-outline-white btn-lg">Talk to us</a>
+    </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <div class="logo">🐂 no~bull <span>consulting</span></div>
-        <p>Powerful business tools for UK sole traders and small businesses. Your data, your Google Sheet, your rules.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Products</h4>
-        <a href="/books.html">no~bull books</a>
-        <a href="/books.html#features">Features</a>
-        <a href="/books.html#pricing">Pricing</a>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <a href="/philosophy.html">Philosophy</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/privacy.html">Privacy Policy</a>
-        <a href="/terms.html">Terms of Service</a>
-      </div>
+  <div class="footer-main">
+    <div class="footer-brand">
+      <span class="logo">&#128002; no<span>~</span>bull <span>consulting</span></span>
+      <p>Practical business software for UK sole traders, freelancers and micro-businesses. Your data, your rules, no lock-in.</p>
+      <div class="tagline">No enterprise price tag. No bull.</div>
     </div>
-    <div class="footer-bottom">
-      <span>© 2026 no~bull consulting · Trading name of Edward Jenkins · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></span>
-      <span>Not a substitute for professional accounting advice · <a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></span>
+    <div class="footer-col">
+      <h4>Products</h4>
+      <a href="/books.html">no~bull books</a>
+      <a href="/products.html#crm">no~bull CRM</a>
+      <a href="/products.html#projects">no~bull Projects</a>
+      <a href="/products.html#payroll">no~bull Payroll</a>
     </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="/about.html">About us</a>
+      <a href="/services.html">Services</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/hmrc-mtd-statement.html">HMRC Compatibility</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 no~bull consulting &middot; Trading name of Edward Jenkins &middot; <a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></span>
+    <span>Not a substitute for professional accounting or legal advice &middot; <a href="mailto:edward@nobull.consulting">edward@nobull.consulting</a></span>
   </div>
 </footer>
 
