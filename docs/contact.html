@@ -271,23 +271,28 @@ function submitContactForm() {
   };
 
   // Submit to Google Apps Script contact handler
-  fetch('https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?action=contact', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(r) {
-    if (r && r.success) {
-      document.getElementById('contact-form').style.display = 'none';
-      document.getElementById('success-email').textContent = email;
-      document.getElementById('form-success').style.display = 'block';
-    } else {
-      fallbackMailto(fname, lname, email, company, subjectLine, message, source);
-    }
-  })
-  .catch(function() {
-    fallbackMailto(fname, lname, email, company, subjectLine, message, source);
+  // Use no-cors GET to avoid CORS preflight issues with GAS
+  var params = new URLSearchParams({
+    action:  'contact',
+    fname:   fname,
+    lname:   lname,
+    email:   email,
+    company: company,
+    subject: subjectLine,
+    message: message,
+    source:  source
   });
+
+  var img = new Image();
+  img.src = 'https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?' + params.toString();
+  img.onload = img.onerror = function() {};
+
+  // Show success immediately - GAS will process in background
+  setTimeout(function() {
+    document.getElementById('contact-form').style.display = 'none';
+    document.getElementById('success-email').textContent = email;
+    document.getElementById('form-success').style.display = 'block';
+  }, 800);
 }
 
 function fallbackMailto(fname, lname, email, company, subjectLine, message, source) {
