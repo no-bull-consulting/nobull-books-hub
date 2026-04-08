@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NO~BULL BOOKS — BANKING
  * Bank accounts, transactions, reconciliation, double-entry ledger
  * ─────────────────────────────────────────────────────────────

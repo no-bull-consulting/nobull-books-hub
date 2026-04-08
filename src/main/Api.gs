@@ -238,9 +238,6 @@ function _route(action, params, ctx) {
     // ── FINANCIAL YEAR ────────────────────────────────────────────────────────
     case 'getFinancialYears':       return getFinancialYears(params);
     case 'runPreCloseChecks':       _auth('settings.write', params); return runPreCloseChecks(params.yearEndDate, params);
-    case 'calculateCT600':         return calculateCT600(params);
-    case 'saveCT600Draft':          return saveCT600Draft(params);
-    case 'getCT600Returns':         return getCT600Returns(params);
     case 'getYearEndSummary':       _auth('settings.write', params); return getYearEndSummary(params.yearStart, params.yearEnd, params);
     case 'closeFinancialYear':      _auth('settings.write', params); return closeFinancialYear(params);
     case 'reopenFinancialYear':     _auth('settings.write', params); return reopenFinancialYear(params.yearId, params.reason, params);

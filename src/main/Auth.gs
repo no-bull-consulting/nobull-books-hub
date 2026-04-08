@@ -2,7 +2,7 @@
  * NO~BULL BOOKS — AUTH / RBAC
  * Permission engine, user context, user management.
  *
- * KEY CHANGE (hub model): every function now accepts optional `params`
+ * KEY CHANGE (hub model): every function now accepts optional 'params'
  * so the correct client spreadsheet (_sheetId) is used for Users lookups.
  * ─────────────────────────────────────────────────────────────────────────────
  */
