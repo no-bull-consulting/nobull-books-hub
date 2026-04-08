@@ -181,7 +181,8 @@
               <option value="other">Other</option>
             </select>
           </div>
-          <button class="form-submit" onclick="submitContactForm()">Send message &#8250;</button>
+          <div id="form-error" style="display:none;color:#dc2626;font-size:13px;margin-bottom:12px;padding:10px 14px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca"></div>
+          <button class="form-submit" id="submit-btn" onclick="submitContactForm()">Send message &#8250;</button>
           <p class="form-note">We respect your privacy. Your details are used only to respond to your enquiry. See our <a href="/privacy.html" style="color:var(--teal)">Privacy Policy</a>.</p>
         </div>
         <div class="form-success" id="form-success">
@@ -248,31 +249,68 @@ function submitContactForm() {
   var email   = document.getElementById('cf-email').value.trim();
   var subject = document.getElementById('cf-subject').value;
   var message = document.getElementById('cf-message').value.trim();
-
-  if (!fname || !lname) { alert('Please enter your name.'); return; }
-  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
-  if (!subject) { alert('Please select what you are enquiring about.'); return; }
-  if (!message) { alert('Please enter a message.'); return; }
-
-  // Build mailto link
-  var subjectLine = 'no~bull consulting enquiry: ' + document.getElementById('cf-subject').options[document.getElementById('cf-subject').selectedIndex].text;
   var company = document.getElementById('cf-company').value.trim();
-  var source = document.getElementById('cf-source').value;
+  var source  = document.getElementById('cf-source').value;
 
-  var body = 'Name: ' + fname + ' ' + lname + '\n' +
-    'Email: ' + email + '\n' +
-    (company ? 'Company: ' + company + '\n' : '') +
-    'Enquiry type: ' + subjectLine + '\n' +
-    (source ? 'Source: ' + source + '\n' : '') +
-    '\nMessage:\n' + message;
+  if (!fname || !lname) { showError('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
+  if (!subject) { showError('Please select what you are enquiring about.'); return; }
+  if (!message) { showError('Please enter a message.'); return; }
 
-  window.location.href = 'mailto:edward@nobull.consulting?subject=' +
-    encodeURIComponent(subjectLine) + '&body=' + encodeURIComponent(body);
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  document.getElementById('form-error').style.display = 'none';
 
-  // Show success state
+  var subjectLine = document.getElementById('cf-subject').options[document.getElementById('cf-subject').selectedIndex].text;
+
+  var payload = {
+    fname: fname, lname: lname, email: email,
+    company: company, subject: subjectLine,
+    message: message, source: source
+  };
+
+  // Submit to Google Apps Script contact handler
+  fetch('https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?action=contact', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if (r && r.success) {
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('success-email').textContent = email;
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      fallbackMailto(fname, lname, email, company, subjectLine, message, source);
+    }
+  })
+  .catch(function() {
+    fallbackMailto(fname, lname, email, company, subjectLine, message, source);
+  });
+}
+
+function fallbackMailto(fname, lname, email, company, subjectLine, message, source) {
+  // Fallback: open mailto if fetch fails
+  var nl = '%0A';
+  var body = 'Name: ' + fname + ' ' + lname + nl +
+    'Email: ' + email + nl +
+    (company ? 'Company: ' + company + nl : '') +
+    'Enquiry: ' + subjectLine + nl +
+    (source ? 'Source: ' + source + nl : '') +
+    nl + 'Message:' + nl + message;
+  window.open('mailto:edward@nobull.consulting?subject=' +
+    encodeURIComponent('no~bull enquiry: ' + subjectLine) +
+    '&body=' + body);
   document.getElementById('contact-form').style.display = 'none';
   document.getElementById('success-email').textContent = email;
   document.getElementById('form-success').style.display = 'block';
+}
+
+function showError(msg) {
+  var el = document.getElementById('form-error');
+  el.textContent = msg;
+  el.style.display = 'block';
 }
 </script>
 
