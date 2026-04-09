@@ -1,5 +1,5 @@
-/* no~bull consulting — Final Compiled Styles 
-   Fix: Restored Grid Layout and Left-Alignment
+/* no~bull consulting — Master Alignment CSS
+   Restores left-aligned grid and standard container bounds
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
@@ -14,7 +14,7 @@
   --white:        #FFFFFF;
   --font-header: 'Lato', sans-serif; 
   --font-body:   'Roboto', sans-serif;
-  --max-w:       1100px; /* This keeps your content from stretching too far */
+  --max-w:       1100px; /* Limits the site width */
   --r:           4px; 
 }
 
@@ -24,9 +24,10 @@ body {
   color: #1a1a1b;
   background: var(--white);
   line-height: 1.6;
+  text-align: left; /* Global left-align */
 }
 
-/* ── NAVIGATION ── */
+/* ── NAVIGATION (Stacked & Centered Logo Only) ── */
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--white); border-bottom: 1px solid #d1d5db; }
 .nav-inner { max-width: var(--max-w); margin: 0 auto; padding: 10px 24px; display: flex; flex-direction: column; align-items: center; }
 .nav-logo { display: flex !important; flex-direction: column; align-items: center; text-decoration: none; margin-bottom: 10px; }
@@ -36,33 +37,43 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(
 .nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
 .nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: var(--r); }
 
-/* ── LAYOUT CONTAINERS ── */
-.section { padding: 160px 24px 60px; } 
+/* ── CORE LAYOUT (The Alignment Fix) ── */
+.section { padding: 160px 24px 60px; width: 100%; display: block; }
+
 .container { 
   max-width: var(--max-w); 
-  margin: 0 auto; 
-  text-align: left !important; /* Forces left alignment site-wide */
+  margin: 0 auto !important; /* Centers the content block on screen */
+  text-align: left !important; /* Ensures everything inside is left-aligned */
+  display: block;
+  position: relative;
 }
 
-/* ── GRID SYSTEM (Fixes the overlapping product box) ── */
+/* ── GRID SYSTEM (For Software Page) ── */
 .grid-2 {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  display: flex;
   gap: 60px;
-  align-items: start;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
 }
 
-@media (max-width: 768px) {
-  .grid-2 { grid-template-columns: 1fr; gap: 40px; }
+.product-info { flex: 1.5; text-align: left; }
+.pricing-card { 
+    flex: 1; 
+    background: var(--stone); 
+    padding: 30px; 
+    border-radius: var(--r); 
+    border: 1px solid #d1d5db; 
+    text-align: left;
 }
 
-/* ── HEADERS & LABELS ── */
+/* ── HEADERS ── */
 h1, h2, h3, .section-title {
   font-family: var(--font-header) !important;
   font-weight: 300 !important; 
   font-size: 30px !important;
   color: var(--oxford-blue);
-  margin-bottom: 12px !important;
+  margin-bottom: 12px;
   text-align: left !important;
 }
 
@@ -73,28 +84,26 @@ h1, h2, h3, .section-title {
     text-transform: uppercase; 
     font-size: 10px; 
     margin-bottom: 12px;
-    display: inline-block;
+    display: block;
+    text-align: left;
 }
 
 /* ── BUTTONS ── */
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: var(--r); font-size: 12px; font-weight: 500; text-decoration: none; border: none; transition: 0.2s; cursor: pointer; }
-.btn-primary { background: var(--oxford-blue); color: var(--white) !important; }
+.btn-primary { background: var(--oxford-blue); color: var(--white) !important; margin-right: 12px; }
 .btn-outline { background: transparent; border: 1px solid var(--oxford-blue); color: var(--oxford-blue) !important; }
-.btn:hover { opacity: 0.8; }
 
-/* ── PRICING CARD ── */
-.pricing-card {
-  background: var(--stone);
-  padding: 40px;
-  border-radius: var(--r);
-  border: 1px solid #d1d5db;
-}
-
-/* ── PHILOSOPHY / LEGAL PAGE FIX ── */
+/* ── PHILOSOPHY & LEGAL PAGES ── */
 .legal-content {
-  max-width: 800px;
-  margin: 140px auto 40px; 
+  max-width: 800px; /* Narrower reading column */
+  margin: 160px auto 60px !important; 
   padding: 0 24px;
   text-align: left !important;
 }
-.legal-content p, .legal-content li { margin-bottom: 12px; font-size: 12px; color: var(--slate); text-align: left !important; }
+
+.legal-content p, .legal-content li { 
+    margin-bottom: 12px; 
+    font-size: 12px; 
+    text-align: left !important; 
+    display: block; 
+}
