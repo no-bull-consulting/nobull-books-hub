@@ -17,7 +17,7 @@
   --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
   
   --max-w:       1100px;
-  --r:           4px; /* Sharper edges for a more professional feel */
+  --r:           4px; 
   --transition:  0.2s ease-in-out;
   --shadow:      0 4px 12px rgba(0,0,0,0.05);
 }
@@ -30,7 +30,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── UPDATED REFINED NAVIGATION ── */
+/* ── REFINED NAVIGATION ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   background: var(--white);
@@ -42,48 +42,69 @@ nav {
   display: flex; align-items: center; height: 80px;
 }
 
-/* New CSS rule for the nav-logo */
 .nav-logo {
-  /* 1. Use the new standard logo as a background */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23002147' d='[Insert SVG path from image_1.png here]'/%3E%3C/svg%3E");
+  display: flex !important;
+  align-items: center;
+  min-width: 280px;
+  height: 40px;
+  background-image: url('logo.png') !important; 
   background-repeat: no-repeat;
-  background-size: 28px 28px; /* Standard icon size */
-  background-position: left center; /* Positioned to the left of the text */
-  padding-left: 40px; /* Add padding to accommodate the icon */
-  
-  /* 2. Set the Typewriter font style */
-  font-family: 'Courier New', Courier, monospace; /* Classic Typewriter style */
-  font-weight: 400; /* Regular typewriter weight */
-  text-transform: lowercase; /* Lowercase for "no~bull" brand consistency */
-  letter-spacing: -0.01em; /* Tighten the spacing for a better look */
-  
-  /* 3. Base text styles */
-  font-size: 24px; 
-  color: var(--oxford-blue); /* Professional Oxford Blue text color */
-  text-decoration: none; /* No underline */
-  display: flex; /* Maintain horizontal layout with background and text */
-  align-items: center; /* Center the text vertically relative to the icon */
-  margin-right: auto; /* Push other nav items to the right */
+  background-size: contain;
+  background-position: left center;
+  padding-left: 55px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  color: var(--oxford-blue);
+  text-decoration: none;
+  margin-right: auto;
+  text-transform: lowercase;
 }
 
-/* Rest of navigation styling remains the same... */
 .nav-links { display: flex; align-items: center; gap: 32px; }
-.nav-links a { color: var(--slate); font-size: 14px; font-weight: 600; text-decoration: none; }
+.nav-links a {
+  color: var(--slate); font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: var(--transition);
+}
 .nav-links a:hover { color: var(--racing-green); }
-.nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 10px 20px; border-radius: var(--r); }
+.nav-cta {
+  background: var(--oxford-blue); color: var(--white) !important;
+  padding: 10px 20px; border-radius: var(--r);
+}
 .nav-cta:hover { background: var(--racing-green); }
 
-/* ── SECTIONS ── */
+/* ── SECTIONS & LAYOUT ── */
 .section { padding: 100px 24px; }
 .container { max-width: var(--max-w); margin: 0 auto; }
+
 .section-label {
     letter-spacing: 0.2em; font-weight: 800; color: var(--racing-green);
     border-left: 3px solid var(--racing-green); padding-left: 12px;
     text-transform: uppercase; font-size: 11px; margin-bottom: 24px;
 }
+
 h1, h2, h3 { font-family: var(--font-display); color: var(--oxford-blue); }
 h1 { font-size: clamp(36px, 5vw, 64px); line-height: 1.1; margin-bottom: 24px; }
 .section-title { font-size: clamp(28px, 4vw, 42px); margin-bottom: 20px; }
+
+/* ── LEGAL & PROSE LAYOUT (CENTERED) ── */
+.legal-content {
+  max-width: 800px;
+  margin: 160px auto 80px;
+  padding: 0 24px;
+}
+
+.legal-content h1 { border-bottom: 2px solid var(--stone); padding-bottom: 24px; }
+.legal-content .meta { font-size: 14px; color: var(--slate); font-style: italic; margin-bottom: 48px; }
+.legal-content h2 { margin: 48px 0 16px; font-size: 24px; color: var(--oxford-blue); }
+.legal-content p, .legal-content li { margin-bottom: 16px; font-size: 16px; color: var(--slate); }
+
+.legal-content table {
+  width: 100%; border-collapse: collapse; margin: 32px 0;
+  background: var(--stone); border-radius: var(--r); overflow: hidden;
+}
+
+.legal-content th, .legal-content td { padding: 16px; text-align: left; border-bottom: 1px solid var(--grey-light); }
+.legal-content th { background: var(--oxford-blue); color: var(--white); font-size: 12px; text-transform: uppercase; }
 
 /* ── BUTTONS ── */
 .btn {
@@ -94,66 +115,3 @@ h1 { font-size: clamp(36px, 5vw, 64px); line-height: 1.1; margin-bottom: 24px; }
 .btn-primary { background: var(--oxford-blue); color: var(--white); }
 .btn-primary:hover { background: var(--racing-green); }
 .btn-outline { border: 2px solid var(--oxford-blue); color: var(--oxford-blue); }
-
-/* ── LEGAL & PROSE LAYOUT ── */
-.legal-content {
-  max-width: 800px;         /* Prevents lines from being too long to read */
-  margin: 160px auto 80px;  /* Centers the block and adds top/bottom spacing */
-  padding: 0 24px;          /* Adds internal "breathing room" for mobile */
-  color: var(--text);
-}
-
-.legal-content h1 {
-  margin-bottom: 16px;
-  border-bottom: 2px solid var(--stone);
-  padding-bottom: 24px;
-}
-
-.legal-content .meta {
-  font-size: 14px;
-  color: var(--slate);
-  margin-bottom: 48px;
-  font-style: italic;
-}
-
-.legal-content h2 {
-  margin: 48px 0 16px;
-  font-size: 24px;
-  color: var(--oxford-blue);
-}
-
-.legal-content p, .legal-content li {
-  margin-bottom: 16px;
-  font-size: 16px;
-  line-height: 1.8; /* Increased line-height for better readability */
-  color: var(--slate);
-}
-
-.legal-content ul {
-  margin-left: 24px;
-  margin-bottom: 24px;
-}
-
-/* Enhances the tables in the HMRC statement */
-.legal-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 32px 0;
-  background: var(--stone);
-  border-radius: var(--r);
-  overflow: hidden;
-}
-
-.legal-content th, .legal-content td {
-  padding: 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--grey-light);
-}
-
-.legal-content th {
-  background: var(--oxford-blue);
-  color: var(--white);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
