@@ -1,4 +1,4 @@
-/* no~bull consulting — Master Alignment & Spacing Fix */
+/* no~bull consulting — Restored Stable CSS */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,63 +14,59 @@
   --max-w:       1100px;
 }
 
-body { font-family: var(--font-body); font-size: 12px; color: #1a1a1b; background: var(--white); line-height: 1.6; text-align: left; }
+body {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #1a1a1b;
+  background: var(--white);
+  line-height: 1.6;
+  text-align: left;
+}
 
-/* ── NAVIGATION ── */
+/* ── STACKED NAVIGATION ── */
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--white); border-bottom: 1px solid #d1d5db; }
-.nav-inner { max-width: var(--max-w); margin: 0 auto; padding: 10px 24px; display: flex; flex-direction: column; align-items: center; }
-.nav-logo { display: flex !important; flex-direction: column; align-items: center; text-decoration: none; margin-bottom: 10px; font-family: 'Courier New', Courier, monospace; font-size: 18px; color: var(--oxford-blue); text-transform: lowercase; }
-.nav-logo::before { content: ""; display: block; width: 45px; height: 35px; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; }
+.nav-inner { max-width: var(--max-w); margin: 0 auto; padding: 15px 24px; display: flex; flex-direction: column; align-items: center; }
+.nav-logo { display: flex !important; flex-direction: column; align-items: center; text-decoration: none; margin-bottom: 15px; }
+.nav-logo::before { content: ""; display: block; width: 60px; height: 45px; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; margin-bottom: 5px; }
+.nav-logo { font-family: 'Courier New', Courier, monospace; font-size: 18px; color: var(--oxford-blue); text-transform: lowercase; }
 .nav-links { display: flex; gap: 24px; align-items: center; }
-.nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
-.nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: 4px; }
+.nav-links a { color: var(--slate); font-size: 11px; font-weight: 500; text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; }
+.nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 8px 16px; border-radius: 4px; }
 
-/* ── CORE ALIGNMENT FIX ── */
-.legal-content {
-  max-width: 850px;
-  margin: 140px auto 60px !important; /* Pulls EVERYTHING up */
-  padding: 0 24px;
-  text-align: left !important;
+/* ── LAYOUT CONTAINERS ── */
+.section { padding: 180px 24px 80px; width: 100%; }
+.container { max-width: var(--max-w); margin: 0 auto; text-align: left; }
+
+/* ── GRID SYSTEM (Restores Software Page) ── */
+.grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px; align-items: start; }
+.pricing-card { background: var(--stone); padding: 40px; border-radius: 4px; border: 1px solid #d1d5db; }
+
+/* ── HEADERS (Restores Lato-Lite 30) ── */
+h1, h2, h3, .section-title {
+  font-family: var(--font-header) !important;
+  font-weight: 300 !important; 
+  font-size: 30px !important;
+  color: var(--oxford-blue);
+  line-height: 1.2;
+  margin-bottom: 24px;
+  text-align: left;
 }
 
-/* ── PHILOSOPHY PAGE SPECIFICS ── */
-.philosophy-hero h1 {
-    font-family: var(--font-header) !important;
-    font-weight: 300 !important;
-    font-size: 42px !important; /* LARGE Header as intended */
-    line-height: 1.1 !important;
-    margin: 4px 0 20px 0 !important; /* Tightens gap to body */
-    color: var(--oxford-blue);
-    text-align: left !important;
-}
-
-.philosophy-hero .section-label {
-    border-left: 3px solid var(--racing-green);
+.section-label {
+    border-left: 3px solid var(--racing-green); 
     padding-left: 12px;
     color: var(--racing-green);
-    text-transform: uppercase;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px !important;
+    text-transform: uppercase; 
+    font-size: 10px; 
+    margin-bottom: 24px;
+    display: block;
 }
 
-.philosophy-body p {
-    font-size: 16px !important; /* Larger, readable body for philosophy */
-    margin-bottom: 24px !important;
-    color: var(--slate);
-    text-align: left !important;
-}
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; padding: 12px 28px; border-radius: 4px; font-size: 12px; font-weight: 600; text-decoration: none; }
+.btn-primary { background: var(--oxford-blue); color: var(--white); }
+.btn-outline { border: 1px solid var(--oxford-blue); color: var(--oxford-blue); }
 
-blockquote {
-    border-left: 4px solid var(--racing-green);
-    padding: 20px 30px;
-    margin: 40px 0;
-    background: var(--stone);
-    font-size: 20px;
-    font-family: var(--font-header);
-    font-weight: 300;
-    font-style: italic;
-    color: var(--oxford-blue);
-}
-
-footer { padding: 40px 24px; border-top: 1px solid #d1d5db; font-size: 10px; color: var(--slate); }
+/* ── FOOTER ── */
+footer { padding: 60px 24px 40px; border-top: 1px solid #d1d5db; }
+footer p, footer a, footer li { font-size: 10px !important; color: var(--slate); }
