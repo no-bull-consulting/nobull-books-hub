@@ -1,6 +1,6 @@
-/* no~bull consulting — Shared British Heritage Styles 
+/* no~bull consulting — Master Shared Styles 
    Typography: Lato-Lite 30 (Headers), Roboto 12 (Body), Roboto 8-10 (Footer)
-   Refinement: Restored vertical label and fixed alignment
+   Features: Stacked Navigation, Left-Aligned Containers, Software Grid & Buttons
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
@@ -87,7 +87,6 @@ h1, h2, h3, .section-title {
   text-align: left;
 }
 
-/* RESTORED: The little vertical character next to the text */
 .section-label {
     letter-spacing: 0.2em; 
     font-weight: 800; 
@@ -109,12 +108,56 @@ h1, h2, h3, .section-title {
   text-align: left !important; 
 }
 
-/* ── PHILOSOPHY & PROSE (CENTERED COLUMN, LEFT TEXT) ── */
+/* ── GRID SYSTEM (For Software/Products Page) ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; gap: 40px; }
+}
+
+.pricing-card {
+  background: var(--stone);
+  padding: 40px;
+  border-radius: var(--r);
+  border: 1px solid var(--grey-light);
+}
+
+/* ── BUTTON STYLES ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  border-radius: var(--r);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary { 
+  background: var(--oxford-blue); 
+  color: var(--white) !important; 
+}
+
+.btn-outline { 
+  background: transparent; 
+  border: 1px solid var(--oxford-blue); 
+  color: var(--oxford-blue) !important; 
+}
+
+/* ── PROSE / LEGAL PAGES ── */
 .legal-content {
   max-width: 800px;
   margin: 160px auto 60px; 
   padding: 0 24px;
-  /* Centering the column itself, but aligning text inside to left */
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
