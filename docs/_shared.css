@@ -1,6 +1,5 @@
 /* no~bull consulting — Shared British Heritage Styles 
-   Typography: Lato-Lite 30 (Headers), Roboto 12 (Body), Roboto 8-10 (Footer)
-   Layout: Stacked Centered Header, Left-Aligned Content
+   Updated: Reduced vertical gaps and forced left-alignment for prose
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
@@ -15,13 +14,10 @@
   --white:        #FFFFFF;
   --text:         #1A1A1B;
   --grey-light:   #D1D5DB;
-  
   --font-header: 'Lato', sans-serif; 
   --font-body:   'Roboto', sans-serif;
-  
   --max-w:       1100px;
   --r:           4px; 
-  --transition:  0.2s ease-in-out;
 }
 
 body {
@@ -30,10 +26,9 @@ body {
   color: var(--text);
   background: var(--white);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
 }
 
-/* ── STACKED NAVIGATION (Letterhead Style) ── */
+/* ── STACKED NAVIGATION ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   background: var(--white);
@@ -43,11 +38,10 @@ nav {
 .nav-inner {
   max-width: var(--max-w); 
   margin: 0 auto; 
-  padding: 15px 24px;
+  padding: 10px 24px;
   display: flex; 
   flex-direction: column; 
   align-items: center; 
-  justify-content: center;
 }
 
 .nav-logo {
@@ -55,20 +49,18 @@ nav {
   flex-direction: column;
   align-items: center;
   text-decoration: none;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
-/* The Bull Icon */
 .nav-logo::before {
   content: "";
   display: block;
-  width: 60px;
-  height: 45px;
+  width: 50px;
+  height: 40px;
   background-image: url('logo.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  margin-bottom: 5px;
 }
 
 .nav-logo {
@@ -76,73 +68,43 @@ nav {
   font-size: 18px;
   color: var(--oxford-blue);
   text-transform: lowercase;
-  white-space: nowrap;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
+.nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: var(--r); }
 
-.nav-links a {
-  color: var(--slate); font-size: 11px; font-weight: 500;
-  text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em;
-}
-
-.nav-cta {
-  background: var(--oxford-blue); color: var(--white) !important;
-  padding: 8px 16px; border-radius: var(--r);
-  margin-left: 10px;
-}
-
-/* ── UNIFIED HEADERS (Left Aligned) ── */
+/* ── HEADERS ── */
 h1, h2, h3, .section-title {
   font-family: var(--font-header) !important;
   font-weight: 300 !important; 
   font-size: 30px !important;
   color: var(--oxford-blue);
   line-height: 1.2;
-  margin-bottom: 24px;
-  text-align: left; /* Forces Philosophy and all others to the left */
+  margin-bottom: 12px; /* REDUCED from 24px to tighten gap */
+  text-align: left;
 }
 
 /* ── CONTENT LAYOUT ── */
-.section { padding: 180px 24px 80px; } /* Increased top padding for tall nav */
-.container { max-width: var(--max-w); margin: 0 auto; }
+.section { padding: 160px 24px 60px; } 
+.container { max-width: var(--max-w); margin: 0 auto; text-align: left; }
 
-.section-label {
-    letter-spacing: 0.2em; font-weight: 800; color: var(--racing-green);
-    border-left: 3px solid var(--racing-green); padding-left: 12px;
-    text-transform: uppercase; font-size: 10px; margin-bottom: 24px;
-    text-align: left;
-}
-
-/* ── LEGAL & PHILOSOPHY PROSE (Centered Reading Column) ── */
+/* ── PHILOSOPHY & LEGAL PROSE FIX ── */
 .legal-content {
   max-width: 800px;
-  margin: 180px auto 80px; /* Aligns with section padding */
+  margin: 160px auto 60px; /* Reduced top/bottom white space */
   padding: 0 24px;
-  text-align: left; /* Content inside the column stays left-aligned */
+  text-align: left !important; /* FORCES body text to the left */
 }
 
-.legal-content h1 { border-bottom: 2px solid var(--stone); padding-bottom: 24px; }
-.legal-content p, .legal-content li { margin-bottom: 16px; font-size: 12px; color: var(--slate); line-height: 1.8; }
-
-/* ── FOOTER (Size 8 to 10) ── */
-footer {
-  padding: 60px 24px 40px; border-top: 1px solid var(--grey-light); background: var(--white);
+.legal-content p, .legal-content li { 
+  margin-bottom: 12px; /* Reduced gap between paragraphs */
+  font-size: 12px; 
+  color: var(--slate); 
+  line-height: 1.7; 
+  text-align: left !important; /* Double-reinforcement of left alignment */
 }
 
-footer p, footer a, footer div, footer li { font-size: 10px !important; color: var(--slate); }
-footer h4 { font-size: 10px !important; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px; }
-footer .copyright { font-size: 8px !important; margin-top: 40px; opacity: 0.7; }
-
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; padding: 12px 28px;
-  border-radius: var(--r); font-size: 12px; font-weight: 600;
-  cursor: pointer; text-decoration: none;
-}
-.btn-primary { background: var(--oxford-blue); color: var(--white); }
-.btn-outline { border: 1px solid var(--oxford-blue); color: var(--oxford-blue); }
+/* ── FOOTER ── */
+footer { padding: 40px 24px; border-top: 1px solid var(--grey-light); }
+footer p, footer a, footer li { font-size: 10px !important; color: var(--slate); }
