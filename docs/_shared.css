@@ -45,19 +45,25 @@ nav {
 .nav-logo {
   display: flex !important;
   align-items: center;
-  min-width: 280px;
+  /* Increased width to ensure 'consulting' doesn't wrap or get cut off */
+  min-width: 320px; 
   height: 40px;
+  
   background-image: url('logo.png') !important; 
   background-repeat: no-repeat;
   background-size: contain;
   background-position: left center;
-  padding-left: 55px;
+  
+  /* INCREASED PADDING: Adjust this if the bull is still too close */
+  padding-left: 75px; 
+  
   font-family: 'Courier New', Courier, monospace;
   font-size: 20px;
   color: var(--oxford-blue);
   text-decoration: none;
   margin-right: auto;
   text-transform: lowercase;
+  white-space: nowrap; /* Prevents the text from jumping to a second line */
 }
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
