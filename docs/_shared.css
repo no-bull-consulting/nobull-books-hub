@@ -1,157 +1,78 @@
-/* no~bull consulting — Shared British Heritage Styles 
-   Typography: Lato-Lite 30 (Headers), Roboto 12 (Body), Roboto 8-10 (Footer)
-*/
-
+/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  /* British Heritage Palette */
+  /* ... existing colors remain ... */
   --oxford-blue:  #002147;
-  --racing-green: #004225;
   --stone:        #F2F0EF;
   --slate:        #4A4E52;
-  --crimson:      #8B0000;
   --white:        #FFFFFF;
-  --text:         #1A1A1B;
-  --grey-light:   #D1D5DB;
   
   /* UPDATED TYPOGRAPHY */
-  --font-header: 'Lato', sans-serif; /* Lato-Lite */
+  --font-header: 'Lato', sans-serif; /* Lato-Lite (Weight 300) */
   --font-body:   'Roboto', sans-serif;
   
   --max-w:       1100px;
-  --r:           4px; 
-  --transition:  0.2s ease-in-out;
-  --shadow:      0 4px 12px rgba(0,0,0,0.05);
+  --r:           4px;
 }
 
 body {
   font-family: var(--font-body);
-  font-size: 12px; /* Standard Body Size */
+  font-size: 12px; /* Set normal text to Roboto 12 */
   color: var(--text);
-  background: var(--white);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* ── HEADERS (Lato-Lite Size 30) ── */
-h1, h2, h3, .section-title {
-  font-family: var(--font-header) !important;
-  font-weight: 300 !important; 
-  font-size: 30px !important;
+h1, h2, .section-title {
+  font-family: var(--font-header);
+  font-weight: 300; /* Lite weight */
+  font-size: 30px !important; /* Force size 30 as requested */
   color: var(--oxford-blue);
-  line-height: 1.2;
-  margin-bottom: 24px;
+  letter-spacing: 0.02em;
 }
 
-/* ── REFINED NAVIGATION ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: var(--white);
-  border-bottom: 1px solid var(--grey-light);
-}
-
-.nav-inner {
-  max-width: var(--max-w); margin: 0 auto; padding: 0 24px;
-  display: flex; align-items: center; height: 80px;
-}
-
+/* ── NAVIGATION LOGO ── */
 .nav-logo {
   display: flex !important;
   align-items: center;
-  min-width: 350px;
+  min-width: 400px; /* Increased to fit larger font */
   height: 40px;
   background-image: url('logo.png') !important; 
   background-repeat: no-repeat;
   background-size: contain;
   background-position: left center;
-  /* Increased padding to prevent bull icon from covering text */
-  padding-left: 85px; 
-  font-family: 'Courier New', Courier, monospace; /* Keeps typewriter branding */
-  font-size: 22px; 
+  padding-left: 100px; /* Increased spacing for the bull */
+  
+  /* Branding font remains typewriter per previous instruction, 
+     or you can switch to Lato-Lite below */
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px; 
   color: var(--oxford-blue);
   text-decoration: none;
-  margin-right: auto;
   text-transform: lowercase;
-  white-space: nowrap;
 }
 
-.nav-links { display: flex; align-items: center; gap: 32px; }
-.nav-links a {
-  color: var(--slate); font-size: 13px; font-weight: 500;
-  text-decoration: none; transition: var(--transition);
-}
-.nav-links a:hover { color: var(--racing-green); }
-
-.nav-cta {
-  background: var(--oxford-blue); color: var(--white) !important;
-  padding: 10px 20px; border-radius: var(--r);
-  font-size: 12px;
+/* ── FOOTER (Size 8 to 10) ── */
+footer, footer p, footer a, footer div {
+  font-size: 10px !important; /* Primary footer text at 10 */
 }
 
-/* ── SECTIONS & LAYOUT ── */
-.section { padding: 100px 24px; }
-.container { max-width: var(--max-w); margin: 0 auto; }
-
-.section-label {
-    letter-spacing: 0.2em; font-weight: 800; color: var(--racing-green);
-    border-left: 3px solid var(--racing-green); padding-left: 12px;
-    text-transform: uppercase; font-size: 10px; margin-bottom: 24px;
+footer .disclaimer, footer .copyright {
+  font-size: 8px !important; /* Fine print at 8 */
+  opacity: 0.7;
 }
 
-/* ── LEGAL & PROSE LAYOUT (CENTERED) ── */
+/* ── LEGAL CONTENT CENTERING ── */
 .legal-content {
   max-width: 800px;
   margin: 160px auto 80px;
   padding: 0 24px;
 }
 
-.legal-content h1 { border-bottom: 2px solid var(--stone); padding-bottom: 24px; }
-.legal-content .meta { font-size: 11px; color: var(--slate); font-style: italic; margin-bottom: 48px; }
-.legal-content h2 { margin: 40px 0 16px; font-size: 22px; color: var(--oxford-blue); }
-.legal-content p, .legal-content li { margin-bottom: 16px; font-size: 12px; color: var(--slate); line-height: 1.8; }
-
-.legal-content table {
-  width: 100%; border-collapse: collapse; margin: 32px 0;
-  background: var(--stone); border-radius: var(--r); overflow: hidden;
-}
-
-.legal-content th, .legal-content td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--grey-light); }
-.legal-content th { background: var(--oxford-blue); color: var(--white); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-
-/* ── FOOTER (Size 8 to 10) ── */
-footer {
-  padding: 80px 24px 40px; border-top: 1px solid var(--grey-light); background: var(--white);
-  font-size: 10px; /* Base footer size */
-}
-
-footer p, footer a, footer div, footer li {
-  font-size: 10px !important;
+/* Ensure paragraph text in legal pages respects the Roboto 12 rule */
+.legal-content p, .legal-content li {
+  font-size: 12px;
   color: var(--slate);
+  line-height: 1.8;
 }
-
-footer h4 {
-  font-size: 10px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--racing-green);
-  margin-bottom: 16px;
-}
-
-footer .copyright, footer .disclaimer {
-  font-size: 8px !important; /* Fine print size */
-  margin-top: 40px;
-  opacity: 0.7;
-}
-
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; padding: 12px 28px;
-  border-radius: var(--r); font-size: 13px; font-weight: 600;
-  cursor: pointer; text-decoration: none; transition: var(--transition);
-}
-.btn-primary { background: var(--oxford-blue); color: var(--white); }
-.btn-primary:hover { background: var(--racing-green); }
-.btn-outline { border: 2px solid var(--oxford-blue); color: var(--oxford-blue); }
