@@ -53,29 +53,53 @@ nav {
   border-bottom: 1px solid var(--grey-light);
 }
 
+/* ── UPDATED CENTERED STACK NAVIGATION ── */
 .nav-inner {
-  max-width: var(--max-w); margin: 0 auto; padding: 0 24px;
-  display: flex; align-items: center; height: 80px;
+  max-width: var(--max-w); 
+  margin: 0 auto; 
+  padding: 10px 24px;
+  display: flex; 
+  flex-direction: column; /* Stacks everything vertically */
+  align-items: center; 
+  justify-content: center;
+  height: auto; /* Allow nav to grow with the stack */
+  min-height: 120px;
 }
 
 .nav-logo {
   display: flex !important;
+  flex-direction: column; /* Stacks image above text */
   align-items: center;
-  min-width: 350px;
-  height: 40px;
-  background-image: url('logo.png') !important; 
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: left center;
-  /* Increased padding to prevent bull icon from covering text */
-  padding-left: 85px; 
-  font-family: 'Courier New', Courier, monospace; /* Branding remains typewriter */
-  font-size: 22px; 
-  color: var(--oxford-blue);
   text-decoration: none;
-  margin-right: auto;
+  margin-bottom: 10px; /* Space between logo stack and nav links */
+}
+
+/* Create the bull icon as a separate pseudo-element above the text */
+.nav-logo::before {
+  content: "";
+  display: block;
+  width: 50px; /* Size of your bull icon */
+  height: 40px;
+  background-image: url('logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: 8px; /* Precise gap between bull and text */
+}
+
+.nav-logo {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  color: var(--oxford-blue);
   text-transform: lowercase;
   white-space: nowrap;
+  padding-left: 0 !important; /* Removes the problematic horizontal padding */
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  padding-bottom: 10px;
 }
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
