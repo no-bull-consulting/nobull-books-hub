@@ -1,5 +1,5 @@
 /* no~bull consulting — Final Compiled Styles 
-   Updated: Aggressive left-alignment and Button styling
+   Fix: Restored Grid Layout and Left-Alignment
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
@@ -14,7 +14,7 @@
   --white:        #FFFFFF;
   --font-header: 'Lato', sans-serif; 
   --font-body:   'Roboto', sans-serif;
-  --max-w:       1100px;
+  --max-w:       1100px; /* This keeps your content from stretching too far */
   --r:           4px; 
 }
 
@@ -26,15 +26,35 @@ body {
   line-height: 1.6;
 }
 
-/* ── STACKED NAVIGATION ── */
+/* ── NAVIGATION ── */
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--white); border-bottom: 1px solid #d1d5db; }
 .nav-inner { max-width: var(--max-w); margin: 0 auto; padding: 10px 24px; display: flex; flex-direction: column; align-items: center; }
 .nav-logo { display: flex !important; flex-direction: column; align-items: center; text-decoration: none; margin-bottom: 10px; }
-.nav-logo::before { content: ""; display: block; width: 50px; height: 40px; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; }
+.nav-logo::before { content: ""; display: block; width: 45px; height: 35px; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; }
 .nav-logo { font-family: 'Courier New', Courier, monospace; font-size: 18px; color: var(--oxford-blue); text-transform: lowercase; }
 .nav-links { display: flex; gap: 24px; align-items: center; }
 .nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
 .nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: var(--r); }
+
+/* ── LAYOUT CONTAINERS ── */
+.section { padding: 160px 24px 60px; } 
+.container { 
+  max-width: var(--max-w); 
+  margin: 0 auto; 
+  text-align: left !important; /* Forces left alignment site-wide */
+}
+
+/* ── GRID SYSTEM (Fixes the overlapping product box) ── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; gap: 40px; }
+}
 
 /* ── HEADERS & LABELS ── */
 h1, h2, h3, .section-title {
@@ -42,7 +62,7 @@ h1, h2, h3, .section-title {
   font-weight: 300 !important; 
   font-size: 30px !important;
   color: var(--oxford-blue);
-  margin-bottom: 8px !important; /* Tightened spacing */
+  margin-bottom: 12px !important;
   text-align: left !important;
 }
 
@@ -52,52 +72,29 @@ h1, h2, h3, .section-title {
     padding-left: 12px;
     text-transform: uppercase; 
     font-size: 10px; 
-    margin-bottom: 12px; /* Tightened spacing */
-    text-align: left !important;
-    display: block;
+    margin-bottom: 12px;
+    display: inline-block;
 }
 
-/* ── BUTTONS (For Software Page & Site-wide) ── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 24px;
-  border-radius: var(--r);
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: 0.2s;
-  cursor: pointer;
-  border: none;
-}
-
+/* ── BUTTONS ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: var(--r); font-size: 12px; font-weight: 500; text-decoration: none; border: none; transition: 0.2s; cursor: pointer; }
 .btn-primary { background: var(--oxford-blue); color: var(--white) !important; }
-.btn-primary:hover { background: var(--racing-green); }
+.btn-outline { background: transparent; border: 1px solid var(--oxford-blue); color: var(--oxford-blue) !important; }
+.btn:hover { opacity: 0.8; }
 
-.btn-outline { 
-  background: transparent; 
-  border: 1px solid var(--oxford-blue); 
-  color: var(--oxford-blue) !important; 
+/* ── PRICING CARD ── */
+.pricing-card {
+  background: var(--stone);
+  padding: 40px;
+  border-radius: var(--r);
+  border: 1px solid #d1d5db;
 }
-.btn-outline:hover { background: var(--stone); }
 
-/* ── PHILOSOPHY / LEGAL CONTENT FIX ── */
+/* ── PHILOSOPHY / LEGAL PAGE FIX ── */
 .legal-content {
   max-width: 800px;
-  margin: 140px auto 40px; /* Reduced top margin to pull content up */
+  margin: 140px auto 40px; 
   padding: 0 24px;
   text-align: left !important;
 }
-
-.legal-content p, .legal-content li, .legal-content div { 
-  margin-bottom: 12px;
-  font-size: 12px; 
-  color: var(--slate); 
-  text-align: left !important; /* Force left align */
-  display: block;
-}
-
-/* ── FOOTER ── */
-footer { padding: 40px 24px; border-top: 1px solid #d1d5db; }
-footer p, footer a, footer li { font-size: 10px !important; color: var(--slate); }
+.legal-content p, .legal-content li { margin-bottom: 12px; font-size: 12px; color: var(--slate); text-align: left !important; }
