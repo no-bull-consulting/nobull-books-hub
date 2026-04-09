@@ -1,4 +1,9 @@
-/* no~bull consulting — Shared British Heritage Styles */
+/* no~bull consulting — Shared British Heritage Styles 
+   Typography: Lato-Lite 30 (Headers), Roboto 12 (Body), Roboto 8-10 (Footer)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -12,9 +17,9 @@
   --text:         #1A1A1B;
   --grey-light:   #D1D5DB;
   
-  /* Refined Typography */
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  /* UPDATED TYPOGRAPHY */
+  --font-header: 'Lato', sans-serif; /* Lato-Lite */
+  --font-body:   'Roboto', sans-serif;
   
   --max-w:       1100px;
   --r:           4px; 
@@ -24,10 +29,21 @@
 
 body {
   font-family: var(--font-body);
+  font-size: 12px; /* Standard Body Size */
   color: var(--text);
   background: var(--white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADERS (Lato-Lite Size 30) ── */
+h1, h2, h3, .section-title {
+  font-family: var(--font-header) !important;
+  font-weight: 300 !important; 
+  font-size: 30px !important;
+  color: var(--oxford-blue);
+  line-height: 1.2;
+  margin-bottom: 24px;
 }
 
 /* ── REFINED NAVIGATION ── */
@@ -45,38 +61,35 @@ nav {
 .nav-logo {
   display: flex !important;
   align-items: center;
-  /* Increased width to ensure 'consulting' doesn't wrap or get cut off */
-  min-width: 320px; 
+  min-width: 350px;
   height: 40px;
-  
   background-image: url('logo.png') !important; 
   background-repeat: no-repeat;
   background-size: contain;
   background-position: left center;
-  
-  /* INCREASED PADDING: Adjust this if the bull is still too close */
-  padding-left: 100px; 
-  
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 20px;
+  /* Increased padding to prevent bull icon from covering text */
+  padding-left: 85px; 
+  font-family: 'Courier New', Courier, monospace; /* Keeps typewriter branding */
+  font-size: 22px; 
   color: var(--oxford-blue);
   text-decoration: none;
   margin-right: auto;
   text-transform: lowercase;
-  white-space: nowrap; /* Prevents the text from jumping to a second line */
+  white-space: nowrap;
 }
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-links a {
-  color: var(--slate); font-size: 14px; font-weight: 600;
+  color: var(--slate); font-size: 13px; font-weight: 500;
   text-decoration: none; transition: var(--transition);
 }
 .nav-links a:hover { color: var(--racing-green); }
+
 .nav-cta {
   background: var(--oxford-blue); color: var(--white) !important;
   padding: 10px 20px; border-radius: var(--r);
+  font-size: 12px;
 }
-.nav-cta:hover { background: var(--racing-green); }
 
 /* ── SECTIONS & LAYOUT ── */
 .section { padding: 100px 24px; }
@@ -85,12 +98,8 @@ nav {
 .section-label {
     letter-spacing: 0.2em; font-weight: 800; color: var(--racing-green);
     border-left: 3px solid var(--racing-green); padding-left: 12px;
-    text-transform: uppercase; font-size: 11px; margin-bottom: 24px;
+    text-transform: uppercase; font-size: 10px; margin-bottom: 24px;
 }
-
-h1, h2, h3 { font-family: var(--font-display); color: var(--oxford-blue); }
-h1 { font-size: clamp(36px, 5vw, 64px); line-height: 1.1; margin-bottom: 24px; }
-.section-title { font-size: clamp(28px, 4vw, 42px); margin-bottom: 20px; }
 
 /* ── LEGAL & PROSE LAYOUT (CENTERED) ── */
 .legal-content {
@@ -100,22 +109,47 @@ h1 { font-size: clamp(36px, 5vw, 64px); line-height: 1.1; margin-bottom: 24px; }
 }
 
 .legal-content h1 { border-bottom: 2px solid var(--stone); padding-bottom: 24px; }
-.legal-content .meta { font-size: 14px; color: var(--slate); font-style: italic; margin-bottom: 48px; }
-.legal-content h2 { margin: 48px 0 16px; font-size: 24px; color: var(--oxford-blue); }
-.legal-content p, .legal-content li { margin-bottom: 16px; font-size: 16px; color: var(--slate); }
+.legal-content .meta { font-size: 11px; color: var(--slate); font-style: italic; margin-bottom: 48px; }
+.legal-content h2 { margin: 40px 0 16px; font-size: 22px; color: var(--oxford-blue); }
+.legal-content p, .legal-content li { margin-bottom: 16px; font-size: 12px; color: var(--slate); line-height: 1.8; }
 
 .legal-content table {
   width: 100%; border-collapse: collapse; margin: 32px 0;
   background: var(--stone); border-radius: var(--r); overflow: hidden;
 }
 
-.legal-content th, .legal-content td { padding: 16px; text-align: left; border-bottom: 1px solid var(--grey-light); }
-.legal-content th { background: var(--oxford-blue); color: var(--white); font-size: 12px; text-transform: uppercase; }
+.legal-content th, .legal-content td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--grey-light); }
+.legal-content th { background: var(--oxford-blue); color: var(--white); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── FOOTER (Size 8 to 10) ── */
+footer {
+  padding: 80px 24px 40px; border-top: 1px solid var(--grey-light); background: var(--white);
+  font-size: 10px; /* Base footer size */
+}
+
+footer p, footer a, footer div, footer li {
+  font-size: 10px !important;
+  color: var(--slate);
+}
+
+footer h4 {
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--racing-green);
+  margin-bottom: 16px;
+}
+
+footer .copyright, footer .disclaimer {
+  font-size: 8px !important; /* Fine print size */
+  margin-top: 40px;
+  opacity: 0.7;
+}
 
 /* ── BUTTONS ── */
 .btn {
-  display: inline-flex; align-items: center; padding: 14px 32px;
-  border-radius: var(--r); font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; padding: 12px 28px;
+  border-radius: var(--r); font-size: 13px; font-weight: 600;
   cursor: pointer; text-decoration: none; transition: var(--transition);
 }
 .btn-primary { background: var(--oxford-blue); color: var(--white); }
