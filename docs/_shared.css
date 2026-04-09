@@ -1,6 +1,5 @@
-/* no~bull consulting — Shared British Heritage Styles 
-   Typography: Lato-Lite 30 (Headers), Roboto 12 (Body), Roboto 8-10 (Footer)
-   Refinement: Restored vertical label and fixed alignment
+/* no~bull consulting — Final Compiled Styles 
+   Updated: Aggressive left-alignment and Button styling
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap');
@@ -13,8 +12,6 @@
   --stone:        #F2F0EF;
   --slate:        #4A4E52;
   --white:        #FFFFFF;
-  --text:         #1A1A1B;
-  --grey-light:   #D1D5DB;
   --font-header: 'Lato', sans-serif; 
   --font-body:   'Roboto', sans-serif;
   --max-w:       1100px;
@@ -24,111 +21,83 @@
 body {
   font-family: var(--font-body);
   font-size: 12px;
-  color: var(--text);
+  color: #1a1a1b;
   background: var(--white);
   line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* ── STACKED NAVIGATION ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: var(--white);
-  border-bottom: 1px solid var(--grey-light);
-}
-
-.nav-inner {
-  max-width: var(--max-w); 
-  margin: 0 auto; 
-  padding: 10px 24px;
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-}
-
-.nav-logo {
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  margin-bottom: 10px;
-}
-
-.nav-logo::before {
-  content: "";
-  display: block;
-  width: 50px;
-  height: 40px;
-  background-image: url('logo.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.nav-logo {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 18px;
-  color: var(--oxford-blue);
-  text-transform: lowercase;
-}
-
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--white); border-bottom: 1px solid #d1d5db; }
+.nav-inner { max-width: var(--max-w); margin: 0 auto; padding: 10px 24px; display: flex; flex-direction: column; align-items: center; }
+.nav-logo { display: flex !important; flex-direction: column; align-items: center; text-decoration: none; margin-bottom: 10px; }
+.nav-logo::before { content: ""; display: block; width: 50px; height: 40px; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; }
+.nav-logo { font-family: 'Courier New', Courier, monospace; font-size: 18px; color: var(--oxford-blue); text-transform: lowercase; }
 .nav-links { display: flex; gap: 24px; align-items: center; }
 .nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
 .nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: var(--r); }
 
-/* ── HEADERS & SECTION LABELS ── */
+/* ── HEADERS & LABELS ── */
 h1, h2, h3, .section-title {
   font-family: var(--font-header) !important;
   font-weight: 300 !important; 
   font-size: 30px !important;
   color: var(--oxford-blue);
-  line-height: 1.2;
-  margin-bottom: 12px;
-  text-align: left;
+  margin-bottom: 8px !important; /* Tightened spacing */
+  text-align: left !important;
 }
 
-/* RESTORED: The little vertical character next to the text */
 .section-label {
-    letter-spacing: 0.2em; 
-    font-weight: 800; 
     color: var(--racing-green);
     border-left: 3px solid var(--racing-green); 
     padding-left: 12px;
     text-transform: uppercase; 
     font-size: 10px; 
-    margin-bottom: 16px;
-    text-align: left;
+    margin-bottom: 12px; /* Tightened spacing */
+    text-align: left !important;
     display: block;
 }
 
-/* ── CONTENT LAYOUT ── */
-.section { padding: 160px 24px 60px; } 
-.container { 
-  max-width: var(--max-w); 
-  margin: 0 auto; 
-  text-align: left !important; 
+/* ── BUTTONS (For Software Page & Site-wide) ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  border-radius: var(--r);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s;
+  cursor: pointer;
+  border: none;
 }
 
-/* ── PHILOSOPHY & PROSE (CENTERED COLUMN, LEFT TEXT) ── */
+.btn-primary { background: var(--oxford-blue); color: var(--white) !important; }
+.btn-primary:hover { background: var(--racing-green); }
+
+.btn-outline { 
+  background: transparent; 
+  border: 1px solid var(--oxford-blue); 
+  color: var(--oxford-blue) !important; 
+}
+.btn-outline:hover { background: var(--stone); }
+
+/* ── PHILOSOPHY / LEGAL CONTENT FIX ── */
 .legal-content {
   max-width: 800px;
-  margin: 160px auto 60px; 
+  margin: 140px auto 40px; /* Reduced top margin to pull content up */
   padding: 0 24px;
-  /* Centering the column itself, but aligning text inside to left */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; 
+  text-align: left !important;
 }
 
 .legal-content p, .legal-content li, .legal-content div { 
   margin-bottom: 12px;
   font-size: 12px; 
   color: var(--slate); 
-  line-height: 1.7; 
-  text-align: left !important;
-  width: 100%;
+  text-align: left !important; /* Force left align */
+  display: block;
 }
 
 /* ── FOOTER ── */
-footer { padding: 40px 24px; border-top: 1px solid var(--grey-light); }
+footer { padding: 40px 24px; border-top: 1px solid #d1d5db; }
 footer p, footer a, footer li { font-size: 10px !important; color: var(--slate); }
