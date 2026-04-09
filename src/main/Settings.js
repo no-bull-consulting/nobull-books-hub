@@ -1,16 +1,16 @@
 /**
- * NO~BULL BOOKS -- SETTINGS
+ * NO~BULL BOOKS — SETTINGS
  * Read/write settings, defaults, logo upload.
  *
  * SECURITY NOTE (S2-01, S2-03):
  * HMRC credentials (clientID, clientSecret, accessToken, tokenExpiry)
- * are stored in ScriptProperties -- NOT in the spreadsheet.
+ * are stored in ScriptProperties — NOT in the spreadsheet.
  * Settings sheet columns 24-27 are preserved as empty placeholders
  * for backward compatibility but are never read or written.
- * -----------------------------------------------------------------------------
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
-// -- PropertiesService keys for HMRC credentials ------------------------------
+// ── PropertiesService keys for HMRC credentials ──────────────────────────────
 var HMRC_PROP_KEYS = {
   CLIENT_ID:     'hmrc_client_id',
   CLIENT_SECRET: 'hmrc_client_secret',
@@ -36,9 +36,9 @@ function _setHMRCProps(settings) {
   if (settings.hmrcTokenExpiry  !== undefined) props.setProperty(HMRC_PROP_KEYS.TOKEN_EXPIRY,  settings.hmrcTokenExpiry  || '');
 }
 
-// -----------------------------------------------------------------------------
-// BANK TRANSACTIONS  (lightweight fetch -- shares auth context with Settings)
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// BANK TRANSACTIONS  (lightweight fetch — shares auth context with Settings)
+// ─────────────────────────────────────────────────────────────────────────────
 
 function fetchBankTransactions(accountId, fromDate, toDate) {
   try {
@@ -73,9 +73,9 @@ function fetchBankTransactions(accountId, fromDate, toDate) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // BANK ACCOUNTS
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getBankAccounts(params) {
   try {
@@ -105,9 +105,9 @@ function getBankAccounts(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // VOID LOG
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getVoidLog(params) {
   try {
@@ -153,9 +153,9 @@ function getVoidLog(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // BAD DEBTS
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getBadDebts(params) {
   try {
@@ -188,9 +188,9 @@ function getBadDebts(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // CREDIT NOTES
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getCreditNotes(params) {
   try {
@@ -223,9 +223,9 @@ function getCreditNotes(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
-// INVOICES  (read -- write functions live in Invoices.gs)
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// INVOICES  (read — write functions live in Invoices.gs)
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getAllInvoices(params) {
   try {
@@ -268,9 +268,9 @@ function getAllInvoices(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
-// BILLS  (read -- write functions live in Bills.gs)
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// BILLS  (read — write functions live in Bills.gs)
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getAllBills(params) {
   try {
@@ -312,9 +312,9 @@ function getAllBills(params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // PURCHASE ORDERS  (read)
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getPurchaseOrders(statusFilter, params) {
   try {
@@ -349,9 +349,9 @@ function getPurchaseOrders(statusFilter, params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // SETTINGS  read / write
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getSettings(params) {
   try {
@@ -394,7 +394,7 @@ function getSettings(params) {
       vatRate:              data[20] ? parseFloat(data[20]) || 20    : 20,
       vatFrequency:         data[21] ? data[21].toString()           : 'quarterly',
       mtdEnabled:           data[22] === true || data[22] === 'TRUE' || data[22] === 'true',
-      // cols 23-26: HMRC credentials -- stored in PropertiesService, not sheet
+      // cols 23-26: HMRC credentials — stored in PropertiesService, not sheet
       hmrcTestMode:         data[26] === true || data[26] === 'TRUE' || data[26] === 'true',
       hmrcNINO:             data[28] ? data[28].toString()           : '',
       mtdBusinessId:        data[29] ? data[29].toString()           : '',
@@ -467,7 +467,7 @@ function updateSettings(settings, params) {
     if (!ss) return { success: false, message: 'Could not open spreadsheet. Check _sheetId.' };
 
     var sheet = ss.getSheetByName('Settings');
-    if (!sheet) return { success: false, message: 'Settings sheet not found -- run initial setup first.' };
+    if (!sheet) return { success: false, message: 'Settings sheet not found — run initial setup first.' };
 
     // Store HMRC credentials in PropertiesService (not the sheet)
     _setHMRCProps(settings);
@@ -504,11 +504,11 @@ function updateSettings(settings, params) {
       settings.vatRate              || 20,
       settings.vatFrequency         || 'quarterly',
       settings.mtdEnabled           || false,
-      '',   // col 24: hmrcClientID     -- intentionally blank (PropertiesService)
-      '',   // col 25: hmrcClientSecret -- intentionally blank
-      '',   // col 26: hmrcAccessToken  -- intentionally blank
+      '',   // col 24: hmrcClientID     — intentionally blank (PropertiesService)
+      '',   // col 25: hmrcClientSecret — intentionally blank
+      '',   // col 26: hmrcAccessToken  — intentionally blank
       settings.hmrcTestMode         || true,
-      '',   // col 28: hmrcTokenExpiry  -- intentionally blank
+      '',   // col 28: hmrcTokenExpiry  — intentionally blank
       settings.hmrcNINO             || '',
       settings.mtdBusinessId        || '',
       settings.cnPrefix             || 'CN-',
@@ -549,9 +549,9 @@ function updateSettings(settings, params) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // LOGO UPLOAD
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * uploadLogo(params)
@@ -577,7 +577,7 @@ function uploadLogo(params) {
     var fileId = file.getId();
     var imgUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400';
 
-    // Save URL back to settings -- pass _sheetId through
+    // Save URL back to settings — pass _sheetId through
     var current       = getSettings(params);
     current.logoURL   = imgUrl;
     current.logoDriveId = fileId;
@@ -598,15 +598,15 @@ function uploadLogo(params) {
 }
 
 function _getOrCreateLogoFolder() {
-  var folderName = 'no~bull books -- Logos';
+  var folderName = 'no~bull books — Logos';
   var folders    = DriveApp.getFoldersByName(folderName);
   if (folders.hasNext()) return folders.next();
   return DriveApp.createFolder(folderName);
 }
 
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 // MISC / DEV HELPERS
-// -----------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getCurrentUser() {
   return {
@@ -647,7 +647,7 @@ function diagSettings() {
   var sheet   = ss.getSheetByName(SHEETS.SETTINGS);
   var lastCol = sheet.getLastColumn();
   var lastRow = sheet.getLastRow();
-  Logger.log('Settings: ' + lastRow + ' rows ? ' + lastCol + ' cols');
+  Logger.log('Settings: ' + lastRow + ' rows × ' + lastCol + ' cols');
   var raw = sheet.getRange(2, 1, 1, lastCol).getValues()[0];
   Logger.log('Col 16 (financialYearStart): ' + raw[15]);
   Logger.log('Col 46 (businessStartDate):  ' + (raw[45] !== undefined ? raw[45] : 'MISSING'));

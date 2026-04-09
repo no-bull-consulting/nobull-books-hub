@@ -1507,9 +1507,3 @@ function createReconAdjustment(params) {
     return { success: false, message: e.toString() };
   }
 }
-
-function _testHtml() {
-  try { Logger.log('Index: ' + typeof showDashboard); } catch(e) { Logger.log('Index FAIL: ' + e); }
-  try { Logger.log('Code2: ' + typeof showBanking); } catch(e) { Logger.log('Code2 FAIL: ' + e); }
-  try { Logger.log('Code3: ' + typeof showVAT); } catch(e) { Logger.log('Code3 FAIL: ' + e); }
-}

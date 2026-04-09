@@ -34,7 +34,49 @@ function _route(action, params, ctx) {
   switch (action) {
 
     // -- STARTUP --------------------------------------------------------------
+    case 'sendOTP':             return sendOTP(params.email, params);
+    case 'verifyOTP':           return verifyOTP(params.email, params.otp, params);
     case 'getStartupData': {
+      // OTP-verified email overrides the identity from Settings sheet
+      if (params._verifiedEmail) {
+        var _vEmail = params._verifiedEmail.toString().toLowerCase().trim();
+        // Superuser bypass
+        if (typeof SUPERUSER_EMAIL !== 'undefined' && _vEmail === SUPERUSER_EMAIL.toLowerCase()) {
+          ctx = { email: _vEmail, role: 'Superuser', canDo: function() { return true; } };
+        } else {
+          // Look up role from Users sheet
+          try {
+            var _uSheet = getDb(params).getSheetByName(SHEETS.USERS);
+            if (_uSheet && _uSheet.getLastRow() >= 2) {
+              var _uRows = _uSheet.getDataRange().getValues();
+              var _found = false;
+              for (var _ui = 1; _ui < _uRows.length; _ui++) {
+                var _uEmail  = _uRows[_ui][0] ? _uRows[_ui][0].toString().toLowerCase().trim() : '';
+                var _uActive = _uRows[_ui][4] !== false && _uRows[_ui][4] !== 'FALSE';
+                if (_uEmail === _vEmail && _uActive) {
+                  var _uRole = _uRows[_ui][1].toString() || 'ReadOnly';
+                  ctx = { email: _vEmail, role: _uRole, canDo: function(a) { return _canDoPermission(_uRole, a); } };
+                  _found = true;
+                  break;
+                }
+              }
+              if (!_found) {
+                return { success: false, accessDenied: true, email: _vEmail,
+                  error: 'Your account (' + _vEmail + ') is not registered for this instance.' };
+              }
+            } else {
+              ctx = { email: _vEmail, role: 'Owner', canDo: function() { return true; } };
+            }
+          } catch(_ue) { Logger.log('verifiedEmail lookup error: ' + _ue); }
+        }
+      } else if (ctx.role === null) {
+        return {
+          success:      false,
+          accessDenied: true,
+          email:        ctx.email,
+          error:        'Your account is not registered for this no~bull books instance.'
+        };
+      }
       var _inv = [], _bil = [], _settings = {}, _ba = [], _cli = [], _sup = [],
           _cn  = [], _po  = [], _bd  = [];
       try { _settings = getSettings(params)           || {}; } catch(e) { Logger.log('settings err: '+e); }
@@ -238,6 +280,12 @@ function _route(action, params, ctx) {
     // -- FINANCIAL YEAR --------------------------------------------------------
     case 'getFinancialYears':       return getFinancialYears(params);
     case 'runPreCloseChecks':       _auth('settings.write', params); return runPreCloseChecks(params.yearEndDate, params);
+    case 'previewImport':          return previewImport(params);
+    case 'importContacts':         return importContacts(params);
+    case 'importInvoices':         return importInvoices(params);
+    case 'importBills':            return importBills(params);
+    case 'importOpeningBalances':  return importOpeningBalances(params);
+    case 'getImportTemplate':      return getImportTemplate(params);
     case 'calculateCT600':         return calculateCT600(params);
     case 'saveCT600Draft':          return saveCT600Draft(params);
     case 'getCT600Returns':         return getCT600Returns(params);

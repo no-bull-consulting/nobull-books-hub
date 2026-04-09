@@ -1,151 +1,222 @@
 <script>
 
+
 function _renderReconPage() {
   var id    = _reconState.accountId;
-  // Refresh bank account data to get latest lastReconciled
   var acct  = (App.data.bankAccounts||[]).find(function(a){ return a.accountId === id; }) || {};
-  var stmts = _reconState.unreconciled;
-  var books = _reconState.bookEntries;
+  var unr   = _reconState.unreconciled;   // statement lines
+  var book  = _reconState.bookEntries;    // book entries
   var all   = _reconState.transactions;
 
-  // Count all reconciled book entries in current session
-  // Use session count as primary (avoids stale _reconState.transactions)
-  var sessionReconciled = (_reconState.reconciledThisSession || 0);
-  var reconciledCount = sessionReconciled || all.filter(function(t) {
+  var reconciledCount = all.filter(function(t) {
     return t.status === 'Reconciled' && t.type !== 'Statement' && t.category !== 'Statement';
   }).length;
 
+  var totalIn  = unr.reduce(function(s,t){ var a=parseFloat(t.amount)||0; return a>0?s+a:s; }, 0);
+  var totalOut = unr.reduce(function(s,t){ var a=parseFloat(t.amount)||0; return a<0?s+Math.abs(a):s; }, 0);
+
+  // Account selector
+  var baSelector = App.data.bankAccounts.length > 1
+    ? '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">' +
+        '<label class="form-label" style="margin:0;white-space:nowrap">Account</label>' +
+        '<select class="form-select" style="max-width:320px" onchange="_switchReconAccount(this.value)">' +
+        App.data.bankAccounts.map(function(a) {
+          return '<option value="'+a.accountId+'"'+(a.accountId===id?' selected':'')+'>'+
+            a.accountName+' ('+a.bankName+') -- '+fmt(a.currentBalance)+'</option>';
+        }).join('') +
+        '</select></div>'
+    : '';
+
+  // Auto-match: build map of statement -> best book match
+  var _matchMap = {}; // stmtId -> { bookEntry, exact }
+  var _usedBook = {};
+  unr.forEach(function(stmt) {
+    var sa = Math.abs(parseFloat(stmt.amount)||0);
+    var exact = null, fuzzy = null;
+    book.forEach(function(b) {
+      if (_usedBook[b.transactionId]) return;
+      var ba = Math.abs(parseFloat(b.amount)||0);
+      var diff = Math.abs(sa - ba);
+      if (diff < 0.01) { if (!exact) exact = b; }
+      else if (diff < sa * 0.05) { if (!fuzzy) fuzzy = b; } // within 5%
+    });
+    if (exact) {
+      _matchMap[stmt.transactionId] = { entry: exact, exact: true };
+      _usedBook[exact.transactionId] = true;
+    } else if (fuzzy) {
+      _matchMap[stmt.transactionId] = { entry: fuzzy, exact: false };
+    }
+  });
+
+  // Build paired rows
+  var rows = '';
+  var maxRows = Math.max(unr.length, 1);
+  unr.forEach(function(stmt) {
+    var sa      = parseFloat(stmt.amount)||0;
+    var isIn    = sa >= 0;
+    var absAmt  = Math.abs(sa);
+    var match   = _matchMap[stmt.transactionId];
+    var stmtSel = _reconState.selectedTx   === stmt.transactionId;
+    var bookSel = match && _reconState.selectedBook === match.entry.transactionId;
+
+    // Left: statement line -- 3 columns (Description | Money In | Money Out)
+    var stmtRowStyle = 'cursor:pointer;transition:background 0.15s;' +
+      (stmtSel ? 'background:var(--blue-50);' : '') +
+      (match && match.exact ? 'background:var(--green-50);' : '');
+
+    var stmtLeft = '<td style="padding:10px 8px;border-bottom:1px solid var(--g100);'+stmtRowStyle +
+      '" colspan="3" onclick="selectStatementLine(\''+stmt.transactionId+'\')">' +
+      '<div style="display:grid;grid-template-columns:1fr 90px 90px;gap:4px;align-items:center">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:500;color:var(--g800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px" title="'+(stmt.description||'')+'">'+
+            fmtDate(stmt.date)+' &nbsp; '+(stmt.description||'--')+'</div>' +
+        '</div>' +
+        '<div style="text-align:right;font-family:monospace;font-size:13px;font-weight:600;color:var(--green-600)">'+
+          (isIn ? fmt(absAmt) : '') +
+        '</div>' +
+        '<div style="text-align:right;font-family:monospace;font-size:13px;font-weight:600;color:var(--red-500)">'+
+          (!isIn ? fmt(absAmt) : '') +
+        '</div>' +
+      '</div>' +
+    '</td>';
+
+    // Right: matched book entry or empty with search button
+    var rightCell = '';
+    if (match) {
+      var b  = match.entry;
+      var ba = parseFloat(b.amount)||0;
+      var bookRowStyle = 'cursor:pointer;transition:background 0.15s;' +
+        (match.exact ? 'background:var(--green-50);border-left:3px solid var(--green-500);' :
+                       'background:var(--amber-50);border-left:3px solid var(--amber-400);');
+      rightCell = '<td style="padding:10px 8px;border-bottom:1px solid var(--g100);'+bookRowStyle+
+        '" onclick="selectBookEntry(\''+b.transactionId+'\')">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:12px;color:var(--g500)">'+fmtDate(b.date)+'</div>' +
+            '<div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px" title="'+(b.description||'')+'">'+
+              (b.description||'--')+'</div>' +
+            '<span class="badge badge-grey" style="font-size:10px">'+(b.type||'')+'</span>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0">' +
+            '<div class="mono" style="font-size:13px;font-weight:600;color:'+(ba>=0?'var(--green-600)':'var(--red-500)')+'">'+
+              fmt(Math.abs(ba))+'</div>' +
+            (match.exact
+              ? '<div style="font-size:10px;color:var(--green-600);font-weight:600">&#10003; Exact match</div>'
+              : '<div style="font-size:10px;color:var(--amber-600)">~ Possible match</div>') +
+          '</div>' +
+        '</div>' +
+      '</td>';
+    } else {
+      rightCell = '<td style="padding:8px;border-bottom:1px solid var(--g100);background:var(--g50)">' +
+        '<div style="display:flex;align-items:center;justify-content:center;height:100%;min-height:48px;gap:8px">' +
+          '<span style="font-size:12px;color:var(--g400)">No match found</span>' +
+          '<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();_searchForMatch(\''+stmt.transactionId+'\')">&#128269; Search</button>' +
+        '</div>' +
+      '</td>';
+    }
+
+    rows += '<tr>'+stmtLeft+rightCell+'</tr>';
+  });
+
+  if (!unr.length) {
+    rows = '<tr><td colspan="4" class="tbl-empty"><p>No unmatched statement lines</p><span>Import a bank statement or all lines are reconciled</span></td></tr>';
+  }
+
   var html =
     '<div class="page-hdr">' +
-      '<div><div class="page-title">Reconcile -- '+acct.accountName+'</div>' +
-        '<div class="page-sub">'+acct.bankName+' . Balance: '+fmt(parseFloat(acct.currentBalance)||0)+'</div></div>' +
+      '<div><div class="page-title">Bank Reconciliation</div>' +
+        '<div class="page-sub">'+(acct.accountName||'')+' &middot; '+(acct.bankName||'')+'</div></div>' +
       '<div class="page-actions">' +
-        '<button class="btn btn-secondary btn-sm" onclick="showReconciliation()">&#8592; Accounts</button>' +
+        '<button class="btn btn-secondary btn-sm" onclick="showBanking()">&#8592; Banking</button>' +
         '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()">&#128228; Import Statement</button>' +
       '</div>' +
     '</div>' +
-    '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">' +
-      '<div class="stat-card"><div class="stat-label">Statement Lines</div>' +
-        '<div class="stat-value" style="color:var(--amber-500)">'+stmts.length+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Book Entries</div>' +
-        '<div class="stat-value" style="color:var(--blue-600)">'+books.length+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Reconciled</div>' +
+    baSelector +
+    // Summary bar
+    '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">' +
+      '<div class="stat-card"><div class="stat-label">Book Balance</div>'+
+        '<div class="stat-value">'+fmt(acct.currentBalance)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Statement In</div>'+
+        '<div class="stat-value amt-pos">'+fmt(totalIn)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Statement Out</div>'+
+        '<div class="stat-value amt-neg">'+fmt(totalOut)+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Unmatched Lines</div>'+
+        '<div class="stat-value" style="color:var(--amber-500)">'+unr.length+'</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Reconciled</div>'+
         '<div class="stat-value amt-pos">'+reconciledCount+'</div></div>' +
-      '<div class="stat-card"><div class="stat-label">Last Reconciled</div>' +
-        '<div style="font-size:13px;font-weight:600;margin-top:4px;color:var(--green-600)">'+((_reconState.lastReconciledNow||acct.lastReconciled) ? fmtDate(_reconState.lastReconciledNow||acct.lastReconciled) : '<span style=\"color:var(--g400)\">Never</span>')+'</div></div>' +
-    '</div>';
-
-  if (!stmts.length && !books.length) {
-    var lastRecDate = _reconState.lastReconciledNow || acct.lastReconciled;
-    html += '<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div>' +
-      '<h3>All reconciled!</h3>' +
-      '<p>Nothing left to match.</p>' +
-      (reconciledCount ? '<p style="color:var(--green-600);font-weight:600">&#10003; ' + reconciledCount + ' transaction' + (reconciledCount!==1?'s':'') + ' reconciled' + (lastRecDate ? ' . ' + fmtDate(lastRecDate) : '') + '</p>' : '') +
-      '<button class="btn btn-secondary" onclick="showReconciliation()">&#8592; Back</button></div>';
-    showContent(html);
-    return;
-  }
-
-  if (!stmts.length) {
-    html += '<div class="alert alert-info" style="margin-bottom:16px">' +
-      '<p><strong>No statement lines imported yet.</strong> Import a bank statement CSV to start matching.</p>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openImportStatementModal()" style="margin-top:8px">&#128228; Import Statement</button></div>';
-  }
-
-  // Build book entry lookup map for auto-matching
-  var bookMap = {};
-  books.forEach(function(b) { bookMap[b.transactionId] = b; });
-
-  // Auto-match by amount -- find best book entry for each statement line
-  function findMatch(stmtAmt) {
-    var abs = Math.abs(stmtAmt);
-    var match = null;
-    books.forEach(function(b) {
-      if (Math.abs(Math.abs(parseFloat(b.amount)||0) - abs) < 0.01) match = b;
-    });
-    return match;
-  }
-
-  // Build statement rows table
-  var stmtRows = stmts.map(function(t) {
-    var a     = parseFloat(t.amount) || 0;
-    var match = findMatch(a);
-    var rowStyle = match ? 'background:var(--green-50);' : '';
-    var matchInfo = match
-      ? '<div style="font-size:11px;color:var(--green-700);font-weight:600">&#10003; Auto-matched: '+
-          (match.description||'')+'</div>'
-      : '';
-
-    // Book entry dropdown for manual selection
-    var bookOpts = '<option value="">-- select --</option>' +
-      books.map(function(b) {
-        var ba = parseFloat(b.amount)||0;
-        var diff = Math.abs(Math.abs(ba) - Math.abs(a));
-        var diffStr = diff < 0.01 ? '' : ' (&#916;'+fmt(diff)+')';
-        return '<option value="'+b.transactionId+'"'+(match&&match.transactionId===b.transactionId?' selected':'')+'>'+
-          fmtDate(b.date)+' . '+(b.description||'').substring(0,30)+' . '+fmt(Math.abs(ba))+diffStr+'</option>';
-      }).join('');
-
-    return '<tr id="stmt-'+t.transactionId+'" style="'+rowStyle+'">' +
-      '<td>'+fmtDate(t.date)+'</td>' +
-      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(t.description||'')+'">'+
-        (t.description||'')+'<br>'+matchInfo+'</td>' +
-      '<td class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'<br>' +
-        '<span style="font-size:10px;color:var(--g400)">'+(a>=0?'CR':'DR')+'</span></td>' +
-      '<td style="min-width:240px">' +
-        '<select class="form-select" id="match-sel-'+t.transactionId+'" style="font-size:12px;padding:4px 8px">' +
-          bookOpts +
-        '</select>' +
-      '</td>' +
-      '<td>' +
-        '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
-          '<button class="btn btn-primary btn-xs" onclick="_doMatch(\''+t.transactionId+'\')">&#10003; Match</button>' +
-          '<button class="btn btn-ghost btn-xs" onclick="_doMarkStmt(\''+t.transactionId+'\')">Mark OK</button>' +
-        '</div>' +
-      '</td>' +
-    '</tr>';
-  }).join('');
-
-  // Unmatched book entries table
-  var bookRows = books.map(function(b) {
-    var a = parseFloat(b.amount)||0;
-    return '<tr>' +
-      '<td>'+fmtDate(b.date)+'</td>' +
-      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(b.description||'')+'">'+
-        (b.description||'')+'</td>' +
-      '<td><span class="badge badge-grey" style="font-size:10px">'+(b.type||b.category||'')+'</span></td>' +
-      '<td class="mono '+(a>=0?'amt-pos':'amt-neg')+'">'+fmt(Math.abs(a))+'</td>' +
-      '<td><button class="btn btn-ghost btn-xs" onclick="_doMarkBook(\''+b.transactionId+'\')">Mark OK</button></td>' +
-    '</tr>';
-  }).join('');
-
-  html +=
-    '<div style="display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start">' +
-      // LEFT: Statement lines
-      '<div>' +
-        '<div class="tbl-bar"><span class="tbl-title" style="color:var(--amber-600)">&#128196; Bank Statement Lines</span>' +
-          '<span style="font-size:12px;color:var(--g400)">from imported CSV</span></div>' +
-        (stmts.length
-          ? '<table class="dt" style="font-size:12px"><thead><tr>' +
-              '<th>Date</th><th>Description</th><th style="text-align:right">Amount</th>' +
-              '<th>Match to book entry</th><th></th>' +
-            '</tr></thead><tbody>'+stmtRows+'</tbody></table>'
-          : '<div class="tbl-empty"><p>No statement lines -- import a CSV first</p></div>') +
+    '</div>' +
+    // Legend
+    '<div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;color:var(--g500)">' +
+      '<span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:var(--green-50);border-left:3px solid var(--green-500);display:inline-block"></span>Exact match</span>' +
+      '<span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:var(--amber-50);border-left:3px solid var(--amber-400);display:inline-block"></span>Possible match</span>' +
+      '<span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;background:var(--g50);display:inline-block;border:1px solid var(--g200)"></span>No match</span>' +
+    '</div>' +
+    // Main matching table
+    '<div class="tbl-wrap">' +
+      '<table class="dt" style="table-layout:fixed;width:100%">' +
+        '<colgroup>' +
+          '<col style="width:55%">' +
+          '<col style="width:45%">' +
+        '</colgroup>' +
+        '<thead>' +
+          '<tr style="background:var(--g50)">' +
+            '<th colspan="3" style="background:var(--amber-50);color:var(--amber-700);border-bottom:2px solid var(--amber-200)">' +
+              '<div style="display:grid;grid-template-columns:1fr 90px 90px;gap:4px">' +
+                '<span>&#128196; Bank Statement</span>' +
+                '<span style="text-align:right">Money In</span>' +
+                '<span style="text-align:right">Money Out</span>' +
+              '</div>' +
+            '</th>' +
+            '<th style="background:var(--blue-50);color:var(--blue-700);border-bottom:2px solid var(--blue-200)">&#128218; Matched Book Entry</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>'+rows+'</tbody>' +
+      '</table>' +
+    '</div>' +
+    // Match action bar
+    '<div id="recon-match-bar" style="display:none;position:sticky;bottom:0;background:var(--g0);border-top:1px solid var(--g200);padding:12px 0;margin-top:16px">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+        '<div id="recon-sel-info" style="font-size:13px;color:var(--g700);flex:1"></div>' +
+        '<button class="btn btn-secondary btn-sm" onclick="clearReconSelection()">Clear</button>' +
+        '<button class="btn btn-warning btn-sm" id="recon-adj-btn" onclick="openReconAdjModal()" style="display:none">+ Adjustment</button>' +
+        '<button class="btn btn-primary btn-sm" id="recon-match-btn" onclick="matchSelected()">&#10003; Confirm Match</button>' +
       '</div>' +
-      // RIGHT: Unmatched book entries
-      '<div>' +
-        '<div class="tbl-bar"><span class="tbl-title" style="color:var(--blue-600)">&#128218; Unmatched Book Entries</span>' +
-          '<span style="font-size:12px;color:var(--g400)">recorded in system</span></div>' +
-        (books.length
-          ? '<table class="dt" style="font-size:12px"><thead><tr>' +
-              '<th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th>' +
-            '</tr></thead><tbody>'+bookRows+'</tbody></table>'
-          : '<div class="tbl-empty"><p>&#10003; All book entries matched</p></div>') +
+      '<div id="recon-adj-hint" style="display:none;font-size:11px;color:var(--amber-600);margin-top:6px;padding-top:6px;border-top:1px solid var(--g100)">' +
+        '&#9888; A difference exists -- click <strong>+ Adjustment</strong> to post a bank charge, interest, or rounding entry.' +
       '</div>' +
     '</div>';
 
   showContent(html);
 }
+
+function _searchForMatch(stmtTxId) {
+  selectStatementLine(stmtTxId);
+  // Open a mini-search modal showing all unmatched book entries
+  var stmt = _reconState.unreconciled.find(function(t){ return t.transactionId === stmtTxId; });
+  var sa   = Math.abs(parseFloat((stmt||{}).amount)||0);
+  var opts = _reconState.bookEntries.map(function(b) {
+    var ba   = Math.abs(parseFloat(b.amount)||0);
+    var diff = Math.abs(sa - ba);
+    var matchStr = diff < 0.01 ? ' &#10003;' : diff < sa*0.1 ? ' ~' : '';
+    return '<tr onclick="selectBookEntry(\''+b.transactionId+'\');closeModal(\'recon-search\')" style="cursor:pointer">' +
+      '<td>'+fmtDate(b.date)+'</td>' +
+      '<td>'+(b.description||'')+'</td>' +
+      '<td><span class="badge badge-grey" style="font-size:10px">'+(b.type||'')+'</span></td>' +
+      '<td class="mono" style="text-align:right">'+fmt(ba)+'</td>' +
+      '<td style="color:var(--green-600);font-weight:700">'+matchStr+'</td>' +
+    '</tr>';
+  }).join('');
+
+  openModal('recon-search', 'Search Book Entries -- Statement: '+fmt(sa),
+    '<p style="font-size:13px;color:var(--g500);margin-bottom:12px">Click a row to select it as the matching book entry.</p>' +
+    '<table class="dt"><thead><tr><th>Date</th><th>Description</th><th>Type</th><th style="text-align:right">Amount</th><th></th></tr></thead>' +
+    '<tbody>'+(opts||'<tr><td colspan="5" class="tbl-empty">No unmatched book entries</td></tr>')+'</tbody></table>',
+    '<button class="btn btn-secondary" onclick="closeModal(\'recon-search\')">Close</button>',
+    'modal-lg'
+  );
+}
+
+
 
 // Match a statement line to selected book entry
 async function _doMatch(stmtId) {

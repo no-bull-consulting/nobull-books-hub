@@ -57,14 +57,19 @@ function _getCurrentUserContext(params) {
   //
   // Security model: knowing the ?id=SHEET_ID URL = authorised access.
   // The sheet ID is a 44-character random string -- effectively a private key.
-  if (params && params._sheetId) {
+  // Priority 1: client-verified email from OTP session
+  if (params && params._verifiedEmail) {
+    email = params._verifiedEmail.trim().toLowerCase();
+    Logger.log('Identity: using OTP-verified email: ' + email);
+  }
+
+  // Priority 2: ownerEmail from Settings sheet (owner / legacy access)
+  if (!email && params && params._sheetId) {
     try {
       var ss       = getDb(params);
       var settings = ss.getSheetByName(SHEETS.SETTINGS);
       if (settings && settings.getLastRow() >= 2) {
         var sData = settings.getRange(2, 1, 1, settings.getLastColumn()).getValues()[0];
-        // ownerEmail is stored in the Settings sheet column named 'ownerEmail'
-        // We look it up by header position
         var headers = settings.getRange(1, 1, 1, settings.getLastColumn()).getValues()[0];
         var ownerEmailCol = headers.indexOf('ownerEmail');
         if (ownerEmailCol >= 0 && sData[ownerEmailCol]) {
@@ -257,6 +262,129 @@ function getAllUsers(params) {
  * _sendUserInvitation(email, role, invitedBy, settings, params)
  * Sends a friendly welcome email to a newly added user.
  */
+
+// -----------------------------------------------------------------------------
+// EMAIL OTP AUTHENTICATION
+// -----------------------------------------------------------------------------
+
+/**
+ * sendOTP(email, params)
+ * Generates a 6-digit OTP, stores it in Script Properties with 10min expiry,
+ * and emails it to the user.
+ */
+function sendOTP(email, params) {
+  try {
+    if (!email || !email.trim()) return { success: false, message: 'Email required' };
+    email = email.trim().toLowerCase();
+
+    // Generate 6-digit OTP
+    var otp     = Math.floor(100000 + Math.random() * 900000).toString();
+    var expiry  = new Date().getTime() + (10 * 60 * 1000); // 10 minutes
+    var key     = 'OTP_' + email.replace(/[^a-z0-9]/g, '_');
+    var payload = otp + ':' + expiry;
+
+    PropertiesService.getScriptProperties().setProperty(key, payload);
+
+    var sheetId     = params && params._sheetId ? params._sheetId : '';
+    var settings    = {};
+    try { settings = getSettings(params || {}); } catch(e) {}
+    var companyName = settings.companyName || 'no~bull books';
+
+    var nl   = '\n';
+    var body = 'Your no~bull books verification code' + nl + nl +
+      'Code: ' + otp + nl + nl +
+      'This code expires in 10 minutes.' + nl +
+      'If you did not request this, please ignore this email.' + nl + nl +
+      'no~bull books -- ' + companyName;
+
+    MailApp.sendEmail({
+      to:      email,
+      subject: otp + ' is your no~bull books verification code',
+      body:    body
+    });
+
+    Logger.log('OTP sent to: ' + email);
+    return { success: true, message: 'Verification code sent to ' + email };
+  } catch(e) {
+    Logger.log('sendOTP error: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+/**
+ * verifyOTP(email, otp, params)
+ * Verifies the OTP and checks the user is in the Users sheet.
+ * Returns { success, role, email } on success.
+ */
+function verifyOTP(email, otp, params) {
+  try {
+    if (!email || !otp) return { success: false, message: 'Email and code required' };
+    email = email.trim().toLowerCase();
+    otp   = otp.toString().trim();
+
+    var key     = 'OTP_' + email.replace(/[^a-z0-9]/g, '_');
+    var stored  = PropertiesService.getScriptProperties().getProperty(key);
+
+    if (!stored) return { success: false, message: 'No verification code found. Please request a new one.' };
+
+    var parts  = stored.split(':');
+    var storedOtp    = parts[0];
+    var storedExpiry = parseInt(parts[1]);
+
+    // Check expiry
+    if (new Date().getTime() > storedExpiry) {
+      PropertiesService.getScriptProperties().deleteProperty(key);
+      return { success: false, message: 'Code has expired. Please request a new one.' };
+    }
+
+    // Check OTP
+    if (otp !== storedOtp) {
+      return { success: false, message: 'Incorrect code. Please try again.' };
+    }
+
+    // Valid -- delete OTP so it can't be reused
+    PropertiesService.getScriptProperties().deleteProperty(key);
+
+    // Check Users sheet
+    var ss    = getDb(params || {});
+    var sheet = ss ? ss.getSheetByName(SHEETS.USERS) : null;
+
+    // Superuser bypass
+    if (typeof SUPERUSER_EMAIL !== 'undefined' && email === SUPERUSER_EMAIL.toLowerCase()) {
+      return { success: true, email: email, role: 'Superuser', verified: true };
+    }
+
+    if (!sheet || sheet.getLastRow() < 2) {
+      // No users sheet or empty -- grant Owner to first user (bootstrap)
+      return { success: true, email: email, role: 'Owner', verified: true };
+    }
+
+    var rows = sheet.getDataRange().getValues();
+    for (var i = 1; i < rows.length; i++) {
+      var rowEmail  = rows[i][0] ? rows[i][0].toString().toLowerCase().trim() : '';
+      var rowActive = rows[i][4] !== false && rows[i][4] !== 'FALSE' && rows[i][4] !== '';
+      if (rowEmail === email && rowActive) {
+        return { success: true, email: email, role: rows[i][1].toString() || 'ReadOnly', verified: true };
+      }
+    }
+
+    // Not in Users sheet
+    return {
+      success:     false,
+      accessDenied: true,
+      email:       email,
+      message:     'Your account (' + email + ') is not registered for this no~bull books instance. Ask the owner to add you in Settings > Users.'
+    };
+
+  } catch(e) {
+    Logger.log('verifyOTP error: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+
+
+
 function _sendUserInvitation(email, role, invitedBy, settings, params) {
   try {
     var companyName = (settings && settings.companyName) ? settings.companyName : 'your company';

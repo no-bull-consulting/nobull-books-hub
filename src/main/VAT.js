@@ -1,8 +1,8 @@
 /**
- * NO~BULL BOOKS -- VAT
+ * NO~BULL BOOKS — VAT
  * Local VAT return storage (save drafts, read history).
  * MTD submission is handled by the HMRC integration layer.
- * -----------------------------------------------------------------------------
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
 /**
@@ -70,11 +70,11 @@ function saveVATReturn(params) {
 
     var ss    = getDb(params || {});
     var sheet = ss.getSheetByName(SHEETS.VAT_RETURNS);
-    if (!sheet) return { success: false, message: 'VATReturns sheet not found -- run initial setup.' };
+    if (!sheet) return { success: false, message: 'VATReturns sheet not found — run initial setup.' };
 
     var d = params;
 
-    // Check if a return for this period already exists -- update rather than duplicate
+    // Check if a return for this period already exists — update rather than duplicate
     var existingRow = -1;
     if (sheet.getLastRow() > 1) {
       var existing = sheet.getDataRange().getValues();

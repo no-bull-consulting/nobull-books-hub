@@ -49,8 +49,11 @@ function calculateCT600(params) {
 
     // -- Get P&L data ----------------------------------------------------------
     var plResult = generateProfitLoss(periodStart, periodEnd, params);
-    if (!plResult || !plResult.success) return { success: false, message: 'Could not generate P&L: ' + (plResult ? plResult.message : 'unknown') };
+    Logger.log('CT600 plResult: ' + JSON.stringify(plResult ? {success:plResult.success, message:plResult.message} : null));
+    if (!plResult) return { success: false, message: 'generateProfitLoss returned null' };
+    if (!plResult.success) return { success: false, message: 'P&L error: ' + (plResult.message || plResult.error || 'unknown') };
     var pl = plResult.report || {};
+    Logger.log('CT600 pl keys: ' + Object.keys(pl).join(','));
 
     // -- Revenue ---------------------------------------------------------------
     var turnover = 0;

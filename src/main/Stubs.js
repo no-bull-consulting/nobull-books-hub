@@ -1,3 +1,9 @@
+function _checkLicence(sheetId) {
+  // Licence check -- returns status object
+  // In production this verifies against the registry
+  return { valid: true, status: 'Active', plan: 'Trial', daysLeft: 14 };
+}
+
 /**
  * NO~BULL BOOKS -- STUBS & SUPPLEMENTARY FUNCTIONS
  * Functions routed in Api.gs that need concrete implementations.
@@ -8,12 +14,6 @@
 // -----------------------------------------------------------------------------
 // FIXED ASSETS
 // -----------------------------------------------------------------------------
-
-function _checkLicence(sheetId) {
-  // Licence check — returns status object
-  // In production this will verify against the registry
-  return { valid: true, status: 'Active', plan: 'Trial', daysLeft: 14 };
-}
 
 function getAllFixedAssets(params) {
   try {
