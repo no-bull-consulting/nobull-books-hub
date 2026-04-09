@@ -37,6 +37,15 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(
 .nav-links a { color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
 .nav-cta { background: var(--oxford-blue); color: var(--white) !important; padding: 6px 14px; border-radius: var(--r); }
 
+.legal-content h1 {
+    margin-bottom: 8px !important; /* Forces the header closer to the body */
+}
+
+.legal-content p {
+    margin-top: 0 !important; /* Removes top padding from paragraphs */
+    text-align: left !important; /* Overrides any remaining centering */
+}
+
 /* ── LAYOUT & SPACING (Restored Top Breathing Room) ── */
 .section { 
     padding: 160px 24px 60px !important; /* Restored to 160px to fix top clipping */
