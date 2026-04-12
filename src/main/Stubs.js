@@ -11,27 +11,48 @@ function _checkLicence(sheetId) {
  * -----------------------------------------------------------------------------
  */
 
+/**
+ * NO~BULL BOOKS — HARDENED AUDIT LOG
+ * Writes every system action to the client's AuditLog sheet.
+ */
 function logAudit(action, entity, id, detail, params) {
   try {
-    var ss = getDb(params);
-    var sheet = ss.getSheetByName('AuditLog');
-    var startTime = params._startTime || new Date().getTime();
-    var duration = new Date().getTime() - startTime;
-    
-    var detailObj = typeof detail === 'object' ? detail : { info: detail };
-    detailObj.executionTimeMs = duration; // 
+    // 1. Resolve the Spreadsheet ID
+    var sheetId = (params && params._sheetId) ? params._sheetId : null;
+    if (!sheetId) {
+      console.warn("Audit Log skipped: No _sheetId in params for action: " + action);
+      return;
+    }
 
+    // 2. Open the Spreadsheet and locate the AuditLog tab
+    var ss = SpreadsheetApp.openById(sheetId);
+    var sheet = ss.getSheetByName('AuditLog'); //
+    
+    if (!sheet) {
+      console.error("Audit Log failed: 'AuditLog' tab not found in sheet " + sheetId);
+      return;
+    }
+
+    // 3. Prepare data for the row
+    var userEmail = Session.getActiveUser().getEmail() || "System";
+    var timestamp = new Date();
+    var auditId = "AUD_" + timestamp.getTime();
+    var detailStr = (typeof detail === 'object') ? JSON.stringify(detail) : String(detail);
+
+    // 4. Write to the sheet
     sheet.appendRow([
-      generateId('AUD'),
-      new Date(),
+      auditId,
+      timestamp,
       action,
       entity,
       id,
-      _getCurrentUserContext(params).email,
-      JSON.stringify(detailObj)
+      userEmail,
+      detailStr
     ]);
-  } catch(e) {
-    Logger.log('Audit Failure: ' + e);
+
+  } catch (e) {
+    // Log to Google Cloud Logs so you can find it in the GAS Execution tab
+    console.error("Critical Audit Failure: " + e.toString());
   }
 }
 
@@ -671,9 +692,43 @@ function exportClientData(clientId)   { return { success: false, message: 'GDPR 
 function generateId(prefix) {
   return (prefix || 'ID') + '_' + new Date().getTime() + '_' + Math.random().toString(36).substr(2, 5).toUpperCase();
 }
-function logAudit(action, entity, id, detail) {
-  try { Logger.log('[AUDIT] ' + action + ' | ' + entity + ' | ' + id + ' | ' + JSON.stringify(detail)); } catch(e) {}
+
+function logAudit(action, entity, id, detail, params) {
+  try {
+    var sheetId = (params && params._sheetId) ? params._sheetId : null;
+    if (!sheetId) return;
+
+    var ss = SpreadsheetApp.openById(sheetId);
+    // Diagnostic: Try to find the sheet even if the name is slightly off
+    var sheet = ss.getSheetByName('AuditLog') || ss.getSheets().find(s => s.getName().trim() === 'AuditLog');
+    
+    if (!sheet) {
+      console.error("CRITICAL: AuditLog tab not found. Please ensure a tab named 'AuditLog' exists.");
+      return;
+    }
+
+    var userEmail = Session.getActiveUser().getEmail() || "System";
+    var rowData = [
+      "AUD_" + new Date().getTime(),
+      new Date(),
+      action,
+      entity,
+      id,
+      userEmail,
+      (typeof detail === 'object') ? JSON.stringify(detail) : String(detail)
+    ];
+
+    // Force the write and flush the spreadsheet changes
+    sheet.appendRow(rowData);
+    SpreadsheetApp.flush(); // Forces GAS to commit the changes immediately
+    
+    console.log("SUCCESS: Audit entry written to " + sheetId);
+
+  } catch (e) {
+    console.error("Audit Write Failed: " + e.toString());
+  }
 }
+
 function safeSerializeDate(val) {
   if (!val) return '';
   try {
