@@ -568,12 +568,10 @@ function showSettings() {
         el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
         return;
       }
-      var secAdvanced = `
-        <div class="mt-4 border-top pt-4">
-        <h5>Accounting Maintenance</h5>
-        <p class="text-muted" style="font-size:11px">Use this to remove ghost entries and restore standard UK nominal codes.</p>
-        <button class="btn btn-danger btn-sm" onclick="handleReseedCoA()">Reset Chart of Accounts</button>
-        </div>
+
+`;
+// Append secMaintenance to your final HTML string
+// e.g., html += secMaintenance;
 `;
       var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
       var detail = r.provider === 'meta'
@@ -806,6 +804,16 @@ function showSettings() {
       '<div style="font-size:11px;color:var(--g400);margin-top:10px">Credentials are stored in Script Properties only and never written to the spreadsheet.</div>' +
     '</div>';
 
+    // -- Section: System Maintenance (Added for CoA Fix) -------------------------
+  var secMaintenance = 
+    '<div style="background:var(--red-50); padding:15px; border-radius:var(--r8); border:1px solid var(--red-100)">' +
+      '<h5 style="color:var(--red-700); font-size:14px; margin-bottom:8px">Repair Chart of Accounts</h5>' +
+      '<p style="font-size:12px; color:var(--red-600); margin-bottom:12px">' +
+        'If you see duplicate accounts or test data, use this button to wipe the CoA sheet and restore clean UK standard nominal codes.' +
+      '</p>' +
+      '<button class="btn btn-danger btn-sm" onclick="handleReseedCoA()">Reset Chart of Accounts</button>' +
+    '</div>';
+
   // -- Section: Chart of Accounts --------------------------------------------
   var secCOA =
     '<div id="coa-seed-status" style="margin-bottom:14px">' +
@@ -855,7 +863,8 @@ function showSettings() {
     acc('email',      '&#9993;&#65039;', 'Email Template',       secEmail,     false) +
     acc('hmrc',       '', 'HMRC / MTD',           secHMRC,      false) +
     acc('currency',   '', 'Currency',             secCurrency,  false) +
-    acc('whatsapp',   '', 'WhatsApp Delivery',    secWhatsApp,  false)
+    acc('whatsapp',   '', 'WhatsApp Delivery',    secWhatsApp,  false) +
+    acc('maintenance','🛠️', 'System Maintenance',   secMaintenance, false)
   );
 
   loadHMRCStatusBar();
@@ -1103,7 +1112,7 @@ async function showUsers() {
     { role:'ReadOnly',   badge:'badge-grey',   desc:'View everything, change nothing. Useful for auditors or silent partners.' }
   ];
   showContent(
-    '<div class="page-hdr"><div><div class="page-title">Users</div>' +
+      '<div class="page-hdr"><div><div class="page-title">Users</div>' +
       '<div class="page-sub">'+us.length+' user'+(us.length!==1?'s':'')+' . role-based access control</div></div>' +
       '<div class="page-actions"><button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button></div></div>' +
 
@@ -2297,15 +2306,19 @@ async function showReconciliation() {
 }
 
 async function handleReseedCoA() {
-  if (!confirm("WARNING: This will wipe your current Chart of Accounts and restore defaults. Existing transactions will NOT be deleted, but they may lose their account mappings. Proceed?")) return;
+  if (!confirm("CRITICAL: This will delete all rows in your Chart of Accounts sheet and re-seed from the template. It will fix the 'doubling up' issue. Continue?")) return;
   
-  showLoading('Reseeding...');
-  const res = await api('reseedChartOfAccounts');
-  if (res.success) {
-    toast(res.message, 'success');
-    location.reload(); // Refresh to clear the App.data cache
-  } else {
-    showError(res.error);
+  showLoading('Cleaning and Reseeding...');
+  try {
+    const res = await api('reseedChartOfAccounts');
+    if (res.success) {
+      alert("Success! The duplicates have been removed. The page will now reload.");
+      location.reload(); 
+    } else {
+      showError(res.error || "Failed to reset.");
+    }
+  } catch(e) {
+    showError(e.toString());
   }
 }
 </script>
