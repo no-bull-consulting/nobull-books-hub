@@ -160,7 +160,9 @@ var ACCOUNTS = {
   VAT_CONTROL: '2200',
   SALES:       '4000',
   BAD_DEBT:    '8100',
-  ROUNDING:    '9100'
+  ROUNDING:    '9100',
+  EXP_CAR:     '7200', // For SA103 Mapping
+  EXP_OFFICE:  '7120'  // For SA103 Mapping
 };
 
 // ============================================

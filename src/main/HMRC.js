@@ -36,9 +36,9 @@ function _getHMRCToken() {
 
 function getHMRCAuthStatus(params) {
   try {
-    var t        = _getHMRCToken();
-    var settings = getSettings(params || {});
+    var settings = getSettings(params); // Fix: pass params so _sheetId is used
     var testMode = settings.hmrcTestMode !== false;
+    var t        = _getHMRCToken();
 
     if (!t.accessToken) {
       return { success: true, connected: false, expired: true, testMode: testMode, expiresIn: 0 };

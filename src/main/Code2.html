@@ -724,14 +724,17 @@ function showSettings() {
     '</div>';
 
   // -- Section: HMRC / MTD -----------------------------------------------------
+// -- Section: HMRC / MTD -----------------------------------------------------
   var secHMRC =
     '<div id="hmrc-status-bar"></div>' +
     '<div class="form-grid-2">' +
       sf('HMRC Client ID', 'hmrcClientID', s.hmrcClientID) +
       sf('HMRC Client Secret', 'hmrcClientSecret', '', 'password') +
+      sf('National Insurance Number (NINO)', 'hmrcNINO', s.hmrcNINO) +
+      sf('MTD Business ID', 'mtdBusinessId', s.mtdBusinessId) +
     '</div>' +
     '<div class="alert alert-info" style="margin-bottom:12px">' +
-      '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. Leave Secret blank to keep existing value.</p>' +
+      '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. NINO and Business ID are required for ITSA submissions.</p>' +
     '</div>' +
     sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox -- disable for live submission') +
     '<div style="display:flex;gap:8px;margin-top:12px">' +
@@ -1038,6 +1041,8 @@ async function saveSettings() {
     vatScheme:            g('vatScheme'),
     vatRate:              parseFloat(g('vatRate'))||20,
     vatFrequency:         g('vatFrequency'),
+    hmrcNINO:             g('hmrcNINO'),
+    mtdBusinessId:        g('mtdBusinessId'),
     yearEndDay:           g('yearEndDay')||'31 March',
     businessStartDate:    g('businessStartDate'),
     hmrcTestMode:         gc('hmrcTestMode'),

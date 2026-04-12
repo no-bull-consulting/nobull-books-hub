@@ -64,41 +64,34 @@ function generateBalanceSheet(params) {
     var coaResult = getAccounts({}, params);
     if (!coaResult.success) return coaResult;
 
-    var assets      = {};
-    var liabilities = {};
-    var equity      = {};
+    var report = {
+      assets: [],
+      liabilities: [],
+      equity: [],
+      totalAssets: 0,
+      totalLiabilities: 0,
+      totalEquity: 0
+    };
 
     coaResult.accounts.forEach(function(acc) {
       if (!acc.active) return;
       var balance = parseFloat(acc.currentBalance) || 0;
-      if (Math.abs(balance) < 0.01) balance = 0;
+      var item = { name: acc.accountName, code: acc.accountCode, amount: balance };
 
       if (acc.accountType === 'Asset') {
-        assets[acc.accountCode]      = { name: acc.accountName, amount: balance };
+        report.assets.push(item);
+        report.totalAssets += balance;
       } else if (acc.accountType === 'Liability') {
-        liabilities[acc.accountCode] = { name: acc.accountName, amount: balance };
+        report.liabilities.push(item);
+        report.totalLiabilities += balance;
       } else if (acc.accountType === 'Equity') {
-        equity[acc.accountCode]      = { name: acc.accountName, amount: balance };
+        report.equity.push(item);
+        report.totalEquity += balance;
       }
     });
 
-    var totalAssets      = Object.keys(assets).reduce(function(s,k)     { return s + assets[k].amount;      }, 0);
-    var totalLiabilities = Object.keys(liabilities).reduce(function(s,k){ return s + liabilities[k].amount; }, 0);
-    var totalEquity      = Object.keys(equity).reduce(function(s,k)      { return s + equity[k].amount;      }, 0);
-
-    return {
-      success: true,
-      report: {
-        assets:           assets,
-        liabilities:      liabilities,
-        equity:           equity,
-        totalAssets:      totalAssets,
-        totalLiabilities: totalLiabilities,
-        totalEquity:      totalEquity
-      }
-    };
+    return { success: true, report: report }; //
   } catch(e) {
-    Logger.log('generateBalanceSheet error: ' + e.toString());
     return { success: false, message: e.toString() };
   }
 }
@@ -434,6 +427,59 @@ function exportReport(reportType, fromDate, toDate, format, params) {
     return { success: false, message: 'Unsupported format: ' + format };
   } catch(e) {
     Logger.log('exportReport error: ' + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+function getGeneralLedger(filters, params) {
+  try {
+    var ss = getDb(params || {});
+    var txnSheet = ss.getSheetByName(SHEETS.TRANSACTIONS);
+    if (!txnSheet || txnSheet.getLastRow() < 2) {
+      return { success: true, entries: [], totalEntries: 0 };
+    }
+
+    var data = txnSheet.getDataRange().getValues();
+    var allEntries = []; // This must be populated by the loop below
+    
+    // Date range parsing
+    var start = filters.startDate ? new Date(filters.startDate) : null;
+    var end   = filters.endDate   ? new Date(filters.endDate)   : null;
+
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      var rowDate = new Date(row[1]);
+
+      // Apply Filters
+      if (start && rowDate < start) continue;
+      if (end   && rowDate > end) continue;
+      if (filters.accountCode && row[4] !== filters.accountCode && row[5] !== filters.accountCode) continue;
+
+      allEntries.push({
+        id:          row[0],
+        date:        safeSerializeDate(row[1]),
+        type:        row[2],
+        reference:   row[3],
+        debitCode:   row[4],
+        creditCode:  row[5],
+        amount:      row[6],
+        description: row[7],
+        docId:       row[8]
+      });
+    }
+
+    // Phase 4 Pagination Logic
+    var limit = 500; 
+    var offset = params.offset || 0;
+    var paginatedEntries = allEntries.slice(offset, offset + limit);
+    
+    return {
+      success: true,
+      entries: paginatedEntries,
+      totalEntries: allEntries.length,
+      hasMore: allEntries.length > (offset + limit)
+    };
+  } catch(e) {
     return { success: false, message: e.toString() };
   }
 }

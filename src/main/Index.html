@@ -6,6 +6,17 @@
 <title>no~bull books</title>
 <style>
 
+  .recon-table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 8px; }
+  .recon-table td { vertical-align: middle; border: none !important; }
+  
+  /* Column widths: 40% (Statement) | 20% (Action) | 40% (Books) */
+  .recon-left { width: 40%; padding: 12px; background: #fff; border-radius: 8px 0 0 8px; border: 1px solid var(--g200) !important; border-right: none !important; }
+  .recon-center { width: 20%; text-align: center; background: var(--g50); border-top: 1px solid var(--g200) !important; border-bottom: 1px solid var(--g200) !important; }
+  .recon-right { width: 40%; padding: 12px; background: #fff; border-radius: 0 8px 8px 0; border: 1px solid var(--g200) !important; border-left: none !important; }
+  
+  .recon-table tr:hover .recon-left, 
+  .recon-table tr:hover .recon-right { background: #fafafa; }
+
   .ai-response-box {
     display: none;
     background: #fdfbff;
@@ -738,7 +749,7 @@ function nbNav(page, params) {
     purchaseOrders:'Purchase Orders', badDebts:'Bad Debts',
     banking:'Bank Accounts', reconciliation:'Reconciliation',
     chartOfAccounts:'Chart of Accounts', reports:'Reports',
-    vat:'VAT / MTD', ct600:'Corporation Tax CT600', importData:'Import / Migrate', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
+    vat:'VAT / MTD', ct600:'Corporation Tax CT600', voidLog:'Void Log', sa103:'SA103 / Self Assessment', itsa:'ITSA / Making Tax Digital', yearEnd:'Year End Close', fixedAssets:'Fixed Assets',
     resources:'Resources', aiAssistant:'AI Assistant', maintenance:'Maintenance', security:'Security & Audit',
     settings:'Settings', users:'Users'
 };
@@ -749,7 +760,7 @@ function nbNav(page, params) {
     purchaseOrders:showPOs, badDebts:showBadDebts,
     banking:showBanking, reconciliation:showReconciliation,
     chartOfAccounts:showCOA, reports:showReports, adminPanel:showAdminPanel, agedDebtors:showAgedDebtors, agedCreditors:showAgedCreditors,
-    vat:showVAT, ct600:showCT600, importData:showImportData, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
+    vat:showVAT, ct600:showCT600, voidLog:showVoidLog, sa103:function(){showSA103&&showSA103();}, itsa:function(){showITSA&&showITSA();}, yearEnd:function(){showYearEnd&&showYearEnd();}, fixedAssets:function(){showFixedAssets&&showFixedAssets();},
     resources:showResources, aiAssistant:showAIAssistant, maintenance:showMaintenance, security:showSecurity,
     settings:showSettings, users:showUsers
 };
@@ -4420,225 +4431,6 @@ function _buildObligationsTable(obs) {
 // -----------------------------------------------------------------------------
 
 var _ct600State = { calculated: null, returns: [] };
-
-
-// ---------------------------------------------------------------------------
-// IMPORT / MIGRATE DATA
-// ---------------------------------------------------------------------------
-
-var _importState = { type: null, csvData: null, preview: null };
-
-async function showImportData() {
-  showContent(
-    '<div class="page-hdr">' +
-      '<div><div class="page-title">Import / Migrate Data</div>' +
-        '<div class="page-sub">Migrate from Xero, FreeAgent, QuickBooks or any CSV source</div></div>' +
-    '</div>' +
-
-    // Warning banner
-    '<div class="alert alert-warning" style="margin-bottom:20px">' +
-      '<p><strong>Before you import:</strong> Take a backup of your data first. Imports cannot be automatically undone. ' +
-        'Run this on a clean instance or after your year-end close.</p>' +
-    '</div>' +
-
-    // Import type cards
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px">' +
-      _importCard('contacts',        '&#128101;', 'Contacts',          'Import clients and suppliers. Detects Type column to route to correct sheet.', ['Xero', 'FreeAgent', 'QuickBooks', 'Generic CSV']) +
-      _importCard('invoices',        '&#128203;', 'Outstanding Invoices', 'Import unpaid/partially paid invoices at migration date.', ['Xero', 'FreeAgent', 'QuickBooks', 'Generic CSV']) +
-      _importCard('bills',           '&#128196;', 'Outstanding Bills',  'Import unpaid supplier bills at migration date.', ['Xero', 'FreeAgent', 'QuickBooks', 'Generic CSV']) +
-      _importCard('openingBalances', '&#9878;&#65039;',  'Opening Balances',  'Import trial balance as at your migration date. Creates journal entries.', ['Trial Balance CSV', 'Manual entry']) +
-    '</div>' +
-
-    // Import wizard panel
-    '<div id="import-panel" style="display:none"></div>'
-  );
-}
-
-function _importCard(type, icon, title, desc, sources) {
-  return '<div class="card" style="cursor:pointer;transition:all 0.2s" onclick="openImportWizard('' + type + '')" ' +
-    'onmouseover="this.style.boxShadow='var(--shadow-lg)';this.style.transform='translateY(-2px)'" ' +
-    'onmouseout="this.style.boxShadow='';this.style.transform=''">' +
-    '<div style="display:flex;align-items:flex-start;gap:14px">' +
-      '<div style="width:44px;height:44px;background:var(--blue-50);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">' + icon + '</div>' +
-      '<div style="flex:1">' +
-        '<h3 style="font-size:15px;color:var(--g900);margin-bottom:4px;font-weight:600">' + title + '</h3>' +
-        '<p style="font-size:13px;color:var(--g500);line-height:1.6;margin-bottom:10px">' + desc + '</p>' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
-          sources.map(function(s){ return '<span class="badge badge-grey" style="font-size:10px">' + s + '</span>'; }).join('') +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div style="margin-top:14px;text-align:right">' +
-      '<a style="font-size:12px;color:var(--blue-600);cursor:pointer" onclick="event.stopPropagation();downloadTemplate('' + type + '')">&#11015; Download template</a>' +
-    '</div>' +
-  '</div>';
-}
-
-function openImportWizard(type) {
-  _importState = { type: type, csvData: null, preview: null };
-  var titles = { contacts:'Contacts', invoices:'Outstanding Invoices', bills:'Outstanding Bills', openingBalances:'Opening Balances' };
-  var panel = document.getElementById('import-panel');
-  if (!panel) return;
-  panel.style.display = 'block';
-  panel.innerHTML =
-    '<div class="card" style="margin-top:4px">' +
-      '<div class="card-hdr" style="background:var(--g800)">' +
-        '<span class="card-ttl" style="color:#fff">Step 1 of 3 &mdash; Upload CSV: ' + (titles[type]||type) + '</span>' +
-        '<button class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.6)" onclick="document.getElementById('import-panel').style.display='none'">&#10005; Close</button>' +
-      '</div>' +
-      '<div class="card-body">' +
-        (type === 'openingBalances'
-          ? '<div class="form-group"><label class="form-label">As at date (migration date) *</label>' +
-              '<input type="date" class="form-input" id="imp-obdate" value="' + new Date().toISOString().split('T')[0] + '" style="max-width:200px"></div>'
-          : '') +
-        '<div class="form-group">' +
-          '<label class="form-label">Upload CSV file *</label>' +
-          '<div style="border:2px dashed var(--g300);border-radius:8px;padding:32px;text-align:center;background:var(--g50);cursor:pointer" ' +
-            'onclick="document.getElementById('imp-file').click()" id="imp-dropzone">' +
-            '<div style="font-size:32px;margin-bottom:8px">&#128229;</div>' +
-            '<div style="font-size:14px;color:var(--g600);margin-bottom:4px">Click to upload or drag and drop</div>' +
-            '<div style="font-size:12px;color:var(--g400)">CSV files only &middot; UTF-8 encoding</div>' +
-          '</div>' +
-          '<input type="file" id="imp-file" accept=".csv,.txt" style="display:none" onchange="_handleImportFile(this)">' +
-        '</div>' +
-        '<div id="imp-step1-status" style="font-size:13px;color:var(--g500)"></div>' +
-        '<div style="margin-top:16px;display:flex;gap:8px">' +
-          '<button class="btn btn-primary" onclick="previewImportData()" id="imp-preview-btn" disabled>Next: Preview &#8250;</button>' +
-          '<a style="font-size:12px;color:var(--blue-600);cursor:pointer;align-self:center" onclick="downloadTemplate('' + type + '')">&#11015; Download template for ' + (titles[type]||type) + '</a>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div id="imp-preview-panel"></div>' +
-    '<div id="imp-result-panel"></div>';
-
-  panel.scrollIntoView({ behavior: 'smooth' });
-}
-
-function _handleImportFile(input) {
-  var file = input.files[0];
-  if (!file) return;
-  var status = document.getElementById('imp-step1-status');
-  var btn    = document.getElementById('imp-preview-btn');
-  var zone   = document.getElementById('imp-dropzone');
-  if (status) status.textContent = 'Reading: ' + file.name + ' (' + Math.round(file.size/1024) + ' KB)...';
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    _importState.csvData = e.target.result;
-    if (status) status.innerHTML = '<span style="color:var(--green-600)">&#10003; ' + file.name + ' loaded (' + Math.round(file.size/1024) + ' KB)</span>';
-    if (zone) zone.style.borderColor = 'var(--green-500)';
-    if (btn) btn.disabled = false;
-  };
-  reader.onerror = function() {
-    if (status) status.innerHTML = '<span style="color:var(--red-500)">Failed to read file. Please try again.</span>';
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-async function previewImportData() {
-  var panel = document.getElementById('imp-preview-panel');
-  if (!panel) return;
-  if (!_importState.csvData) { toast('Please upload a CSV file first', 'warning'); return; }
-  panel.innerHTML = '<div class="card" style="margin-top:12px"><div class="card-body"><div class="loader"><div class="spin"></div><span>Analysing CSV...</span></div></div></div>';
-  var r = await api('previewImport', { importType: _importState.type, csvData: _importState.csvData });
-  if (!r || !r.success) {
-    panel.innerHTML = '<div class="alert alert-error"><p>' + (r ? r.message : 'Preview failed') + '</p></div>';
-    return;
-  }
-  _importState.preview = r;
-
-  var previewRows = (r.preview || []).map(function(row) {
-    return '<tr>' + r.headers.map(function(h){ return '<td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (row[h]||'') + '</td>'; }).join('') + '</tr>';
-  }).join('');
-
-  panel.innerHTML =
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="card-hdr" style="background:var(--g800)">' +
-        '<span class="card-ttl" style="color:#fff">Step 2 of 3 &mdash; Preview</span>' +
-      '</div>' +
-      '<div class="card-body">' +
-        '<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">' +
-          '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Rows to import</div><div class="stat-value" style="color:var(--green-600)">' + r.totalRows + '</div></div>' +
-          '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Detected platform</div><div style="font-size:16px;font-weight:700;color:var(--g800);margin-top:4px">' + r.platform + '</div></div>' +
-          '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Columns found</div><div class="stat-value">' + r.headers.length + '</div></div>' +
-        '</div>' +
-        '<p style="font-size:13px;color:var(--g500);margin-bottom:10px">Showing first ' + (r.preview||[]).length + ' of ' + r.totalRows + ' rows:</p>' +
-        '<div style="overflow-x:auto;border:1px solid var(--g200);border-radius:6px">' +
-          '<table class="dt" style="font-size:12px"><thead><tr>' +
-            r.headers.map(function(h){ return '<th style="white-space:nowrap;font-size:10px">' + h + '</th>'; }).join('') +
-          '</tr></thead><tbody>' + previewRows + '</tbody></table>' +
-        '</div>' +
-        '<div style="margin-top:16px;display:flex;gap:8px">' +
-          '<button class="btn btn-primary" onclick="runImport()">&#10003; Import ' + r.totalRows + ' records</button>' +
-          '<button class="btn btn-secondary" onclick="document.getElementById('imp-preview-panel').innerHTML=''">&#8592; Back</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  panel.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function runImport() {
-  var resultPanel = document.getElementById('imp-result-panel');
-  var previewPanel = document.getElementById('imp-preview-panel');
-  if (resultPanel) resultPanel.innerHTML = '<div class="card" style="margin-top:12px"><div class="card-body"><div class="loader"><div class="spin"></div><span>Importing...</span></div></div></div>';
-
-  var params = { importType: _importState.type, csvData: _importState.csvData, source: _importState.preview ? _importState.preview.platform : 'CSV' };
-  if (_importState.type === 'openingBalances') {
-    var obDate = document.getElementById('imp-obdate');
-    if (obDate) params.asAtDate = obDate.value;
-  }
-
-  var actions = { contacts:'importContacts', invoices:'importInvoices', bills:'importBills', openingBalances:'importOpeningBalances' };
-  var action  = actions[_importState.type];
-  if (!action) { toast('Unknown import type', 'error'); return; }
-
-  var r = await api(action, params);
-  if (previewPanel) previewPanel.innerHTML = '';
-
-  var errHtml = '';
-  if (r.errors && r.errors.length) {
-    errHtml = '<div class="alert alert-warning" style="margin-top:12px"><p><strong>' + r.errors.length + ' row error(s):</strong></p><ul style="margin:8px 0 0 16px;font-size:12px">' +
-      r.errors.slice(0,10).map(function(e){ return '<li>' + e + '</li>'; }).join('') + '</ul></div>';
-  }
-  var warnHtml = '';
-  if (r.warnings && r.warnings.length) {
-    warnHtml = '<div class="alert alert-info" style="margin-top:12px"><ul style="margin:0 0 0 16px;font-size:12px">' +
-      r.warnings.slice(0,5).map(function(w){ return '<li>' + w + '</li>'; }).join('') + '</ul></div>';
-  }
-
-  if (resultPanel) resultPanel.innerHTML =
-    '<div class="card" style="margin-top:12px">' +
-      '<div class="card-hdr" style="background:' + (r.success ? 'var(--green-700)' : 'var(--red-700)') + '">' +
-        '<span class="card-ttl" style="color:#fff">Step 3 of 3 &mdash; ' + (r.success ? 'Import Complete' : 'Import Failed') + '</span>' +
-      '</div>' +
-      '<div class="card-body">' +
-        (r.success
-          ? '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">' +
-              '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Imported</div><div class="stat-value amt-pos">' + (r.imported||0) + '</div></div>' +
-              '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Skipped</div><div class="stat-value">' + (r.skipped||0) + '</div></div>' +
-              '<div class="stat-card" style="padding:12px;flex:1"><div class="stat-label">Errors</div><div class="stat-value ' + (r.errors&&r.errors.length?'amt-neg':'') + '">' + (r.errors?r.errors.length:0) + '</div></div>' +
-            '</div>'
-          : '<div class="alert alert-error"><p>' + (r.message||'Import failed') + '</p></div>') +
-        errHtml + warnHtml +
-        '<div style="margin-top:16px;display:flex;gap:8px">' +
-          '<button class="btn btn-primary" onclick="showImportData()">&#8592; Import more data</button>' +
-          '<button class="btn btn-secondary" onclick="nbNav('dashboard')">Go to Dashboard</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-
-  resultPanel.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function downloadTemplate(type) {
-  var r = await api('getImportTemplate', { templateType: type });
-  if (!r || !r.success) { toast('Could not get template', 'error'); return; }
-  var blob = new Blob([r.csv], { type: 'text/csv' });
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url; a.download = r.filename; a.click();
-  URL.revokeObjectURL(url);
-  toast('Template downloaded', 'success');
-}
 
 async function showCT600() {
   showLoader();

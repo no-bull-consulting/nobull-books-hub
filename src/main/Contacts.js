@@ -13,6 +13,57 @@
 // CLIENTS
 // -----------------------------------------------------------------------------
 
+/**
+ * exportClientData(clientId)
+ * Fulfils GDPR Article 20 (Right to Data Portability).
+ * Compiles all client info, invoices, and payment history into a portable JSON format.
+ */
+function exportClientData(clientId, params) {
+  try {
+    _auth('clients.read', params);
+    var ss = getDb(params);
+    
+    // 1. Get Client Profile
+    var clients = getAllClients(params).clients || [];
+    var client = clients.find(function(c) { return c.clientId === clientId; });
+    if (!client) throw new Error("Client not found");
+
+    // 2. Get all related Invoices
+    var allInvoices = getAllInvoices(params).invoices || [];
+    var clientInvoices = allInvoices.filter(function(i) { return i.clientId === clientId; });
+
+    // 3. Get all related Transactions (Ledger entries)
+    var allTxns = getAllTransactions(null, null, params).transactions || [];
+    var clientLedger = allTxns.filter(function(t) { return t.invoiceId && clientInvoices.some(function(ci) { return ci.invoiceId === t.invoiceId; }); });
+
+    var exportPackage = {
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        version: APP_VERSION,
+        instanceId: params._sheetId
+      },
+      clientProfile: client,
+      invoices: clientInvoices.map(function(inv) {
+        return {
+          header: inv,
+          lines: getInvoiceLines(inv.invoiceId, params)
+        };
+      }),
+      ledgerEntries: clientLedger
+    };
+
+    logAudit('GDPR_EXPORT', 'Client', clientId, { name: client.clientName }, params);
+    
+    return { 
+      success: true, 
+      export: exportPackage,
+      message: "Data compiled successfully for " + client.clientName 
+    };
+  } catch(e) {
+    return apiError("Export failed", e);
+  }
+}
+
 function getAllClients(params) {
   try {
     var sheet = getDb(params || {}).getSheetByName(SHEETS.CLIENTS);
@@ -50,31 +101,33 @@ function getAllClients(params) {
 function createClient(params) {
   try {
     _auth('clients.write', params);
-    var sheet = getDb(params || {}).getSheetByName(SHEETS.CLIENTS);
-    if (!sheet) return { success: false, message: 'Clients sheet not found' };
-
+    var sheet = getDb(params).getSheetByName(SHEETS.CLIENTS);
+    
+    // Strict Type Casting & Sanitization
     var clientId = generateId('CLI');
-    var name = params.clientName || params.name || '';
+    var name     = String(params.clientName || '').substring(0, 255);
+    var email    = String(params.email || '').toLowerCase().trim();
+    var phone    = String(params.phone || '').replace(/[^\d+ ]/g, ''); // Numeric only
+    
     sheet.appendRow([
-      clientId,
-      name,
-      params.email          || '',
-      params.phone          || '',
-      params.address        || '',
-      params.postcode       || '',
-      params.country        || 'UK',
-      params.vatRegNumber   || params.vatNumber || '',
-      params.contactName    || '',
-      params.notes          || '',
+      clientId, 
+      name, 
+      email, 
+      phone,
+      String(params.address || ''),
+      String(params.postcode || '').toUpperCase(),
+      String(params.country || 'UK'),
+      String(params.vatRegNumber || ''),
+      String(params.contactName || ''),
+      String(params.notes || '').substring(0, 1000),
       new Date(),
       true
     ]);
 
     logAudit('CREATE', 'Client', clientId, { name: name }, params);
-    return { success: true, clientId: clientId, clientName: name };
+    return { success: true, clientId: clientId };
   } catch(e) {
-    Logger.log('createClient error: ' + e.toString());
-    return { success: false, message: e.toString() };
+    return apiError("Failed to create client", e);
   }
 }
 
@@ -145,6 +198,37 @@ function deleteClient(clientId, params) {
   } catch(e) {
     Logger.log('deleteClient error: ' + e.toString());
     return { success: false, message: e.toString() };
+  }
+}
+
+/**
+ * eraseClient(clientId)
+ * Fulfils GDPR Article 17 (Right to Erasure).
+ * Anonymizes PII (Personally Identifiable Information) while keeping financial rows for audit.
+ */
+function eraseClient(clientId, params) {
+  try {
+    _auth('clients.write', params);
+    var ss = getDb(params);
+    var sheet = ss.getSheetByName(SHEETS.CLIENTS);
+    var data = sheet.getDataRange().getValues();
+
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] === clientId) {
+        var rowNum = i + 1;
+        // Overwrite personal fields with Anonymized markers
+        sheet.getRange(rowNum, 2).setValue("GDPR_ERASED_" + clientId); // Name
+        sheet.getRange(rowNum, 3, 1, 7).setValues([["erased@example.com", "0000", "Erased", "0000", "UK", "N/A", "N/A"]]);
+        sheet.getRange(rowNum, 10).setValue("Personal data erased on " + new Date().toISOString()); // Notes
+        sheet.getRange(rowNum, 12).setValue(false); // Deactivate
+        
+        logAudit('GDPR_ERASE', 'Client', clientId, { status: "Anonymized" }, params);
+        return { success: true, message: "Client personal data anonymized. Financial records retained." };
+      }
+    }
+    throw new Error("Client not found");
+  } catch(e) {
+    return apiError("Erasure failed", e);
   }
 }
 

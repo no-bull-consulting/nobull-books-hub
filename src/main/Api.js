@@ -11,17 +11,31 @@ var API_VERSION = '2.0';
  * handleApiCall(action, paramsJson)
  * Single google.script.run entry point.
  */
+/**
+ * NO~BULL BOOKS -- API LAYER v2.2
+ */
+
 function handleApiCall(action, paramsJson) {
   try {
-    var params = JSON.parse(paramsJson || '{}');
-    var ctx    = _getCurrentUserContext(params);
+    var rawParams = JSON.parse(paramsJson || '{}');
+    var params = typeof validateParams === 'function' ? validateParams(action, rawParams) : rawParams;
+    var ctx = _getCurrentUserContext(params);
+
+    // Automated Audit Log for every call
+    logAudit('API_CALL', 'System', action, { user: ctx.email }, params);
 
     if (action === 'askGemini') return handleGeminiRequest(params, ctx);
 
-    var result = _route(action, params, ctx);
-    return JSON.parse(JSON.stringify(result));
+    // Routing
+    switch (action) {
+      case 'getSA103Data': return getSA103Data(params); // Resolved ReferenceError
+      case 'saveVATReturn': _auth('reports.tax', params); return saveVATReturn(params);
+      case 'calculateVATReturn': return calculateVATReturn(params.periodStart, params.periodEnd, params);
+      // ... Add your other cases from your original Api.gs ...
+      default:
+        return _route(action, params, ctx);
+    }
   } catch(e) {
-    Logger.log('handleApiCall ERROR [' + action + ']: ' + e.toString());
     return { success: false, error: e.toString() };
   }
 }

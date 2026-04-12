@@ -19,7 +19,8 @@ function checkAndInitSheet(params) {
         'FinancialYearStart','FinancialYearEnd','CurrentFinancialYear','VATRegistered',
         'VATScheme','VATRate','VATFrequency','MTDEnabled',
         'hmrcClientID','hmrcClientSecret','hmrcAccessToken','hmrcTestMode','hmrcTokenExpiry',
-        'hmrcNINO','mtdBusinessId','cnPrefix','nextCNNumber','poPrefix','nextPONumber',
+        'hmrcNINO','mtdBusinessId', // Indices 28, 29
+        'cnPrefix','nextCNNumber','poPrefix','nextPONumber',
         'lockedBefore','emailSubject','emailBody','paymentTerms','invoiceFooter',
         'templateAccentColor','templateLogoPosition','templateShowReference','templateFont',
         'baseCurrency','enabledCurrencies','businessStartDate','yearEndDay',
@@ -54,10 +55,11 @@ function checkAndInitSheet(params) {
       ],
       'BankAccounts': [
         'AccountId','AccountName','BankName','SortCode','AccountNumber',
-        'Currency','OpeningBalance','CurrentBalance','Active','Notes'
+        'Currency','OpeningBalance','CurrentBalance','Active','Notes',
+        'NominalCode', 'IBAN', 'SWIFT'
       ],
       'BankTransactions': [
-        'TxId','Date','Description','Reference','Amount','Type','Category',
+        'TxId','Date','Descripti on','Reference','Amount','Type','Category',
         'BankAccount','Status','ReconciledDate','MatchId','MatchType','Notes'
       ],
       'Transactions': [

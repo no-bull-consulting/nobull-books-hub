@@ -353,81 +353,94 @@ function getPurchaseOrders(statusFilter, params) {
 // SETTINGS  read / write
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * NO~BULL BOOKS — SETTINGS
+ * Fixed mapping for NINO and MTD Business ID.
+ */
+
 function getSettings(params) {
   try {
-    var ss    = getDb(params || {});
+    var ss = getDb(params || {});
     var sheet = ss.getSheetByName(SHEETS.SETTINGS);
+    if (!sheet || sheet.getLastRow() < 2) return getDefaultSettings();
 
-    if (!sheet || sheet.getLastRow() < 2) {
-      return getDefaultSettings();
-    }
-
-    var sheetCols = sheet.getLastColumn();
-    var readCols  = Math.max(sheetCols, 1);
-    var rawData   = sheet.getRange(2, 1, 1, readCols).getValues()[0];
-    var data      = rawData;
-    while (data.length < 47) data.push('');
-
+    var lastCol = sheet.getLastColumn();
+    var data = sheet.getRange(2, 1, 1, Math.max(lastCol, 48)).getValues()[0];
     var hmrcProps = _getHMRCProps();
 
     return {
-      companyName:          data[0]  ? data[0].toString()            : '',
-      companyAddress:       data[1]  ? data[1].toString()            : '',
-      companyPostcode:      data[2]  ? data[2].toString()            : '',
-      companyPhone:         data[3]  ? data[3].toString()            : '',
-      companyEmail:         data[4]  ? data[4].toString()            : '',
-      vatRegNumber:         data[5]  ? data[5].toString()            : '',
-      invoicePrefix:        data[6]  ? data[6].toString()            : 'INV-',
-      nextInvoiceNumber:    data[7]  ? parseInt(data[7])  || 1       : 1,
-      billPrefix:           data[8]  ? data[8].toString()            : 'BILL-',
-      nextBillNumber:       data[9]  ? parseInt(data[9])  || 1       : 1,
-      logoURL:              data[10] ? data[10].toString()           : '',
-      bankName:             data[11] ? data[11].toString()           : '',
-      accountName:          data[12] ? data[12].toString()           : '',
-      sortCode:             data[13] ? data[13].toString()           : '',
-      accountNumber:        data[14] ? data[14].toString()           : '',
-      financialYearStart:   safeSerializeDate(data[15]) || '2026-04-01',
-      financialYearEnd:     safeSerializeDate(data[16]) || '2027-03-31',
-      currentFinancialYear: data[17] ? data[17].toString()           : '2026/27',
-      vatRegistered:        data[18] === true || data[18] === 'TRUE' || data[18] === 'true',
-      vatScheme:            data[19] ? data[19].toString()           : 'standard',
-      vatRate:              data[20] ? parseFloat(data[20]) || 20    : 20,
-      vatFrequency:         data[21] ? data[21].toString()           : 'quarterly',
-      mtdEnabled:           data[22] === true || data[22] === 'TRUE' || data[22] === 'true',
-      // cols 23-26: HMRC credentials — stored in PropertiesService, not sheet
-      hmrcTestMode:         data[26] === true || data[26] === 'TRUE' || data[26] === 'true',
-      hmrcNINO:             data[28] ? data[28].toString()           : '',
-      mtdBusinessId:        data[29] ? data[29].toString()           : '',
-      cnPrefix:             data[30] ? data[30].toString()           : 'CN-',
-      nextCNNumber:         data[31] ? parseInt(data[31]) || 1       : 1,
-      poPrefix:             data[32] ? data[32].toString()           : 'PO-',
-      nextPONumber:         data[33] ? parseInt(data[33]) || 1       : 1,
-      lockedBefore:         (data.length>34&&data[34]) ? data[34].toString()      : '',
-      emailSubject:         (data.length>35&&data[35]) ? data[35].toString()      : '',
-      emailBody:            (data.length>36&&data[36]) ? data[36].toString()      : '',
-      paymentTerms:         (data.length>37&&data[37]) ? parseInt(data[37])||30   : 30,
-      invoiceFooter:        (data.length>38&&data[38]) ? data[38].toString()      : '',
-      templateAccentColor:  (data.length>39&&data[39]) ? data[39].toString()      : '#1a3c6b',
-      templateLogoPosition: (data.length>40&&data[40]) ? data[40].toString()      : 'left',
-      templateShowReference:(data.length>41&&data[41]) === true || data[41] === 'TRUE',
-      templateFont:         (data.length>42&&data[42]) ? data[42].toString()      : 'sans',
-      baseCurrency:         (data.length>43&&data[43]) ? data[43].toString()      : 'GBP',
-      enabledCurrencies:    (data.length>44&&data[44]) ? data[44].toString().split(',') : ['GBP','EUR','USD'],
-      businessStartDate:    safeSerializeDate(data[45]) || '',
-      yearEndDay:           (data.length>46&&data[46])
-        ? (function(v){ var d=safeSerializeDate(v); return d || (typeof v==='string'?v:'31 March'); })(data[46])
-        : '31 March',
-      // HMRC credentials from PropertiesService
-      hmrcClientID:         hmrcProps.hmrcClientID,
-      hmrcClientSecret:     hmrcProps.hmrcClientSecret,
-      hmrcAccessToken:      hmrcProps.hmrcAccessToken,
-      hmrcTokenExpiry:      hmrcProps.hmrcTokenExpiry,
-      // Pass _sheetId through so updateSettings() can find the correct sheet
+      companyName:          String(data[0] || ''),
+      companyAddress:       String(data[1] || ''),
+      companyPostcode:      String(data[2] || ''),
+      companyPhone:         String(data[3] || ''),
+      companyEmail:         String(data[4] || ''),
+      vatRegNumber:         String(data[5] || ''),
+      invoicePrefix:        String(data[6] || 'INV-'),
+      nextInvoiceNumber:    parseInt(data[7]) || 1,
+      billPrefix:           String(data[8] || 'BILL-'),
+      nextBillNumber:       parseInt(data[9]) || 1,
+      logoURL:              String(data[10] || ''),
+      bankName:             String(data[11] || ''),
+      accountName:          String(data[12] || ''),
+      sortCode:             String(data[13] || ''),
+      accountNumber:        String(data[14] || ''),
+      financialYearStart:   safeSerializeDate(data[15]),
+      financialYearEnd:     safeSerializeDate(data[16]),
+      currentFinancialYear: String(data[17] || ''),
+      vatRegistered:        data[18] === true || data[18] === 'TRUE',
+      vatScheme:            String(data[19] || 'standard'),
+      vatRate:              parseFloat(data[20]) || 20,
+      vatFrequency:         String(data[21] || 'quarterly'),
+      mtdEnabled:           data[22] === true || data[22] === 'TRUE',
+      hmrcTestMode:         data[26] === true || data[26] === 'TRUE',
+      hmrcNINO:             String(data[28] || ''), // Fixed mapping
+      mtdBusinessId:        String(data[29] || ''), // Fixed mapping
+      lockedBefore:         safeSerializeDate(data[34]),
+      emailSubject:         String(data[35] || ''),
+      emailBody:            String(data[36] || ''),
+      paymentTerms:         parseInt(data[37]) || 30,
+      invoiceFooter:        String(data[38] || ''),
+      baseCurrency:         String(data[43] || 'GBP'),
       _sheetId:             params && params._sheetId ? params._sheetId : ''
     };
   } catch(e) {
-    Logger.log('getSettings error: ' + e.toString());
     return getDefaultSettings();
+  }
+}
+
+function updateSettings(settings, params) {
+  if (params && params._sheetId && !settings._sheetId) settings._sheetId = params._sheetId;
+  try {
+    var ss = getDb(settings);
+    var sheet = ss.getSheetByName('Settings');
+    _setHMRCProps(settings);
+
+    var data = [
+      settings.companyName || '', settings.companyAddress || '', settings.companyPostcode || '',
+      settings.companyPhone || '', settings.companyEmail || '', settings.vatRegNumber || '',
+      settings.invoicePrefix || 'INV-', settings.nextInvoiceNumber || 1,
+      settings.billPrefix || 'BILL-', settings.nextBillNumber || 1,
+      settings.logoURL || '', settings.bankName || '', settings.accountName || '',
+      settings.sortCode || '', settings.accountNumber || '', settings.financialYearStart || '',
+      settings.financialYearEnd || '', settings.currentFinancialYear || '',
+      settings.vatRegistered || false, settings.vatScheme || 'standard',
+      settings.vatRate || 20, settings.vatFrequency || 'quarterly', settings.mtdEnabled || false,
+      '', '', '', settings.hmrcTestMode || true, '',
+      settings.hmrcNINO || '',       // Index 28
+      settings.mtdBusinessId || '',  // Index 29
+      settings.cnPrefix || 'CN-', settings.nextCNNumber || 1,
+      settings.poPrefix || 'PO-', settings.nextPONumber || 1,
+      settings.lockedBefore || '', settings.emailSubject || '', settings.emailBody || '',
+      settings.paymentTerms || 30, settings.invoiceFooter || '',
+      '#1a3c6b', 'left', true, 'sans', settings.baseCurrency || 'GBP',
+      'GBP,EUR,USD', settings.businessStartDate || '', settings.yearEndDay || '31 March',
+      settings.ownerEmail || ''
+    ];
+
+    sheet.getRange(2, 1, 1, data.length).setValues([data]);
+    return { success: true, message: 'Settings saved.' };
+  } catch(e) {
+    return { success: false, error: e.toString() };
   }
 }
 

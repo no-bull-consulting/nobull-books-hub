@@ -408,23 +408,15 @@ function updateAccount(accountData, params) {
 }
 
 function deleteAccount(accountCode, params) {
-  try {
-    _auth('coa.write', params);
-    var sheet = getDb(params || {}).getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
-    if (!sheet) return { success: false, message: 'Chart of Accounts sheet not found.' };
-
-    var data = sheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (data[i][0] && data[i][0].toString() === accountCode.toString()) {
-        sheet.getRange(i + 1, 7).setValue(false); // deactivate rather than delete
-        logAudit('DELETE', 'Account', accountCode, { name: data[i][1] });
-        return { success: true, message: 'Account ' + accountCode + ' deactivated.' };
-      }
+  _auth('coa.write', params);
+  var sheet = getDb(params).getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === accountCode) {
+      sheet.deleteRow(i + 1); // Hard delete for compliance cleanup
+      logAudit('DELETE', 'Account', accountCode, {}, params);
+      return { success: true };
     }
-    return { success: false, message: 'Account not found.' };
-  } catch(e) {
-    Logger.log('deleteAccount error: ' + e.toString());
-    return { success: false, message: e.toString() };
   }
 }
 

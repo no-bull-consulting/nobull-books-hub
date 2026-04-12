@@ -11,6 +11,30 @@ function _checkLicence(sheetId) {
  * -----------------------------------------------------------------------------
  */
 
+function logAudit(action, entity, id, detail, params) {
+  try {
+    var ss = getDb(params);
+    var sheet = ss.getSheetByName('AuditLog');
+    var startTime = params._startTime || new Date().getTime();
+    var duration = new Date().getTime() - startTime;
+    
+    var detailObj = typeof detail === 'object' ? detail : { info: detail };
+    detailObj.executionTimeMs = duration; // 
+
+    sheet.appendRow([
+      generateId('AUD'),
+      new Date(),
+      action,
+      entity,
+      id,
+      _getCurrentUserContext(params).email,
+      JSON.stringify(detailObj)
+    ]);
+  } catch(e) {
+    Logger.log('Audit Failure: ' + e);
+  }
+}
+
 // -----------------------------------------------------------------------------
 // FIXED ASSETS
 // -----------------------------------------------------------------------------
@@ -317,50 +341,6 @@ function runPreCloseChecks(yearEndDate, params) {
     var allPassed = checks.every(function(c) { return c.passed; });
     return { success: true, checks: checks, allPassed: allPassed };
   } catch(e) {
-    return { success: false, message: e.toString() };
-  }
-}
-
-function getYearEndSummary(yearStart, yearEnd, params) {
-  try {
-    _auth('settings.write', params);
-    var plResult = generateProfitLoss(yearStart, yearEnd, params);
-    return {
-      success:       true,
-      yearStart:     yearStart,
-      yearEnd:       yearEnd,
-      totalRevenue:  plResult.success ? plResult.report.totalRevenue  : 0,
-      totalExpenses: plResult.success ? plResult.report.totalExpenses : 0,
-      netProfit:     plResult.success ? plResult.report.netProfit     : 0
-    };
-  } catch(e) {
-    return { success: false, message: e.toString() };
-  }
-}
-
-function closeFinancialYear(params) {
-  try {
-    _auth('settings.write', params);
-    var db    = getDb(params || {});
-    var sheet = db.getSheetByName(SHEETS.FINANCIAL_YEARS);
-    if (!sheet) return { success: false, message: 'FinancialYears sheet not found.' };
-
-    var yearId    = generateId('FY');
-    var ctx       = _getCurrentUserContext(params);
-    sheet.appendRow([
-      yearId,
-      params.label     || (params.yearStart + ' - ' + params.yearEnd),
-      params.yearStart || '',
-      params.yearEnd   || '',
-      'Closed',
-      new Date().toISOString().split('T')[0],
-      ctx.email || ''
-    ]);
-
-    logAudit('CLOSE', 'FinancialYear', yearId, { label: params.label });
-    return { success: true, yearId: yearId, message: 'Financial year closed.' };
-  } catch(e) {
-    Logger.log('closeFinancialYear error: ' + e.toString());
     return { success: false, message: e.toString() };
   }
 }
