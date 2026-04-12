@@ -568,6 +568,13 @@ function showSettings() {
         el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
         return;
       }
+      var secAdvanced = `
+        <div class="mt-4 border-top pt-4">
+        <h5>Accounting Maintenance</h5>
+        <p class="text-muted" style="font-size:11px">Use this to remove ghost entries and restore standard UK nominal codes.</p>
+        <button class="btn btn-danger btn-sm" onclick="handleReseedCoA()">Reset Chart of Accounts</button>
+        </div>
+`;
       var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
       var detail = r.provider === 'meta'
         ? 'Phone ID: <code>' + r.meta.phoneId + '</code>'
@@ -2287,5 +2294,18 @@ async function showReconciliation() {
     return t.type !== 'Statement' && t.category !== 'Statement' && t.status !== 'Reconciled';
   });
   _renderReconPage();
+}
+
+async function handleReseedCoA() {
+  if (!confirm("WARNING: This will wipe your current Chart of Accounts and restore defaults. Existing transactions will NOT be deleted, but they may lose their account mappings. Proceed?")) return;
+  
+  showLoading('Reseeding...');
+  const res = await api('reseedChartOfAccounts');
+  if (res.success) {
+    toast(res.message, 'success');
+    location.reload(); // Refresh to clear the App.data cache
+  } else {
+    showError(res.error);
+  }
 }
 </script>

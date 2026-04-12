@@ -34,35 +34,33 @@ function _getHMRCToken() {
 // AUTH STATUS
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * NO~BULL BOOKS — HMRC VAT HANDLER
+ */
 function getHMRCAuthStatus(params) {
   try {
-    var settings = getSettings(params); // Fix: pass params so _sheetId is used
-    var testMode = settings.hmrcTestMode !== false;
-    var t        = _getHMRCToken();
+    var settings = getSettings(params);
+    var vrn = (settings.vatRegNumber || '').replace(/\s/g, ''); // Clean VRN
 
-    if (!t.accessToken) {
-      return { success: true, connected: false, expired: true, testMode: testMode, expiresIn: 0 };
+    if (!vrn) {
+      return { success: false, message: "VAT Registration Number is missing in Settings." };
     }
 
-    var now       = new Date();
-    var expiry    = t.tokenExpiry ? new Date(t.tokenExpiry) : null;
-    var expired   = !expiry || expiry <= now;
-    var expiresIn = expiry ? Math.max(0, Math.round((expiry - now) / 60000)) : 0;
+    var token = _getHMRCToken(); // Check Script Properties
+    var isConnected = (token && token.access_token);
 
-    // Extract VRN from stored token metadata if available
-    var vrn = settings.vatRegNumber ? settings.vatRegNumber.replace(/[^0-9]/g, '') : '';
+    // Audit this check so we can see it in the log
+    logAudit('MTD_CHECK', 'HMRC', vrn, { connected: !!isConnected }, params);
 
     return {
-      success:   true,
-      connected: !expired,
-      expired:   expired,
-      expiresIn: expiresIn,
-      testMode:  testMode,
-      vrn:       vrn
+      success: true,
+      isConnected: isConnected,
+      vrn: vrn,
+      testMode: settings.hmrcTestMode
     };
-  } catch(e) {
-    Logger.log('getHMRCAuthStatus error: ' + e.toString());
-    return { success: false, connected: false, expired: true, message: e.toString() };
+  } catch (e) {
+    logAudit('MTD_ERROR', 'HMRC', 'System', e.toString(), params);
+    return { success: false, message: "HMRC Auth Check Failed: " + e.toString() };
   }
 }
 

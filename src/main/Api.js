@@ -31,6 +31,7 @@ function handleApiCall(action, paramsJson) {
       case 'getSA103Data': return getSA103Data(params); // Resolved ReferenceError
       case 'saveVATReturn': _auth('reports.tax', params); return saveVATReturn(params);
       case 'calculateVATReturn': return calculateVATReturn(params.periodStart, params.periodEnd, params);
+      case 'reseedChartOfAccounts': return reseedChartOfAccounts(params);
       // ... Add your other cases from your original Api.gs ...
       default:
         return _route(action, params, ctx);

@@ -669,3 +669,36 @@ function diagSettings() {
   Logger.log('getSettings.financialYearStart: ' + s.financialYearStart);
   Logger.log('getSettings.businessStartDate:  ' + s.businessStartDate);
 }
+
+/**
+ * NO~BULL BOOKS — COA RESET
+ * Wipes the current CoA and replaces it with the clean COA_seed.gs template.
+ */
+function reseedChartOfAccounts(params) {
+  try {
+    _auth('admin.super', params); //
+    var ss = getDb(params);
+    var sheet = ss.getSheetByName('ChartOfAccounts');
+    
+    if (!sheet) throw new Error("ChartOfAccounts sheet not found.");
+
+    // 1. Clear existing data (Rows 2 to the end)
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
+    }
+
+    // 2. Fetch clean data from COA_seed.gs
+    var standardData = getStandardCoA(); 
+    
+    // 3. Write clean data back to the sheet
+    if (standardData && standardData.length > 0) {
+      sheet.getRange(2, 1, standardData.length, standardData[0].length).setValues(standardData);
+    }
+
+    logAudit('RESET_COA', 'System', 'All', 'Re-seeded CoA from standard template', params);
+    return { success: true, message: 'Chart of Accounts reset to standard template.' };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}

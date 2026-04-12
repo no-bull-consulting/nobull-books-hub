@@ -407,16 +407,44 @@ function updateAccount(accountData, params) {
   }
 }
 
+/**
+ * COA.gs — Hard Delete with Integrity Check
+ */
 function deleteAccount(accountCode, params) {
-  _auth('coa.write', params);
-  var sheet = getDb(params).getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0].toString() === accountCode) {
-      sheet.deleteRow(i + 1); // Hard delete for compliance cleanup
-      logAudit('DELETE', 'Account', accountCode, {}, params);
-      return { success: true };
+  try {
+    _auth('coa.write', params);
+    var ss = getDb(params);
+    
+    // 1. Integrity Check: Ensure no transactions exist for this account
+    var txnSheet = ss.getSheetByName(SHEETS.TRANSACTIONS);
+    var txns = txnSheet.getDataRange().getValues();
+    var hasUsage = txns.some(row => row[4] == accountCode || row[5] == accountCode);
+    
+    if (hasUsage) {
+      return { success: false, message: "Cannot delete account " + accountCode + ". It has existing transactions." };
     }
+
+    // 2. Perform Physical Deletion
+    var sheet = ss.getSheetByName(SHEETS.CHART_OF_ACCOUNTS);
+    var data = sheet.getDataRange().getValues();
+    var deleted = false;
+
+    for (var i = data.length - 1; i >= 1; i--) {
+      if (data[i][0].toString() === accountCode.toString()) {
+        sheet.deleteRow(i + 1);
+        deleted = true;
+        break; 
+      }
+    }
+
+    if (deleted) {
+      logAudit('DELETE_COA', 'Account', accountCode, "Hard deleted account", params);
+      return { success: true };
+    } else {
+      return { success: false, message: "Account code not found in database." };
+    }
+  } catch (e) {
+    return { success: false, error: e.toString() };
   }
 }
 
