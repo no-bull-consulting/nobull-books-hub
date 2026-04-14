@@ -2321,4 +2321,106 @@ async function handleReseedCoA() {
     showError(e.toString());
   }
 }
+
+async function handleITSASubmit() {
+  // 1. Ask the user which quarter they want to calculate
+  const q = prompt("Enter Quarter (1, 2, 3, or 4):");
+  const year = 2026; // Current tax year
+  
+  const ranges = {
+    '1': { start: `${year}-04-06`, end: `${year}-07-05` },
+    '2': { start: `${year}-07-06`, end: `${year}-10-05` },
+    '3': { start: `${year}-10-06`, end: `${year+1}-01-05` },
+    '4': { start: `${year+1}-01-06`, end: `${year+1}-04-05` }
+  };
+
+  if (!ranges[q]) return alert("Invalid Quarter selection.");
+
+  showLoading(`Calculating Quarter ${q} totals...`);
+  
+  try {
+    // 2. Call the new ITSA engine we put in ITSA.gs
+    const res = await api('calculateITSAQuarter', ranges[q]);
+    
+    if (res.success) {
+      // 3. Render a preview of the totals before sending to HMRC
+      renderITSAPreview(res.report, q, ranges[q]);
+    } else {
+      showError(res.error);
+    }
+  } catch (e) {
+    showError(e.toString());
+  }
+}
+
+function renderITSAPreview(report, quarter, range) {
+  const area = document.getElementById('itsa-results-area'); // Create or target a div for this
+  if (!area) return;
+
+  let html = `
+    <div class="card mt-4 animate-fade-in">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Quarter ${quarter} Summary Preview</h5>
+        <span class="badge bg-info">${range.start} to ${range.end}</span>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted text-uppercase small fw-bold">Income</h6>
+            <div class="display-6 mb-3">£${report.income.toLocaleString()}</div>
+            
+            <h6 class="text-muted text-uppercase small fw-bold">Expenses</h6>
+            <ul class="list-unstyled">
+              <li class="d-flex justify-content-between border-bottom py-2">
+                <span>Direct Costs:</span> <strong>£${report.expenses.directCosts.toLocaleString()}</strong>
+              </li>
+              <li class="d-flex justify-content-between border-bottom py-2">
+                <span>Overheads:</span> <strong>£${report.expenses.overheads.toLocaleString()}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-2">
+                <span>Other:</span> <strong>£${report.expenses.other.toLocaleString()}</strong>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6 border-start">
+            <div class="p-3 bg-light rounded">
+              <h6 class="text-muted text-uppercase small fw-bold">Net Profit</h6>
+              <div class="h3 text-success">£${report.netProfit.toLocaleString()}</div>
+              
+              <hr>
+              
+              <h6 class="text-muted text-uppercase small fw-bold">Est. Tax Liability (20%)</h6>
+              <div class="h4 text-primary">£${report.estimatedTax.toLocaleString()}</div>
+              <p class="text-muted small mt-2">
+                *This is a simplified estimate based on standard rates and does not include your Personal Allowance.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-warning mt-4 d-flex align-items-center gap-3">
+          <input type="checkbox" id="confirm-itsa" style="width:20px; height:20px;">
+          <label for="confirm-itsa" class="mb-0 small">
+            I confirm that these totals are a true representation of my digital records for this period.
+          </label>
+        </div>
+        
+        <div class="d-flex justify-content-end gap-2">
+          <button class="btn btn-outline-secondary" onclick="location.reload()">Cancel</button>
+          <button class="btn btn-success" id="btn-itsa-submit" onclick="submitToHMRC(${quarter})" disabled>
+            Submit Quarterly Update to HMRC
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  area.innerHTML = html;
+
+  // Logic to enable button only when checkbox is ticked
+  document.getElementById('confirm-itsa').addEventListener('change', function(e) {
+    document.getElementById('btn-itsa-submit').disabled = !e.target.checked;
+  });
+}
+
 </script>

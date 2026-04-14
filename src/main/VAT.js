@@ -124,3 +124,96 @@ function saveVATReturn(params) {
     return { success: false, message: e.toString() };
   }
 }
+
+/**
+ * NO~BULL BOOKS — VAT BOX CALCULATOR
+ * Translates Transactions sheet data into the HMRC 9-Box format.
+ * Uses Column B (Date), Column G (Net), and Column L (VAT).
+ */
+function calculateVATReturn(startDate, endDate, params) {
+  try {
+    const ss = getDb(params);
+    const sheet = ss.getSheetByName('Transactions');
+    if (!sheet) throw new Error("Transactions sheet not found.");
+    
+    const data = sheet.getDataRange().getValues();
+    
+    // HMRC 9-Box Structure
+    let boxes = {
+      box1: 0, // VAT due on sales
+      box2: 0, // VAT due on acquisitions from EU
+      box3: 0, // Total VAT due (Box 1 + Box 2)
+      box4: 0, // VAT reclaimed on purchases
+      box5: 0, // Net VAT to pay or reclaim
+      box6: 0, // Total value of sales (excl. VAT)
+      box7: 0, // Total value of purchases (excl. VAT)
+      box8: 0, // Total value of goods supplied to EU
+      box9: 0  // Total value of goods acquired from EU
+    };
+
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+
+    // Iterate through transactions (skip header row)
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row[1]) continue; // Skip if no date
+
+      const txDate = new Date(row[1]).getTime(); // Column B
+
+      // Filter by Date Range
+      if (txDate >= start && txDate <= end) {
+        const netAmount = parseFloat(row[6]) || 0;  // Column G
+        const vatAmount = parseFloat(row[11]) || 0; // Column L (VAT Amount)
+        const debitCode = row[4] ? row[4].toString() : '';  // Column E
+        const creditCode = row[5] ? row[5].toString() : ''; // Column F
+
+        // --- SALES LOGIC (Revenue/Income) ---
+        // Typically a credit to a 4xxx series account
+        if (creditCode.startsWith('4')) {
+          boxes.box6 += netAmount;
+          boxes.box1 += vatAmount;
+        }
+
+        // --- PURCHASE LOGIC (Expenses/Assets) ---
+        // Typically a debit to 5xxx (Direct Costs) or 7xxx (Overheads)
+        if (debitCode.startsWith('5') || debitCode.startsWith('7')) {
+          boxes.box7 += netAmount;
+          boxes.box4 += vatAmount;
+        }
+      }
+    }
+
+    // Final Cross-Box Calculations
+    boxes.box3 = boxes.box1 + boxes.box2;
+    boxes.box5 = Math.abs(boxes.box3 - boxes.box4);
+
+    // HMRC Formatting: Whole pounds for Boxes 1, 2, 3, 4, 6, 7, 8, 9. 
+    // Box 5 allows pence (2 decimal places).
+    const result = {
+      box1: Math.round(boxes.box1),
+      box2: Math.round(boxes.box2),
+      box3: Math.round(boxes.box3),
+      box4: Math.round(boxes.box4),
+      box5: parseFloat(boxes.box5.toFixed(2)),
+      box6: Math.round(boxes.box6),
+      box7: Math.round(boxes.box7),
+      box8: Math.round(boxes.box8),
+      box9: Math.round(boxes.box9)
+    };
+
+    // Log the calculation event
+    logAudit('VAT_CALCULATION', 'System', startDate + ' to ' + endDate, { netPayable: result.box5 }, params);
+
+    return { 
+      success: true, 
+      data: result, 
+      period: { start: startDate, end: endDate } 
+    };
+
+  } catch (e) {
+    console.error("calculateVATReturn Error: " + e.toString());
+    logAudit('VAT_CALC_ERROR', 'System', 'VAT Engine', e.toString(), params);
+    return { success: false, error: e.toString() };
+  }
+}

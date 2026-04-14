@@ -211,3 +211,12 @@ function _checkProps() {
   Logger.log('TRIAL_DAYS: '        + props['TRIAL_DAYS']);
   Logger.log('GEMINI_API_KEY: '    + (props['GEMINI_API_KEY'] ? 'set (' + props['GEMINI_API_KEY'].substring(0,8) + '...)' : 'NOT SET'));
 }
+
+function handleExchange(codeFromUI) {
+  try {
+    const result = exchangeCode(codeFromUI);
+    return result;
+  } catch (e) {
+    return "Error: " + e.message;
+  }
+}

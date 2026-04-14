@@ -683,7 +683,6 @@ function getIntegrityStatus(params) {
 }
 function initializeSystem(params)     { return checkAndInitSheet(params); }
 function createBackup(params)         { return { success: true }; }
-function getITSAObligationsFromSheet(params){ return { success: true, obligations: [] }; }
 function getITSASubmissions(params)   { return { success: true, submissions: [] }; }
 function submitQuarterlyUpdate(nino, businessId, taxYear, quarter, income, params){ return { success: false, message: 'ITSA not yet configured.' }; }
 function triggerAndGetCalculation(nino, taxYear, params){ return { success: false, message: 'ITSA not yet configured.' }; }

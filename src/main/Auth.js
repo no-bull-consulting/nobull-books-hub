@@ -487,3 +487,8 @@ function manageUser(action, email, role, notes, params) {
     return { success: false, message: e.toString() };
   }
 }
+
+function getAuthUrl() {
+  // This is a direct, hardcoded link including the ITSA scopes
+  return "https://test-api.service.hmrc.gov.uk/oauth/authorize?client_id=ylNDYLn5yc3ri0Gb2Sj7iVgCRWH2&response_type=code&scope=read:vat%20write:vat%20read:self-assessment%20write:self-assessment&redirect_uri=https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+}

@@ -40,27 +40,32 @@ function _getHMRCToken() {
 function getHMRCAuthStatus(params) {
   try {
     var settings = getSettings(params);
-    var vrn = (settings.vatRegNumber || '').replace(/\s/g, ''); // Clean VRN
+    var nino = (settings.nino || '').replace(/\s/g, ''); 
+    var vrn = (settings.vatRegNumber || '').replace(/\s/g, '');
 
-    if (!vrn) {
-      return { success: false, message: "VAT Registration Number is missing in Settings." };
+    var tokenObj = _getHMRCToken(); 
+    var active = false;
+
+    if (tokenObj && tokenObj.accessToken) {
+      var now = new Date();
+      // If there's an expiry date, check it. Otherwise, assume active.
+      active = tokenObj.tokenExpiry ? (now < new Date(tokenObj.tokenExpiry)) : true;
     }
 
-    var token = _getHMRCToken(); // Check Script Properties
-    var isConnected = (token && token.access_token);
-
-    // Audit this check so we can see it in the log
-    logAudit('MTD_CHECK', 'HMRC', vrn, { connected: !!isConnected }, params);
-
+    // We return multiple versions of "true" to catch whatever the HTML is looking for
     return {
       success: true,
-      isConnected: isConnected,
+      isConnected: active,     // Version 1
+      connected: active,       // Version 2
+      authenticated: active,   // Version 3
+      isAuthorized: active,    // Version 4
+      nino: nino,
       vrn: vrn,
-      testMode: settings.hmrcTestMode
+      expiry: tokenObj ? tokenObj.tokenExpiry : ''
     };
+
   } catch (e) {
-    logAudit('MTD_ERROR', 'HMRC', 'System', e.toString(), params);
-    return { success: false, message: "HMRC Auth Check Failed: " + e.toString() };
+    return { success: false, isConnected: false, message: e.toString() };
   }
 }
 
@@ -179,18 +184,23 @@ function testHMRCConnection(params) {
 
 function getVATObligations(vrn, fromDate, toDate, params) {
   try {
-    var t        = _getHMRCToken();
+    var t = _getHMRCToken();
     var settings = getSettings(params);
     var testMode = settings.hmrcTestMode !== false;
 
     if (!t.accessToken) return { success: false, message: 'Not connected to HMRC MTD.' };
-    if (!vrn)           return { success: false, message: 'VAT registration number is required.' };
+    
+    // Clean VRN to remove spaces
+    var cleanVrn = (vrn || '').replace(/\s/g, '');
+    if (!cleanVrn) return { success: false, message: 'VAT registration number is required.' };
 
     var baseUrl = testMode
       ? 'https://test-api.service.hmrc.gov.uk'
       : 'https://api.service.hmrc.gov.uk';
 
-    var url = baseUrl + '/organisations/vat/' + vrn + '/obligations?from=' + fromDate + '&to=' + toDate;
+    // Added status=O to fetch ONLY outstanding obligations
+    var url = baseUrl + '/organisations/vat/' + cleanVrn + '/obligations?from=' + fromDate + '&to=' + toDate + '&status=O';
+    
     var response = UrlFetchApp.fetch(url, {
       headers: {
         Authorization: 'Bearer ' + t.accessToken,
@@ -199,12 +209,20 @@ function getVATObligations(vrn, fromDate, toDate, params) {
       muteHttpExceptions: true
     });
 
+    // Log the API hit
+    logAudit('HMRC_OBLIGATION_CHECK', 'HMRC', cleanVrn, { status: response.getResponseCode() }, params);
+
     var json = JSON.parse(response.getContentText());
-    if (json.code || json.message) throw new Error(json.message || json.code);
+    
+    // Better error handling for HMRC specific error objects
+    if (response.getResponseCode() !== 200) {
+      throw new Error(json.message || json.code || 'HMRC Communication Error');
+    }
 
     return { success: true, obligations: json.obligations || [] };
   } catch(e) {
-    Logger.log('getVATObligations error: ' + e.toString());
+    // Log errors to your new Audit Log
+    logAudit('HMRC_ERROR', 'HMRC', 'Obligations', e.toString(), params);
     return { success: false, message: e.toString() };
   }
 }

@@ -275,7 +275,18 @@ function _route(action, params, ctx) {
     case 'getVATLiabilities':   { var _v2=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATLiabilities(_v2, params.fromDate, params.toDate, params); }
     case 'getVATPayments':      { var _v3=params.vrn||(function(){ var s=getSettings(params); return (s.vatRegNumber||'').replace(/[^0-9]/g,''); })(); return getVATPayments(_v3, params.fromDate, params.toDate, params); }
     case 'getHMRCAuthStatus':   return getHMRCAuthStatus(params);
-    case 'getHMRCAuthUrl':      return getHMRCManualAuthUrl(params);
+    case 'getHMRCAuthUrl': 
+      var clientId = "ylNDYLn5yc3ri0Gb2Sj7iVgCRWH2";
+      var redirectUri = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+      var scopes = "read:vat write:vat read:self-assessment write:self-assessment";
+      
+      var finalUrl = "https://test-api.service.hmrc.gov.uk/oauth/authorize" +
+                     "?client_id=" + clientId +
+                     "&response_type=code" +
+                     "&scope=" + encodeURIComponent(scopes) +
+                     "&redirect_uri=" + encodeURIComponent(redirectUri);
+
+      return { success: true, url: finalUrl };
     case 'exchangeHMRCCode':    _auth('credentials.manage', params); return exchangeHMRCCode(params.code, params);
     case 'testHMRCConnection':  return testHMRCConnection(params);
 
