@@ -6,6 +6,30 @@
     <title>no~bull consulting | Practical UK Business Tools</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="_shared.css">
+    <style>
+      /* Integrated Mobile-Friendly Navigation Styles */
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .nav-cta-secondary {
+        text-decoration: none;
+        color: var(--slate);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        transition: color 0.2s;
+      }
+      .nav-cta-secondary:hover { color: var(--oxford-blue); }
+
+      /* Mobile Adjustment */
+      @media screen and (max-width: 768px) {
+        .nav-links a:not(.nav-cta) { display: none; } /* Hide secondary links on tiny screens */
+        .section { padding: 80px 20px; }
+        h1 { font-size: 36px; }
+      }
+    </style>
 </head>
 <body>
 
@@ -16,16 +40,10 @@
     <div class="nav-links">
       <a href="products.html">Software</a>
       <a href="services.html">Bespoke</a>
-      <a href="about.html">Philosophy</a>
-      <a href="contact.html">Contact</a>
-      <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="nav-cta" target="_blank">Start Free Trial</a>
-      <a href="/app.html" style="text-decoration:none; color:#64748b; font-size:14px; font-weight:500; margin-right:20px;">App Login</a>
-      <a href="/app.html" style="display:inline-block; background:#2563eb; color:#fff; text-decoration:none; padding:10px 24px; border-radius:8px; font-weight:600; font-size:14px; transition:background 0.2s;" 
-         onmouseover="this.style.background='#1d4ed8'" 
-         onmouseout="this.style.background='#2563eb'">
-         Launch App &rarr;
-</a> 
-	</div>
+      <a href="about.html">Philosophy</a>      
+      <a href="app.html" class="nav-cta-secondary">Client Login</a>
+      <a href="app.html" class="nav-cta" style="background: var(--oxford-blue); color: white;">Launch My Books &rarr;</a>
+    </div>
   </div>
 </nav>
 
@@ -37,16 +55,16 @@
       Honest, Google-native tools for UK sole traders and micro-businesses. 
       No enterprise bloat, no data lock-in—just quiet competence.
     </p>
-    <div style="display: flex; gap: 16px;">
-      <a href="products.html" class="btn btn-primary">Explore no~bull books</a>
-      <a href="services.html" class="btn btn-outline">Discuss a Project</a>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+      <a href="app.html" class="btn btn-primary">Launch no~bull books</a>
+      <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-outline" target="_blank">Start Free Trial</a>
     </div>
   </div>
 </header>
 
 <section class="section">
   <div class="container">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px;" class="mobile-stack">
       <div>
         <div class="section-label">The Problem</div>
         <h2 class="section-title">Small business tools shouldn't be "hand-me-downs".</h2>
@@ -69,14 +87,17 @@
 <section class="section" style="background: var(--oxford-blue); color: var(--white);">
   <div class="container" style="text-align: center;">
     <h2 class="section-title" style="color: var(--white);">Ready for an honest alternative?</h2>
-    <p style="margin-bottom: 40px; opacity: 0.8;">14-day free trial. No credit card required. Your data, your rules.</p>
-    <a href="https://script.google.com/..." class="btn btn-primary" style="background: var(--white); color: var(--oxford-blue);">Start Free Trial</a>
+    <p style="margin-bottom: 40px; opacity: 0.8;">Already a user? Log in via the portal. New? 14-day free trial.</p>
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="app.html" class="btn" style="background: var(--white); color: var(--oxford-blue); font-weight: 700;">Launch App Portal</a>
+        <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn" style="border: 1px solid white; color: white;" target="_blank">Try Free Trial</a>
+    </div>
   </div>
 </section>
 
 <footer class="section" style="padding: 80px 24px 40px; border-top: 1px solid var(--grey-light); background: var(--white);">
   <div class="container">
-    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: start;">
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: start;" class="mobile-stack">
       
       <div>
         <div style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--oxford-blue); margin-bottom: 16px;">
@@ -95,16 +116,17 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div>
           <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px;">Legal</h4>
-          <ul style="list-style: none; font-size: 14px; line-height: 2;">
-            <li><a href="terms.html" style="color: var(--slate);">Terms of Service</a></li>
-            <li><a href="privacy.html" style="color: var(--slate);">Privacy Policy</a></li>
+          <ul style="list-style: none; font-size: 14px; line-height: 2; padding: 0;">
+            <li><a href="terms.html" style="color: var(--slate); text-decoration: none;">Terms of Service</a></li>
+            <li><a href="privacy.html" style="color: var(--slate); text-decoration: none;">Privacy Policy</a></li>
+            <li><a href="app.html" style="color: var(--oxford-blue); font-weight: 600; text-decoration: none;">Client Login</a></li>
           </ul>
         </div>
         <div>
           <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px;">Compliance</h4>
-          <ul style="list-style: none; font-size: 14px; line-height: 2;">
-            <li><a href="hmrc-mtd-statement.html" style="color: var(--slate);">HMRC Compatibility</a></li>
-            <li><a href="contact.html" style="color: var(--slate);">Support</a></li>
+          <ul style="list-style: none; font-size: 14px; line-height: 2; padding: 0;">
+            <li><a href="hmrc-mtd-statement.html" style="color: var(--slate); text-decoration: none;">HMRC Compatibility</a></li>
+            <li><a href="contact.html" style="color: var(--slate); text-decoration: none;">Support</a></li>
           </ul>
         </div>
       </div>
@@ -117,6 +139,16 @@
     </div>
   </div>
 </footer>
+
+<script>
+  // Simple check to stack grid columns on mobile if _shared.css doesn't handle it
+  if (window.innerWidth < 768) {
+    document.querySelectorAll('.mobile-stack').forEach(el => {
+      el.style.gridTemplateColumns = '1fr';
+      el.style.gap = '40px';
+    });
+  }
+</script>
 
 </body>
 </html>
