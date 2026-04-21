@@ -684,8 +684,6 @@ function getIntegrityStatus(params) {
 function initializeSystem(params)     { return checkAndInitSheet(params); }
 function createBackup(params)         { return { success: true }; }
 function getITSASubmissions(params)   { return { success: true, submissions: [] }; }
-function submitQuarterlyUpdate(nino, businessId, taxYear, quarter, income, params){ return { success: false, message: 'ITSA not yet configured.' }; }
-function triggerAndGetCalculation(nino, taxYear, params){ return { success: false, message: 'ITSA not yet configured.' }; }
 function eraseClient(clientId, retainFinancial){ return { success: false, message: 'GDPR erase not yet implemented.' }; }
 function exportClientData(clientId)   { return { success: false, message: 'GDPR export not yet implemented.' }; }
 function generateId(prefix) {

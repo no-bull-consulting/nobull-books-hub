@@ -1196,23 +1196,24 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
     
     var pdfFile = DriveApp.getFileById(pdfResult.fileId);
     
-    // ── Build payment details string ─────────────────────────────────────────
+    // ── Build payment details string with HTML breaks ─────────────────────────
+    // Removed \n and ensured <br> is used for vertical stacking
     var paymentDetails = '';
     if (settings.bankName) {
-      paymentDetails = 'Bank: ' + (settings.bankName||'') +
-        '\nAccount Name: ' + (settings.accountName||'') +
-        '\nSort Code: '    + (settings.sortCode||'') +
-        '\nAccount Number: '+ (settings.accountNumber||'');
+      paymentDetails = '<strong>Bank:</strong> ' + (settings.bankName||'') + '<br>' +
+        '<strong>Account Name:</strong> ' + (settings.accountName||'') + '<br>' +
+        '<strong>Sort Code:</strong> '    + (settings.sortCode||'') + '<br>' +
+        '<strong>Account Number:</strong> '+ (settings.accountNumber||'');
     }
 
     // ── Apply email template from Settings, fall back to default ─────────────
     var defaultSubject = 'Invoice {{invoiceNumber}} from {{companyName}}';
     var defaultBody    =
-      'Dear {{clientName}},\n\n' +
-      'Please find attached invoice {{invoiceNumber}} for {{total}}, due on {{dueDate}}.\n\n' +
-      (paymentDetails ? 'Payment Details\n' + paymentDetails + '\n\n' : '') +
-      'If you have any questions, please do not hesitate to get in touch.\n\n' +
-      'Kind regards,\n{{companyName}}';
+      'Dear {{clientName}},<br><br>' +
+      'Please find attached invoice <strong>{{invoiceNumber}}</strong> for <strong>{{total}}</strong>, due on <strong>{{dueDate}}</strong>.<br><br>' +
+      (paymentDetails ? '<strong>Payment Details</strong><br>' + paymentDetails + '<br><br>' : '') +
+      'If you have any questions, please do not hesitate to get in touch.<br><br>' +
+      'Kind regards,<br>{{companyName}}';
 
     var subjectTpl = (settings.emailSubject && settings.emailSubject.trim())
       ? settings.emailSubject : defaultSubject;
@@ -1228,28 +1229,37 @@ function sendInvoiceEmail(invoiceId, overrides, params) {
         .replace(/\{\{dueDate\}\}/g,       invoice.dueDate ? Utilities.formatDate(new Date(invoice.dueDate), Session.getScriptTimeZone(), 'dd MMM yyyy') : '')
         .replace(/\{\{amountDue\}\}/g,     '£' + (invoice.amountDue||0).toFixed(2))
         .replace(/\{\{companyName\}\}/g,   settings.companyName  || '')
-        .replace(/\{\{paymentDetails\}\}/g,paymentDetails);
+        .replace(/\{\{paymentDetails\}\}/g, paymentDetails);
     }
 
     var subject = applyTemplate(subjectTpl);
     var body    = applyTemplate(bodyTpl);
     
+    // ── Prepare final email content ──────────────────────────────────────────
+    // Use overridden body if the user edited it in the modal
+    if (overrides.body) body = overrides.body;
+    if (overrides.subject) subject = overrides.subject;
+
+    // CRITICAL: Convert standard new lines to HTML breaks for proper layout
+    var htmlVersion = body.replace(/\n/g, '<br>');
+
     var mailOpts = {
       name: settings.companyName || '',
-      attachments: [pdfFile.getAs(MimeType.PDF)]
+      attachments: [pdfFile.getAs(MimeType.PDF)],
+      htmlBody: htmlVersion // Forces the email client to render the tags
     };
+    
     if (overrides.cc)  mailOpts.cc  = overrides.cc;
     if (overrides.bcc) mailOpts.bcc = overrides.bcc;
-    // Use overridden subject/body if provided (user edited in send modal)
-    if (overrides.subject) subject = overrides.subject;
-    if (overrides.body)    body    = overrides.body;
+
+    // Send the email
     GmailApp.sendEmail(toEmail, subject, body, mailOpts);
     
     if (invoice.status === 'Draft') {
       updateInvoiceStatus(invoiceId, 'Sent');
     }
     
-    addInvoiceHistory(invoiceId, 'EmailSent', '', '', '', 'Email sent to ' + invoice.clientEmail);
+    addInvoiceHistory(invoiceId, 'EmailSent', '', '', '', 'Email sent to ' + toEmail);
     
     return { success: true, message: 'Email sent successfully' };
   } catch (e) {

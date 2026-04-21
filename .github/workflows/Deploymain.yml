@@ -1,4 +1,4 @@
-name: Deploy — Main Hub
+name: Deploy — Main Hub (Compliance Enhanced)
 
 on:
   push:
@@ -21,8 +21,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install clasp
-        run: npm install -g @google/clasp
+      - name: Install clasp and Linting Tools
+        run: |
+          npm install -g @google/clasp
+          npm install eslint eslint-plugin-google-apps-script
+
+      # NEW: Phase 2 Security Scan
+      - name: Run Security & Style Scan (Lint)
+        run: |
+          npx eslint src/main/**
 
       - name: Authenticate clasp
         run: |
@@ -32,6 +39,7 @@ jobs:
         run: |
           echo '{"scriptId":"${{ secrets.MAIN_SCRIPT_ID }}","rootDir":"src/main"}' > .clasp.json
 
+      # Only push if the Lint step passed
       - name: Push to Apps Script
         run: clasp push --force
 
@@ -42,3 +50,10 @@ jobs:
           else
             clasp deploy --description "Auto-deploy $(date +'%Y-%m-%d %H:%M') — ${{ github.sha }}"
           fi
+
+      # NEW: Automated Release Tagging for HMRC Audit Trail
+      - name: Create Version Tag
+        run: |
+          TAG_NAME="v$(date +'%Y.%m.%d-%H%M')"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME

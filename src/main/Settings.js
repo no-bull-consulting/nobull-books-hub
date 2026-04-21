@@ -353,10 +353,9 @@ function getPurchaseOrders(statusFilter, params) {
 // SETTINGS  read / write
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * NO~BULL BOOKS — SETTINGS
- * Fixed mapping for NINO and MTD Business ID.
- */
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS  read / write
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getSettings(params) {
   try {
@@ -365,9 +364,9 @@ function getSettings(params) {
     if (!sheet || sheet.getLastRow() < 2) return getDefaultSettings();
 
     var lastCol = sheet.getLastColumn();
+    // Fetch up to 48 columns to include AW (hmrcTaxYear)
     var data = sheet.getRange(2, 1, 1, Math.max(lastCol, 48)).getValues()[0];
-    var hmrcProps = _getHMRCProps();
-
+    
     return {
       companyName:          String(data[0] || ''),
       companyAddress:       String(data[1] || ''),
@@ -393,8 +392,12 @@ function getSettings(params) {
       vatFrequency:         String(data[21] || 'quarterly'),
       mtdEnabled:           data[22] === true || data[22] === 'TRUE',
       hmrcTestMode:         data[26] === true || data[26] === 'TRUE',
-      hmrcNINO:             String(data[28] || ''), // Fixed mapping
-      mtdBusinessId:        String(data[29] || ''), // Fixed mapping
+      
+      // FIXED MAPPING
+      hmrcNINO:             String(data[28] || '').replace(/\s/g, '').toUpperCase(), // Col AC
+      mtdBusinessId:        String(data[29] || '').replace(/\s/g, ''),              // Col AD
+      hmrcTaxYear:          String(data[47] || '2025-26'),                          // Col AW
+      
       lockedBefore:         safeSerializeDate(data[34]),
       emailSubject:         String(data[35] || ''),
       emailBody:            String(data[36] || ''),
@@ -405,42 +408,6 @@ function getSettings(params) {
     };
   } catch(e) {
     return getDefaultSettings();
-  }
-}
-
-function updateSettings(settings, params) {
-  if (params && params._sheetId && !settings._sheetId) settings._sheetId = params._sheetId;
-  try {
-    var ss = getDb(settings);
-    var sheet = ss.getSheetByName('Settings');
-    _setHMRCProps(settings);
-
-    var data = [
-      settings.companyName || '', settings.companyAddress || '', settings.companyPostcode || '',
-      settings.companyPhone || '', settings.companyEmail || '', settings.vatRegNumber || '',
-      settings.invoicePrefix || 'INV-', settings.nextInvoiceNumber || 1,
-      settings.billPrefix || 'BILL-', settings.nextBillNumber || 1,
-      settings.logoURL || '', settings.bankName || '', settings.accountName || '',
-      settings.sortCode || '', settings.accountNumber || '', settings.financialYearStart || '',
-      settings.financialYearEnd || '', settings.currentFinancialYear || '',
-      settings.vatRegistered || false, settings.vatScheme || 'standard',
-      settings.vatRate || 20, settings.vatFrequency || 'quarterly', settings.mtdEnabled || false,
-      '', '', '', settings.hmrcTestMode || true, '',
-      settings.hmrcNINO || '',       // Index 28
-      settings.mtdBusinessId || '',  // Index 29
-      settings.cnPrefix || 'CN-', settings.nextCNNumber || 1,
-      settings.poPrefix || 'PO-', settings.nextPONumber || 1,
-      settings.lockedBefore || '', settings.emailSubject || '', settings.emailBody || '',
-      settings.paymentTerms || 30, settings.invoiceFooter || '',
-      '#1a3c6b', 'left', true, 'sans', settings.baseCurrency || 'GBP',
-      'GBP,EUR,USD', settings.businessStartDate || '', settings.yearEndDay || '31 March',
-      settings.ownerEmail || ''
-    ];
-
-    sheet.getRange(2, 1, 1, data.length).setValues([data]);
-    return { success: true, message: 'Settings saved.' };
-  } catch(e) {
-    return { success: false, error: e.toString() };
   }
 }
 
@@ -455,20 +422,14 @@ function getDefaultSettings() {
     currentFinancialYear: '2026/27', vatRegistered: false,
     vatScheme: 'standard', vatRate: 20, vatFrequency: 'quarterly',
     mtdEnabled: false, hmrcTestMode: true,
-    hmrcClientID: '', hmrcClientSecret: '', hmrcAccessToken: '', hmrcTokenExpiry: '',
-    hmrcNINO: '', mtdBusinessId: '',
+    hmrcNINO: '', mtdBusinessId: '', hmrcTaxYear: '2025-26',
     cnPrefix: 'CN-', nextCNNumber: 1, poPrefix: 'PO-', nextPONumber: 1,
     paymentTerms: 30, baseCurrency: 'GBP',
-    enabledCurrencies: ['GBP','EUR','USD'],
-    templateAccentColor: '#1a3c6b', templateLogoPosition: 'left',
-    templateShowReference: true, templateFont: 'sans',
     yearEndDay: '31 March'
   };
 }
 
 /**
- * updateSettings(settings)
- *
  * Saves all settings to the client's Settings sheet.
  * settings must contain _sheetId so getDb() can find the right spreadsheet.
  */

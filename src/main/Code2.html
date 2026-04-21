@@ -568,11 +568,6 @@ function showSettings() {
         el.innerHTML = '<span style="font-size:12px;color:var(--g400)">WhatsApp not configured</span>';
         return;
       }
-
-`;
-// Append secMaintenance to your final HTML string
-// e.g., html += secMaintenance;
-`;
       var provLabel = r.provider === 'meta' ? 'Meta Cloud API' : r.provider === 'twilio' ? 'Twilio' : '';
       var detail = r.provider === 'meta'
         ? 'Phone ID: <code>' + r.meta.phoneId + '</code>'
@@ -728,8 +723,7 @@ function showSettings() {
       '<button class="btn btn-ghost btn-sm" onclick="resetEmailTemplate()">&#8617; Reset to Default</button>' +
     '</div>';
 
-  // -- Section: HMRC / MTD -----------------------------------------------------
-// -- Section: HMRC / MTD -----------------------------------------------------
+  // -- Section: HMRC / MTD with Mobile ID Card ---------------------------------
   var secHMRC =
     '<div id="hmrc-status-bar"></div>' +
     '<div class="form-grid-2">' +
@@ -738,14 +732,18 @@ function showSettings() {
       sf('National Insurance Number (NINO)', 'hmrcNINO', s.hmrcNINO) +
       sf('MTD Business ID', 'mtdBusinessId', s.mtdBusinessId) +
     '</div>' +
-    '<div class="alert alert-info" style="margin-bottom:12px">' +
-      '<p style="font-size:11px">Client ID and Secret are stored securely in Script Properties, not the spreadsheet. NINO and Business ID are required for ITSA submissions.</p>' +
+    '<div class="card" style="margin:16px 0; border-left:4px solid var(--blue-600); background:var(--blue-50)">' +
+      '<div class="card-body" style="padding:16px">' +
+        '<div style="font-weight:700; font-size:14px; margin-bottom:4px; color:var(--blue-900)">Mobile & Remote Access</div>' +
+        '<p style="font-size:12px; color:var(--blue-700); margin-bottom:12px">Use this ID to log in at <strong>nobull.consulting/app.html</strong> on your mobile device.</p>' +
+        '<div style="display:flex; gap:8px">' +
+          '<input type="text" class="form-input mono" id="set-sheet-id" value="Fetching..." readonly style="background:#fff; flex:1; font-size:11px">' +
+          '<button class="btn btn-secondary btn-sm" onclick="_copySheetId()">Copy ID</button>' +
+        '</div>' +
+        '<div style="margin-top:6px"><a href="javascript:void(0)" onclick="_manualIdRefresh()" style="font-size:10px; color:var(--blue-600); text-decoration:none;">ID missing? Click to refresh</a></div>' +
+      '</div>' +
     '</div>' +
-    sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox -- disable for live submission') +
-    '<div style="display:flex;gap:8px;margin-top:12px">' +
-      '<button class="btn btn-secondary btn-sm" onclick="testHMRCConn()"> Test Connection</button>' +
-      '<button class="btn btn-secondary btn-sm" onclick="openHMRCConnectModal()"> Connect / Re-authenticate</button>' +
-    '</div>';
+    sc('Sandbox (Test) Mode', 'hmrcTestMode', s.hmrcTestMode !== false, 'Use HMRC sandbox for development');
 
   // -- Section: Currency -------------------------------------------------------
   var currencyNames = {
@@ -804,7 +802,7 @@ function showSettings() {
       '<div style="font-size:11px;color:var(--g400);margin-top:10px">Credentials are stored in Script Properties only and never written to the spreadsheet.</div>' +
     '</div>';
 
-    // -- Section: System Maintenance (Added for CoA Fix) -------------------------
+  // -- Section: System Maintenance ---------------------------------------------
   var secMaintenance = 
     '<div style="background:var(--red-50); padding:15px; border-radius:var(--r8); border:1px solid var(--red-100)">' +
       '<h5 style="color:var(--red-700); font-size:14px; margin-bottom:8px">Repair Chart of Accounts</h5>' +
@@ -834,7 +832,7 @@ function showSettings() {
     '<button class="btn btn-primary" id="coa-seed-btn" onclick="doSeedCOA()"> Seed Chart of Accounts</button>' +
     '<span style="font-size:12px;color:var(--g400);margin-left:12px">Safe to run on existing data -- skips accounts that already exist</span>';
 
-  // -- Render ------------------------------------------------------------------
+  // -- Main Content Assembly ---------------------------------------------------
   showContent(
     '<div class="page-hdr">' +
       '<div class="page-title">&#9881;&#65039; Settings</div>' +
@@ -853,28 +851,62 @@ function showSettings() {
     '@media(max-width:600px){.form-grid-2{grid-template-columns:1fr!important}.sacc-body{padding:14px}}' +
     '</style>' +
 
-    acc('company',    '', 'Company',             secCompany,   true)  +
-    acc('invoicing',  '', 'Invoicing',            secInvoicing, false) +
-    acc('template',   '', 'Invoice PDF Template', secTemplate,  false) +
-    acc('fy',         '', 'Financial Year',       secFY,        false) +
-    acc('coa',         '', 'Chart of Accounts',    secCOA,       false) +
+    acc('company',    '🏢', 'Company',             secCompany,   true)  +
+    acc('invoicing',  '📄', 'Invoicing',            secInvoicing, false) +
+    acc('template',   '🎨', 'Invoice PDF Template', secTemplate,  false) +
+    acc('fy',         '📅', 'Financial Year',       secFY,        false) +
+    acc('coa',        '📊', 'Chart of Accounts',    secCOA,       false) +
     acc('vat',        '%',  'VAT',                  secVAT,       false, s.vatRegistered ? '&#10003; Registered' : '') +
-    acc('bank',       '', 'Bank Details',         secBank,      false) +
-    acc('email',      '&#9993;&#65039;', 'Email Template',       secEmail,     false) +
-    acc('hmrc',       '', 'HMRC / MTD',           secHMRC,      false) +
-    acc('currency',   '', 'Currency',             secCurrency,  false) +
-    acc('whatsapp',   '', 'WhatsApp Delivery',    secWhatsApp,  false) +
+    acc('bank',       '🏦', 'Bank Details',         secBank,      false) +
+    acc('email',      '📧', 'Email Template',       secEmail,     false) +
+    acc('hmrc',       '🏛️', 'HMRC / MTD',           secHMRC,      false) +
+    acc('currency',   '💱', 'Currency',             secCurrency,  false) +
+    acc('whatsapp',   '💬', 'WhatsApp Delivery',    secWhatsApp,  false) +
     acc('maintenance','🛠️', 'System Maintenance',   secMaintenance, false)
   );
 
+  // -- Final UI Logic ----------------------------------------------------------
   loadHMRCStatusBar();
   loadCOASeedStatus();
+  setTimeout(function() {
+    var el = document.getElementById('set-sheet-id');
+    if (el && !el.value) {
+      el.value = new URLSearchParams(window.location.search).get('id') || '';
+    }
+  }, 150);
   setTimeout(initVATToggle, 50);
   setTimeout(updateFYPreview, 50);
   var yed = document.getElementById('s_yearEndDay');
   var bsd = document.getElementById('s_businessStartDate');
   if (yed) yed.addEventListener('change', updateFYPreview);
   if (bsd) bsd.addEventListener('change', updateFYPreview);
+
+window._manualIdRefresh = function() {
+    const el = document.getElementById('set-sheet-id');
+    if (!el) return;
+
+    // Plan A: Check the App Context
+    if (typeof App !== 'undefined' && App.clientSheetId) {
+      el.value = App.clientSheetId;
+      return;
+    }
+
+    // Plan B: Check URL
+    const urlId = new URLSearchParams(window.location.search).get('id');
+    if (urlId) {
+      el.value = urlId;
+      return;
+    }
+
+    // Plan C: Call the server function we just created
+    google.script.run.withSuccessHandler(function(id) {
+      if (id) el.value = id;
+      else el.value = "Manual copy required from URL";
+    }).getActiveSpreadsheetId();
+  };
+
+  setTimeout(_manualIdRefresh, 600);
+
 }
 
 function toggleSettingsAcc(id) {
@@ -2421,6 +2453,18 @@ function renderITSAPreview(report, quarter, range) {
   document.getElementById('confirm-itsa').addEventListener('change', function(e) {
     document.getElementById('btn-itsa-submit').disabled = !e.target.checked;
   });
+}
+
+/**
+ * Helper to copy the Sheet ID to the clipboard for mobile login
+ */
+function _copySheetId() {
+  var copyText = document.getElementById("set-sheet-id");
+  if (!copyText) return;
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); // Compatibility for mobile
+  navigator.clipboard.writeText(copyText.value);
+  toast('ID copied! You can now paste this into the mobile portal.', 'success');
 }
 
 </script>

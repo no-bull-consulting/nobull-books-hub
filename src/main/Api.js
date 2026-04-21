@@ -15,26 +15,42 @@ var API_VERSION = '2.0';
  * NO~BULL BOOKS -- API LAYER v2.2
  */
 
+/**
+ * NO~BULL BOOKS -- API LAYER v2.3
+ */
 function handleApiCall(action, paramsJson) {
   try {
-    var rawParams = JSON.parse(paramsJson || '{}');
-    var params = typeof validateParams === 'function' ? validateParams(action, rawParams) : rawParams;
+    var params = (typeof paramsJson === 'string') ? JSON.parse(paramsJson || '{}') : (paramsJson || {});
     var ctx = _getCurrentUserContext(params);
 
-    // Automated Audit Log for every call
-    logAudit('API_CALL', 'System', action, { user: ctx.email }, params);
-
-    if (action === 'askGemini') return handleGeminiRequest(params, ctx);
-
-    // Routing
     switch (action) {
-      case 'getSA103Data': return getSA103Data(params); // Resolved ReferenceError
-      case 'saveVATReturn': _auth('reports.tax', params); return saveVATReturn(params);
-      case 'calculateVATReturn': return calculateVATReturn(params.periodStart, params.periodEnd, params);
-      case 'reseedChartOfAccounts': return reseedChartOfAccounts(params);
-      // ... Add your other cases from your original Api.gs ...
-      default:
-        return _route(action, params, ctx);
+      case 'getSA103Data': return getSA103Data(params);
+      case 'submitITSAQuarterlyUpdate': 
+        return submitITSAQuarterlyUpdate(params.nino, params.businessId, params.taxYear, params.quarter, params.income, params);
+      case 'activateBusiness': return activateBusinessSource(params);  
+      case 'getHMRCAuthUrl': 
+        var clientId = "ylNDYLn5yc3ri0Gb2Sj7iVgCRWH2";
+        var redirectUri = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+        
+        // UPDATED SCOPES: Added periodic-update and individual-details for 2026 mandate
+        var scopes = [
+         "read:vat", 
+         "write:vat", 
+         "read:self-assessment", 
+         "write:self-assessment",
+         "read:self-assessment-vbs-periodic-update", 
+         "write:self-assessment-vbs-periodic-update",
+         "read:self-assessment-individual-details"
+        ].join(" ");
+        
+        var finalUrl = "https://test-api.service.hmrc.gov.uk/oauth/authorize" +
+                       "?client_id=" + clientId +
+                       "&response_type=code" +
+                       "&scope=" + encodeURIComponent(scopes) +
+                       "&redirect_uri=" + encodeURIComponent(redirectUri);
+        return { success: true, url: finalUrl };
+
+      default: return _route(action, params, ctx);
     }
   } catch(e) {
     return { success: false, error: e.toString() };
@@ -297,11 +313,33 @@ function _route(action, params, ctx) {
     case 'deleteCapitalAllowance': _auth('reports.tax', params); return deleteCapitalAllowance(params);
     case 'saveSATaxAdjustments':   _auth('reports.tax', params); return saveSATaxAdjustments(params);
 
-    // -- ITSA ------------------------------------------------------------------
-    case 'getITSAObligationsFromSheet': return getITSAObligationsFromSheet(params);
-    case 'getITSASubmissions':          return getITSASubmissions(params);
-    case 'submitITSAQuarterlyUpdate':   _auth('mtd.submit', params); return submitQuarterlyUpdate(params.nino||'', params.businessId||'', params.taxYear, params.quarter, { turnover:params.turnover, expenses:params.expenses }, params);
-    case 'triggerITSACalculation':      _auth('mtd.submit', params); return triggerAndGetCalculation(params.nino||'', params.taxYear||'', params);
+// -- ITSA (MTD for Income Tax) -------------------------------------------------
+case 'getITSAObligationsFromSheet':
+case 'getITSAObligations':
+  return getITSAObligations(params);
+
+case 'getITSASubmissions':
+  return getITSASubmissions(params);
+
+case 'submitITSAQuarterlyUpdate':
+  return submitITSAQuarterlyUpdate(
+    params.nino || '',
+    params.businessId || '',
+    params.taxYear || '2026-27',
+    params.quarter || '',
+    params.income || 0,
+    params
+  );
+
+case 'calculateITSAQuarter':
+  return calculateITSAQuarter(
+    params.startDate,
+    params.endDate,
+    params
+  );
+
+case 'testITSAConnection':
+  return testITSAConnection();
 
     // -- FINANCIAL YEAR --------------------------------------------------------
     case 'getFinancialYears':       return getFinancialYears(params);
@@ -412,5 +450,142 @@ function getWhatsAppStatus(params) {
     return { success: true, configured: false, provider: null };
   } catch(e) {
     return { success: false, configured: false, error: e.toString() };
+  }
+}
+
+function getAuthUrlManually() {
+  const clientId = "ylNDYLn5yc3ri0Gb2Sj7iVgCRWH2";
+  const redirectUri = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+  const scopes = "read:self-assessment write:self-assessment";
+  
+  const url = "https://test-api.service.hmrc.gov.uk/oauth/authorize" +
+    "?client_id=" + clientId +
+    "&response_type=code" +
+    "&scope=" + encodeURIComponent(scopes) +
+    "&redirect_uri=" + encodeURIComponent(redirectUri);
+  
+  Logger.log("Auth URL: " + url);
+  return url;
+}
+
+function exchangeCodeForToken() {
+  // PASTE YOUR CODE HERE (the one from the redirect URL)
+  const authorizationCode = "3f9ae60558844ee0a18df6590077dfc3";  // <-- REPLACE THIS
+  
+  const clientId = "ylNDYLn5yc3ri0Gb2Sj7iVgCRWH2";
+  const clientSecret = PropertiesService.getScriptProperties().getProperty('HMRC_CLIENT_SECRET');
+  
+  if (!clientSecret) {
+    console.log("ERROR: No client secret found. Add it to Script Properties as 'HMRC_CLIENT_SECRET'");
+    return { success: false, message: "Missing client secret" };
+  }
+  
+  const redirectUri = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+  
+  const url = "https://test-api.service.hmrc.gov.uk/oauth/token";
+  
+  const payload = {
+    "client_id": clientId,
+    "client_secret": clientSecret,
+    "grant_type": "authorization_code",
+    "redirect_uri": redirectUri,
+    "code": authorizationCode
+  };
+  
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+  
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const resCode = response.getResponseCode();
+    const resText = response.getContentText();
+    
+    console.log("Response Code: " + resCode);
+    console.log("Response Body: " + resText);
+    
+    if (resCode === 200) {
+      const data = JSON.parse(resText);
+      
+      // Save tokens to Script Properties
+      const props = PropertiesService.getScriptProperties();
+      props.setProperty('HMRC_ACCESS_TOKEN', data.access_token);
+      props.setProperty('HMRC_REFRESH_TOKEN', data.refresh_token);
+      
+      // Calculate and save expiry time
+      const expiresAt = Date.now() + (data.expires_in * 1000);
+      props.setProperty('HMRC_TOKEN_EXPIRY', expiresAt.toString());
+      
+      console.log("✅ TOKEN SAVED SUCCESSFULLY!");
+      console.log("Access Token: " + data.access_token.substring(0, 30) + "...");
+      console.log("Expires in: " + data.expires_in + " seconds");
+      
+      return {
+        success: true,
+        message: "Token saved successfully",
+        expiresIn: data.expires_in
+      };
+    } else {
+      return {
+        success: false,
+        message: `Error ${resCode}: ${resText}`
+      };
+    }
+  } catch(e) {
+    console.log("Error: " + e.toString());
+    return { success: false, message: e.toString() };
+  }
+}
+
+function verifyTokenAndTest() {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('HMRC_ACCESS_TOKEN');
+  
+  if (!token) {
+    console.log("❌ No token found. Complete OAuth flow first.");
+    return;
+  }
+  
+  console.log("✅ Token found: " + token.substring(0, 30) + "...");
+  
+  // Now test the ITSA submission
+  const result = testITSADirect();
+  console.log("Test result: " + JSON.stringify(result));
+  
+  return result;
+}
+
+/**
+ * A more robust bridge to provide the Spreadsheet ID
+ */
+function getActiveSpreadsheetId() {
+  try {
+    // Attempt 1: Get the spreadsheet this script belongs to
+    var ss = SpreadsheetApp.getActive();
+    if (ss) return ss.getId();
+    
+    // Attempt 2: Fallback to the Standalone ID if necessary
+    return SpreadsheetApp.openByUrl(ScriptApp.getService().getUrl()).getId();
+  } catch (e) {
+    return "Error: " + e.toString();
+  }
+}
+
+/**
+ * Fix for getInvoiceFiles ReferenceError
+ */
+function getInvoiceFiles(invoiceId) {
+  try {
+    // For now, we return an empty array to stop the error.
+    // Later, this can be linked to a Google Drive folder.
+    return { success: true, files: [] };
+  } catch (e) {
+    return { success: false, error: e.toString() };
   }
 }

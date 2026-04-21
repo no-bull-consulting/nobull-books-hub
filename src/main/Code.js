@@ -12,10 +12,14 @@
 function doGet(e) {
   var sheetId = e.parameter.id;
 
-  // -- HMRC OAuth redirect --------------------------------------------------
-  if (e.parameter.code && !sheetId) { return _hmrcRedirectPage(e.parameter.code); }
+  // -- 1. HMRC OAuth Redirect ----------------------------------------------
+  // If the URL contains an auth code but no sheetId, it's an HMRC callback.
+  if (e.parameter.code && !sheetId) { 
+    return _hmrcRedirectPage(e.parameter.code)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); 
+  }
 
-  // -- Main app ----------------------------------------------------------------
+  // -- 2. Main App Interface -----------------------------------------------
   if (sheetId) {
     var tmpl = HtmlService.createTemplateFromFile('Index');
     tmpl.clientSheetId = sheetId;
@@ -24,13 +28,12 @@ function doGet(e) {
 
     return tmpl.evaluate()
       .setTitle('no~bull books')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
-  // -- Auto-initialise sheet if first visit ------------------------------------
-  // If the sheet exists but hasn't been initialised (no Settings tab), init it now.
-  // This ensures the app works even if the setup service redirect was interrupted.
+  // -- 3. Auto-initialise Sheet --------------------------------------------
+  // Reliability check: If sheetId is provided in params but tab 'Settings' is missing.
   if (e.parameter.id) {
     try {
       var testSs    = getDb({ _sheetId: e.parameter.id });
@@ -47,8 +50,7 @@ function doGet(e) {
     }
   }
 
-  // -- Registry ping from SetupService ----------------------------------------
-  // Called by SetupService after creating a new client sheet
+  // -- 4. Registry Ping (from SetupService) --------------------------------
   if (e.parameter.action === 'pingRegistry') {
     try {
       pingRegistry(e.parameter.sheetId, {
@@ -63,13 +65,12 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // -- Landing page ------------------------------------------------------------
-  var setupUrl = PropertiesService.getScriptProperties()
-    .getProperty('SETUP_SERVICE_URL') || '#';
+  // -- 5. External Landing Page / Marketing --------------------------------
+  var setupUrl = PropertiesService.getScriptProperties().getProperty('SETUP_SERVICE_URL') || '#';
 
   return HtmlService.createHtmlOutput(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no">' +
     '<link rel="icon" href="data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>?</text></svg>">' +
     '<title>no~bull books</title>' +
     '<style>' +
@@ -98,12 +99,12 @@ function doGet(e) {
       '<p>Straightforward accounting for UK sole traders &amp; small businesses.<br>' +
         'Your data lives in your own Google Sheet.</p>' +
       '<button class="btn-primary" onclick="window.top.location.href=\'' + setupUrl + '\'">Get started free -></button>' +
-      '<p class="sub">14-day free trial ? No credit card required</p>' +
+      '<p class="sub">14-day free trial &#183; No credit card required</p>' +
     '</div>' +
     '</body></html>'
   )
   .setTitle('no~bull books')
-  .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+  .addMetaTag('viewport', 'width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no')
   .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

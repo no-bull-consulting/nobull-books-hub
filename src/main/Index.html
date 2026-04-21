@@ -2,9 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>no~bull books</title>
 <style>
+
+  /* --- MOBILE RESPONSIVENESS --- */
+@media screen and (max-width: 768px) {
+  /* 1. Adjust Top Nav */
+  #topnav { padding: 0 10px; gap: 5px; }
+  .nav-logo-text, #company-pill { display: none; } /* Hide text to save space */
+  .nav-groups { display: none; } /* We will move these to a mobile drawer later */
+  
+  /* 2. Make content area scroll properly */
+  #content { padding: 12px; }
+  
+  /* 3. Hero Strip Adjustment */
+  div[style*="linear-gradient"] { 
+    flex-direction: column; 
+    align-items: flex-start !important; 
+    padding: 15px; 
+  }
+  div[style*="linear-gradient"] > div { width: 100%; gap: 15px !important; }
+
+  /* 4. Grid Transformation */
+  .stats-grid { 
+    grid-template-columns: 1fr 1fr !important; 
+    gap: 10px; 
+  }
+  div[style*="grid-template-columns: 1fr 1fr 1fr"],
+  div[style*="grid-template-columns: 2fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 5. The "Magic" Table-to-Card Transformation */
+  table.dt, table.dt thead, table.dt tbody, table.dt th, table.dt td, table.dt tr { 
+    display: block; 
+  }
+  table.dt thead { display: none; } /* Hide headers */
+  table.dt tr { 
+    margin-bottom: 12px; 
+    border: 1px solid var(--g200); 
+    border-radius: 8px; 
+    background: #fff;
+    padding: 8px;
+  }
+  table.dt td { 
+    text-align: right; 
+    padding: 6px 10px; 
+    position: relative; 
+    border: none !important;
+    font-size: 13px;
+  }
+  /* Labeling the data in mobile view */
+  table.dt td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    font-weight: 600;
+    color: var(--g500);
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+
+  /* 6. Modals on Mobile */
+  .modal-box { 
+    width: 95% !important; 
+    margin: 10px; 
+    max-height: 90vh; 
+  }
+  .form-grid-2, .form-grid-3 { grid-template-columns: 1fr !important; }
+}
 
   .recon-table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 8px; }
   .recon-table td { vertical-align: middle; border: none !important; }
@@ -464,19 +531,25 @@ async function api(action, params = {}) {
     Object.assign(params, _fd);
   }
 
-  // 2. SEND TO SERVER
-  return new Promise((resolve, reject) => {
-    google.script.run
-      .withSuccessHandler(res => {
-        console.log("API Response [" + action + "]:", res);
-        resolve(res);
-      })
-      .withFailureHandler(err => {
-        console.error("API Error [" + action + "]:", err);
-        reject(err);
-      })
-      .handleApiCall(action, JSON.stringify(params));
-  });
+// 2. SEND TO SERVER
+return new Promise((resolve, reject) => {
+  google.script.run
+    .withSuccessHandler(res => {
+      // Ensure we log the actual success/failure status from HMRC
+      if (res && res.success) {
+        console.log("✅ API Success [" + action + "]:", res);
+      } else {
+        console.warn("⚠️ API Logic Error [" + action + "]:", res.message || res.error);
+      }
+      resolve(res);
+    })
+    .withFailureHandler(err => {
+      // This catches script-level crashes (e.g., SyntaxError or Timeouts)
+      console.error("❌ API System Error [" + action + "]:", err);
+      reject(err);
+    })
+    .handleApiCall(action, params); // Passing params as an object is usually cleaner than stringifying
+});
 }
  
 'use strict';
@@ -1387,12 +1460,35 @@ function openITSASubmitModal() {
 
 async function submitITSAQuarter() {
   var year = (document.getElementById('itsa-year')||{}).value;
-  var q    = parseInt((document.getElementById('itsa-quarter')||{}).value)||1;
+  var q    = (document.getElementById('itsa-quarter')||{}).value;
   var inc  = parseFloat((document.getElementById('itsa-income')||{}).value)||0;
   var exp  = parseFloat((document.getElementById('itsa-expenses')||{}).value)||0;
-  var btn  = document.getElementById('itsa-submit-btn');
+  
+  // Fetch NINO and BusinessID from the App's memory
+  var s = App.settings || {};
+  var nino = s.hmrcNINO || '';
+  var busId = s.mtdBusinessId || '';
+
+  if (!nino || !busId) {
+    toast('Error: NINO or Business ID missing in Settings', 'error');
+    return;
+  }
+
+  var btn = document.getElementById('itsa-submit-btn');
   if (btn) { btn.disabled=true; btn.textContent='Submitting...'; }
-  var r = await api('submitITSAQuarterlyUpdate', { taxYear:year, quarter:q, turnover:inc, expenses:exp });
+
+  // We pack everything into the params object
+  var params = { 
+    nino: nino, 
+    businessId: busId, 
+    taxYear: year, 
+    quarter: q, 
+    income: inc,      // Changed from 'turnover' to 'income' to match ITSA.gs
+    expenses: exp 
+  };
+
+  var r = await api('submitITSAQuarterlyUpdate', params);
+  
   if (r && r.success) {
     closeModal('itsa-submit');
     toast('ITSA quarterly update submitted: '+(r.message||''),'success',5000);
@@ -2176,15 +2272,16 @@ function showDashboard() {
   barSVG+='</svg>';
 
   showContent(
-    // -- Hero strip --------------------------------------------------------
+    // -- Hero strip (Updated with Website Launch Style) ---------------------
     '<div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:var(--r12);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px">' +
       '<div style="display:flex;gap:28px;flex-wrap:wrap">' +
         _heroKPI('Cash Position',fmt(bal),'#60a5fa',sparkline(balHistory,80,28,'#60a5fa')) +
         _heroKPI('Receivable',fmt(rcv),rcv>0?'#4ade80':'#94a3b8',null) +
         _heroKPI('Payable',fmt(pay),pay>0?'#f87171':'#94a3b8',null) +
-        _heroKPI('Net',fmt(rcv-pay),(rcv-pay)>=0?'#4ade80':'#f87171',null) +
       '</div>' +
-      '<div style="display:flex;gap:8px;flex-shrink:0">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex-shrink:0">' +
+        // New Website-style links
+        '<a href="https://nobull.consulting/app.html" target="_blank" style="text-decoration:none; color:#94a3b8; font-size:13px; font-weight:500; margin-right:10px;">App Portal</a>' +
         '<button class="btn btn-primary btn-sm" onclick="openCreateInvoiceModal()">+ Invoice</button>' +
         '<button class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,.2);color:#cbd5e1;background:rgba(255,255,255,.05)" onclick="openCreateBillModal()">+ Bill</button>' +
       '</div>' +
@@ -4808,8 +4905,14 @@ async function calcVAT() {
     }
   }
 
-</script>
-<script>
+function _copySheetId() {
+  var copyText = document.getElementById("set-sheet-id");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); // For mobile devices
+  navigator.clipboard.writeText(copyText.value);
+  toast('ID copied to clipboard!', 'success');
+}
+
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     var openBg = document.querySelector('.modal-bg.open');
@@ -4825,6 +4928,7 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+
 </script>
 </body>
 </html>

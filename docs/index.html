@@ -7,27 +7,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="_shared.css">
     <style>
-      /* Integrated Mobile-Friendly Navigation Styles */
+      /* Navigation Font & Style Standardization */
       .nav-links {
         display: flex;
         align-items: center;
         gap: 24px;
       }
-      .nav-cta-secondary {
-        text-decoration: none;
-        color: var(--slate);
+      .nav-links a {
         font-family: 'Plus Jakarta Sans', sans-serif;
+        text-decoration: none;
+      }
+      .nav-cta-secondary {
+        color: var(--slate);
         font-size: 14px;
         font-weight: 600;
         transition: color 0.2s;
       }
       .nav-cta-secondary:hover { color: var(--oxford-blue); }
 
-      /* Mobile Adjustment */
+      /* Mobile Responsiveness for Grids and Buttons */
       @media screen and (max-width: 768px) {
-        .nav-links a:not(.nav-cta) { display: none; } /* Hide secondary links on tiny screens */
-        .section { padding: 80px 20px; }
-        h1 { font-size: 36px; }
+        .nav-links a:not(.nav-cta) { display: none; } 
+        .mobile-stack { 
+          grid-template-columns: 1fr !important; 
+          gap: 40px !important; 
+        }
+        header { padding-top: 120px !important; }
+        h1 { font-size: 32px !important; }
       }
     </style>
 </head>
@@ -38,11 +44,12 @@
     <a href="index.html" class="nav-logo">no~bull consulting</a>
     
     <div class="nav-links">
-      <a href="products.html">Software</a>
-      <a href="services.html">Bespoke</a>
-      <a href="about.html">Philosophy</a>      
+      <a href="products.html" class="nav-cta-secondary">Software</a>
+      <a href="services.html" class="nav-cta-secondary">Bespoke</a>
+      <a href="about.html" class="nav-cta-secondary">Philosophy</a>
+      
       <a href="app.html" class="nav-cta-secondary">Client Login</a>
-      <a href="app.html" class="nav-cta" style="background: var(--oxford-blue); color: white;">Launch My Books &rarr;</a>
+      <a href="app.html" class="nav-cta" style="background: var(--oxford-blue); color: white;">Launch App &rarr;</a>
     </div>
   </div>
 </nav>
@@ -56,7 +63,7 @@
       No enterprise bloat, no data lock-in—just quiet competence.
     </p>
     <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-      <a href="app.html" class="btn btn-primary">Launch no~bull books</a>
+      <a href="app.html" class="btn btn-primary">Launch App</a>
       <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn btn-outline" target="_blank">Start Free Trial</a>
     </div>
   </div>
@@ -87,10 +94,10 @@
 <section class="section" style="background: var(--oxford-blue); color: var(--white);">
   <div class="container" style="text-align: center;">
     <h2 class="section-title" style="color: var(--white);">Ready for an honest alternative?</h2>
-    <p style="margin-bottom: 40px; opacity: 0.8;">Already a user? Log in via the portal. New? 14-day free trial.</p>
+    <p style="margin-bottom: 40px; opacity: 0.8;">Already a user? Log in via the app portal. New? Start your 14-day free trial.</p>
     <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-        <a href="app.html" class="btn" style="background: var(--white); color: var(--oxford-blue); font-weight: 700;">Launch App Portal</a>
-        <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn" style="border: 1px solid white; color: white;" target="_blank">Try Free Trial</a>
+        <a href="app.html" class="btn" style="background: var(--white); color: var(--oxford-blue); font-weight: 700;">Launch App</a>
+        <a href="https://script.google.com/macros/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec" class="btn" style="border: 1px solid white; color: white;" target="_blank">Start Free Trial</a>
     </div>
   </div>
 </section>
@@ -119,7 +126,7 @@
           <ul style="list-style: none; font-size: 14px; line-height: 2; padding: 0;">
             <li><a href="terms.html" style="color: var(--slate); text-decoration: none;">Terms of Service</a></li>
             <li><a href="privacy.html" style="color: var(--slate); text-decoration: none;">Privacy Policy</a></li>
-            <li><a href="app.html" style="color: var(--oxford-blue); font-weight: 600; text-decoration: none;">Client Login</a></li>
+            <li><a href="app.html" style="color: var(--oxford-blue); font-weight: 700; text-decoration: none;">Client Login</a></li>
           </ul>
         </div>
         <div>
@@ -139,16 +146,6 @@
     </div>
   </div>
 </footer>
-
-<script>
-  // Simple check to stack grid columns on mobile if _shared.css doesn't handle it
-  if (window.innerWidth < 768) {
-    document.querySelectorAll('.mobile-stack').forEach(el => {
-      el.style.gridTemplateColumns = '1fr';
-      el.style.gap = '40px';
-    });
-  }
-</script>
 
 </body>
 </html>
