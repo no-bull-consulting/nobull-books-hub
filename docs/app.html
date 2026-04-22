@@ -3,39 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    
     <title>no~bull books | Client Portal</title>
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        :root {
+            --navy: #14213D;
+            --teal: #14A8AE;
+            --slate: #94a3b8;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        /* Iframe for the Spoke Architecture */
         iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; }
         
-        #login-box { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; text-align: center; padding: 20px; }
-        .input-group { background: #1e293b; padding: 40px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 100%; max-width: 420px; border: 1px solid #334155; }
-        .logo-text { font-family: Georgia, serif; font-size: 24px; margin-bottom: 20px; }
-        .logo-text span { color: #3b82f6; }
+        #portal-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; text-align: center; padding: 20px; box-sizing: border-box; }
+        .dashboard-box { background: var(--card-bg); padding: 32px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 100%; max-width: 440px; border: 1px solid #334155; }
         
-        input { width: 100%; padding: 14px; margin: 15px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 14px; box-sizing: border-box; }
-        input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        .logo-text { font-family: Georgia, serif; font-size: 24px; margin-bottom: 24px; font-weight: bold; }
+        .logo-text span { color: var(--teal); }
         
-        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background 0.2s; }
-        button:hover { background: #1d4ed8; }
+        h3 { margin: 0 0 8px 0; font-size: 18px; }
+        .subtitle { font-size: 13px; color: var(--slate); margin-bottom: 24px; line-height: 1.5; }
+
+        /* Instance List Styling */
+        #instance-list { display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
         
-        .footer-link { margin-top: 20px; font-size: 12px; color: #94a3b8; text-decoration: none; cursor: pointer; }
+        .company-card { 
+            background: var(--bg); 
+            padding: 16px; 
+            border-radius: 10px; 
+            border: 1px solid #334155; 
+            cursor: pointer; 
+            text-align: left; 
+            transition: transform 0.2s, border-color 0.2s;
+            border-left: 4px solid var(--teal);
+        }
+        .company-card:hover { transform: translateY(-2px); border-color: var(--teal); }
+        .company-card .name { font-weight: 600; color: white; font-size: 15px; margin-bottom: 2px; }
+        .company-card .meta { font-size: 11px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        button.btn-action { 
+            width: 100%; padding: 14px; background: var(--teal); color: white; border: none; 
+            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: opacity 0.2s; 
+        }
+        button.btn-action:hover { opacity: 0.9; }
+
+        .spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--teal); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .footer-links { margin-top: 25px; padding-top: 20px; border-top: 1px solid #334155; display: flex; justify-content: space-between; font-size: 11px; }
+        .footer-links a { color: var(--slate); text-decoration: none; }
+        .footer-links a:hover { color: var(--teal); }
     </style>
 </head>
 <body>
 
-    <div id="login-box">
-        <div class="input-group">
+    <div id="portal-container">
+        <div class="dashboard-box">
             <div class="logo-text">no~bull <span>books</span></div>
-            <h3 style="margin-bottom: 8px;">Login to your instance</h3>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Enter your unique Spreadsheet ID</p>
             
-            <input type="text" id="sheetIdInput" placeholder="Paste Spreadsheet ID here..." onkeydown="if(event.key==='Enter')launchApp()">
-            <button onclick="launchApp()">Open My Books &rarr;</button>
-            
-            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #334155;">
-                <p style="font-size: 11px; color: #64748b;">Don't have an instance yet?</p>
-                <a href="https://nobull.consulting" class="footer-link" style="color: #3b82f6;">Visit our homepage</a>
+            <div id="auth-stage">
+                <h3>Welcome back</h3>
+                <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID" 
+                     data-callback="handleSignIn"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large" data-width="100%"></div>
+            </div>
+
+            <div id="dashboard-stage" style="display: none;">
+                <h3>Your Workspaces</h3>
+                <p class="subtitle">Select a business instance to open your books.</p>
+                
+                <div id="loading-indicator">
+                    <div class="spinner"></div>
+                    <p style="font-size: 12px; color: var(--slate);">Fetching instances...</p>
+                </div>
+
+                <div id="instance-list"></div>
+
+                <button class="btn-action" onclick="window.location.href='index.html#trial'">+ Add New Business</button>
+                
+                <div class="footer-links">
+                    <a href="#" onclick="signOut()">Sign Out</a>
+                    <a href="https://nobull.consulting">Support</a>
+                </div>
             </div>
         </div>
     </div>
@@ -43,49 +107,60 @@
     <iframe id="appFrame"></iframe>
 
     <script>
+        // REPLACE with your deployed Admin Console Web App URL 
+        const ADMIN_API_URL = "https://script.google.com/macros/s/AKfy.../exec"; 
         const frame = document.getElementById('appFrame');
-        const login = document.getElementById('login-box');
-        const baseAppUrl = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec";
+        const portal = document.getElementById('portal-container');
 
-        window.onload = function() {
-            // 1. Priority: Check URL for ?id=... (Direct bookmark/link)
-            const urlParams = new URLSearchParams(window.location.search);
-            const urlId = urlParams.get('id');
-
-            if (urlId) {
-                // Save it for next time and load
-                localStorage.setItem('nb_last_sheet_id', urlId);
-                loadFrame(urlId);
-                return;
-            }
-
-            // 2. Secondary: Check LocalStorage (Persistence)
-            const savedId = localStorage.getItem('nb_last_sheet_id');
-            if (savedId) {
-                loadFrame(savedId);
-            }
-        };
-
-        function launchApp() {
-            const id = document.getElementById('sheetIdInput').value.trim();
-            if (id) {
-                localStorage.setItem('nb_last_sheet_id', id);
-                loadFrame(id);
-            } else {
-                alert("Please enter a valid Spreadsheet ID");
-            }
+        /**
+         * Handle successful Google Sign-In 
+         */
+        function handleSignIn(response) {
+            document.getElementById('auth-stage').style.display = 'none';
+            document.getElementById('dashboard-stage').style.display = 'block';
+            
+            fetchInstances();
         }
 
-        function loadFrame(id) {
-            login.style.display = 'none';
+        /**
+         * Call the Admin Console Discovery Engine
+         */
+        function fetchInstances() {
+            const listContainer = document.getElementById('instance-list');
+            const loader = document.getElementById('loading-indicator');
+
+            fetch(`${ADMIN_API_URL}?action=getInstances`)
+                .then(res => res.json())
+                .then(data => {
+                    loader.style.display = 'none';
+                    if (data.success && data.instances.length > 0) {
+                        listContainer.innerHTML = data.instances.map(inst => `
+                            <div class="company-card" onclick="launchApp('${inst.sheetId}')">
+                                <div class="name">${inst.companyName}</div>
+                                <div class="meta">${inst.status} · ${inst.plan || 'Trial'}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No active workspaces found.</p>';
+                    }
+                })
+                .catch(err => {
+                    loader.innerHTML = '<p style="color:#f87171; font-size:12px;">Error connecting to hub.</p>';
+                });
+        }
+
+        /**
+         * Launch a specific Spoke (Client Book)
+         */
+        function launchApp(sheetId) {
+            portal.style.display = 'none';
             frame.style.display = 'block';
-            // Passing the ID to GAS via the iframe URL
-            frame.src = baseAppUrl + "?id=" + id;
+            // Redirect inside the iframe to keep the Hub/Spoke structure
+            frame.src = `https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=${sheetId}`;
         }
 
-        // Handle "Sign Out" or "Switch Instance" (Optional helper)
-        function clearSession() {
-            localStorage.removeItem('nb_last_sheet_id');
+        function signOut() {
+            google.accounts.id.disableAutoSelect();
             window.location.reload();
         }
     </script>

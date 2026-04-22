@@ -30,6 +30,92 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Dashboard Grid */
+.instance-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column for mobile first */
+    gap: 12px;
+    margin: 20px 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Desktop upgrade for grid */
+@media (min-width: 600px) {
+    .instance-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+/* Prevent text selection for a more 'App-like' feel */
+.company-card, button {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+/* Ensure the iframe fills the screen perfectly without scrolls */
+#appFrame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    z-index: 999;
+}
+
+/* Loading Spinner for the 'Fetching' state */
+.spinner {
+    border: 3px solid rgba(20, 168, 174, 0.1);
+    border-top: 3px solid #14A8AE;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 0.8s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Individual Company Card */
+.company-card {
+    background: #0f172a; /* Deep Navy to match your theme */
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    border-left: 4px solid #14A8AE; /* Your Teal accent color */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.company-card:hover, .company-card:active {
+    border-color: #14A8AE;
+    background: #1e293b;
+    transform: translateY(-2px);
+}
+
+.company-card .name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    color: white;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.company-card .status {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 /* ── STACKED NAVIGATION ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
