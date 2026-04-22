@@ -125,29 +125,39 @@
         /**
          * Call the Admin Console Discovery Engine
          */
-        function fetchInstances() {
-            const listContainer = document.getElementById('instance-list');
-            const loader = document.getElementById('loading-indicator');
+        /**
+ * Uses JSONP to bypass CORS/302 Redirect restrictions.
+ */
+function fetchInstances() {
+    const listContainer = document.getElementById('instance-list');
+    const loader = document.getElementById('loading-indicator');
 
-            fetch(`${ADMIN_API_URL}?action=getInstances`)
-                .then(res => res.json())
-                .then(data => {
-                    loader.style.display = 'none';
-                    if (data.success && data.instances.length > 0) {
-                        listContainer.innerHTML = data.instances.map(inst => `
-                            <div class="company-card" onclick="launchApp('${inst.sheetId}')">
-                                <div class="name">${inst.companyName}</div>
-                                <div class="meta">${inst.status} · ${inst.plan || 'Trial'}</div>
-                            </div>
-                        `).join('');
-                    } else {
-                        listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No active workspaces found.</p>';
-                    }
-                })
-                .catch(err => {
-                    loader.innerHTML = '<p style="color:#f87171; font-size:12px;">Error connecting to hub.</p>';
-                });
+    // Create a unique callback name
+    const callbackName = 'nb_callback_' + Math.floor(Math.random() * 100000);
+    
+    // Define the global function for the Hub to call
+    window[callbackName] = function(data) {
+        loader.style.display = 'none';
+        if (data.success && data.instances.length > 0) {
+            listContainer.innerHTML = data.instances.map(inst => `
+                <div class="company-card" onclick="launchApp('${inst.sheetId}')">
+                    <div class="name">${inst.companyName}</div>
+                    <div class="meta">${inst.status} · ${inst.plan}</div>
+                </div>
+            `).join('');
+        } else {
+            listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No active workspaces found.</p>';
         }
+        // Cleanup script tag
+        document.body.removeChild(document.getElementById('jsonp-script'));
+    };
+
+    // Inject the script tag to trigger the Hub call
+    const script = document.createElement('script');
+    script.id = 'jsonp-script';
+    script.src = `${ADMIN_API_URL}?action=getInstances&callback=${callbackName}`;
+    document.body.appendChild(script);
+}
 
         /**
          * Launch a specific Spoke (Client Book)
