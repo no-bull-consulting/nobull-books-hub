@@ -77,21 +77,22 @@
                 <h3>Welcome back</h3>
                 <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
                 <div id="g_id_onload"
-                data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com" 
+                data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
                 data-context="signin"
                 data-ux_mode="redirect"
                 data-login_uri="https://nobull.consulting/app.html"
-                data-auto_prompt="false">
-            </div>
+                data-auto_prompt="false"
+                data-itp_support="true">
+                </div>
 
-            <div class="g_id_signin" 
+                <div class="g_id_signin" 
                 data-type="standard" 
                 data-shape="rectangular" 
                 data-theme="filled_black" 
                 data-text="signin_with" 
                 data-size="large" 
                 data-logo_alignment="left">
-            </div>
+                </div>
             </div>
 
             <div id="dashboard-stage" style="display: none;">
@@ -132,18 +133,27 @@
      * This replaces the old ID-based window.onload.
      */
     window.onload = function() {
-        google.accounts.id.initialize({
-            client_id: CLIENT_ID,
-            ux_mode: 'redirect', // Forces redirect to bypass the COOP popup error
-            login_uri: 'https://nobull.consulting/app.html', // Must match Cloud Console
-            callback: handleSignIn 
-        });
+    google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        ux_mode: 'redirect',
+        login_uri: 'https://nobull.consulting/app.html',
+        use_fedcm_for_prompt: true // Modern standard for browser compatibility
+    });
 
-        // If we didn't just come back from a redirect, render the button
+    // Check if we returned from a redirect with a credential in the URL fragment
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const credential = urlParams.get('credential');
+    
+    if (credential) {
+        // Logged in! Hide the stage and fetch instances
+        handleSignIn({ credential: credential });
+    } else {
+        // Not logged in yet, show the button
         google.accounts.id.renderButton(
             document.querySelector(".g_id_signin"),
             { theme: "filled_black", size: "large", width: 320 }
         );
+    }
     };
 
     /**
