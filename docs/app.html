@@ -77,22 +77,13 @@
                 <h3>Welcome back</h3>
                 <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
                 <div id="g_id_onload"
-                data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
+                data-client_id="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com"
                 data-context="signin"
-                data-ux_mode="redirect"
-                data-login_uri="https://nobull.consulting/app.html"
-                data-auto_prompt="false"
-                data-itp_support="true">
-                </div>
+                data-callback="handleSignIn" 
+                data-auto_prompt="false">
+            </div>
 
-                <div class="g_id_signin" 
-                data-type="standard" 
-                data-shape="rectangular" 
-                data-theme="filled_black" 
-                data-text="signin_with" 
-                data-size="large" 
-                data-logo_alignment="left">
-                </div>
+            <div class="g_id_signin" data-type="standard" data-size="large" data-width="320"></div>
             </div>
 
             <div id="dashboard-stage" style="display: none;">
@@ -133,26 +124,29 @@
      * This replaces the old ID-based window.onload.
      */
     window.onload = function() {
+    // 1. Initialize Google Identity (Crucial for the Login Button)
     google.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        ux_mode: 'redirect',
-        login_uri: 'https://nobull.consulting/app.html',
-        use_fedcm_for_prompt: true // Modern standard for browser compatibility
+        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com",
+        callback: handleSignIn, // Handled locally to avoid GitHub's 405 error
+        auto_select: false,
+        itp_support: true 
     });
 
-    // Check if we returned from a redirect with a credential in the URL fragment
-    const urlParams = new URLSearchParams(window.location.hash.substring(1));
-    const credential = urlParams.get('credential');
-    
-    if (credential) {
-        // Logged in! Hide the stage and fetch instances
-        handleSignIn({ credential: credential });
-    } else {
-        // Not logged in yet, show the button
-        google.accounts.id.renderButton(
-            document.querySelector(".g_id_signin"),
-            { theme: "filled_black", size: "large", width: 320 }
-        );
+    // 2. Render the actual Sign-In Button
+    google.accounts.id.renderButton(
+        document.querySelector(".g_id_signin"),
+        { theme: "filled_black", size: "large", width: 320 }
+    );
+
+    // 3. Legacy Logic (Optional): Check for existing sessions
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlId = urlParams.get('id');
+    const savedId = localStorage.getItem('nb_last_sheet_id');
+
+    if (urlId || savedId) {
+        // If they have a direct link or saved session, you can decide 
+        // if you want to skip login or force it.
+        console.log("Existing session detected, but waiting for Google Auth.");
     }
     };
 
