@@ -114,23 +114,21 @@
     const portal = document.getElementById('portal-container');
 
     window.onload = function() {
-    // Standardizing the initialization
     google.accounts.id.initialize({
         client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com",
         callback: handleSignIn,
         auto_select: false,
-        itp_support: true,
-        use_fedcm_for_prompt: false // Helps bypass the AbortError
+        itp_support: true, // <-- ENSURE THIS COMMA IS HERE
+        use_fedcm_for_prompt: false 
     });
 
-    // Render the button explicitly
     google.accounts.id.renderButton(
         document.querySelector(".g_id_signin"),
         { theme: "filled_black", size: "large", width: 320 }
     );
     
     console.log("no~bull books: Google Identity Initialized.");
-    };
+};
 
     function handleSignIn(response) {
         if (response.credential) {
