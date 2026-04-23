@@ -76,14 +76,8 @@
             <div id="auth-stage">
                 <h3>Welcome back</h3>
                 <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
-                <div id="g_id_onload"
-                data-client_id="YOUR_CLIENT_ID_HERE.apps.googleusercontent.com"
-                data-context="signin"
-                data-callback="handleSignIn" 
-                data-auto_prompt="false">
-            </div>
-
-            <div class="g_id_signin" data-type="standard" data-size="large" data-width="320"></div>
+                <div id="g_id_onload"></div>
+                <div class="g_id_signin"></div>
             </div>
 
             <div id="dashboard-stage" style="display: none;">
@@ -124,40 +118,35 @@
      * This replaces the old ID-based window.onload.
      */
     window.onload = function() {
-    // 1. Initialize Google Identity (Crucial for the Login Button)
+    // 1. Single Initialization with your REAL ID
     google.accounts.id.initialize({
-        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com",
-        callback: handleSignIn, // Handled locally to avoid GitHub's 405 error
+        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com", // USE YOUR ACTUAL ID
+        callback: handleSignIn,
         auto_select: false,
         itp_support: true 
     });
 
-    // 2. Render the actual Sign-In Button
+    // 2. Render the Button
     google.accounts.id.renderButton(
         document.querySelector(".g_id_signin"),
         { theme: "filled_black", size: "large", width: 320 }
     );
 
-    // 3. Legacy Logic (Optional): Check for existing sessions
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlId = urlParams.get('id');
-    const savedId = localStorage.getItem('nb_last_sheet_id');
-
-    if (urlId || savedId) {
-        // If they have a direct link or saved session, you can decide 
-        // if you want to skip login or force it.
-        console.log("Existing session detected, but waiting for Google Auth.");
-    }
+    // 3. Clear any stuck spinner if the user isn't logged in
+    console.log("no~bull portal initialized.");
     };
 
     /**
      * 2. Handle the sign-in response (the "Handshake").
      */
     function handleSignIn(response) {
+    if (response.credential) {
+        // Hide the login box so the dashboard stage (with the spinner) appears
         document.getElementById('auth-stage').style.display = 'none';
         document.getElementById('dashboard-stage').style.display = 'block';
         fetchInstances();
     }
+}
 
     /**
      * 3. Fetch instances using JSONP to bypass CORS blocks.
