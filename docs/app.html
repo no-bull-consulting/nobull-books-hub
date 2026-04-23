@@ -106,51 +106,40 @@
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-    // REPLACE with your deployed Admin Console Web App URL
+    // 1. SET YOUR CONSTANTS HERE
     const ADMIN_API_URL = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec"; 
-    const CLIENT_ID = "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com";
-    
+    const ACTUAL_ID = "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"; // Paste your full ID here
+
     const frame = document.getElementById('appFrame');
     const portal = document.getElementById('portal-container');
 
-    /**
-     * 1. Initialize the Google Identity library on page load.
-     * This replaces the old ID-based window.onload.
-     */
     window.onload = function() {
-    // 1. Single Initialization with your REAL ID
-    google.accounts.id.initialize({
-        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com", // USE YOUR ACTUAL ID
-        callback: handleSignIn,
-        auto_select: false,
-        itp_support: true 
-    });
+        // Single Initialization
+        google.accounts.id.initialize({
+            client_id: ACTUAL_ID, 
+            callback: handleSignIn,
+            auto_select: false,
+            itp_support: true 
+        });
 
-    // 2. Render the Button
-    google.accounts.id.renderButton(
-        document.querySelector(".g_id_signin"),
-        { theme: "filled_black", size: "large", width: 320 }
-    );
-
-    // 3. Clear any stuck spinner if the user isn't logged in
-    console.log("no~bull portal initialized.");
+        // Render the Button
+        google.accounts.id.renderButton(
+            document.querySelector(".g_id_signin"),
+            { theme: "filled_black", size: "large", width: 320 }
+        );
+        
+        console.log("Portal initialized with ID: " + ACTUAL_ID);
     };
 
-    /**
-     * 2. Handle the sign-in response (the "Handshake").
-     */
     function handleSignIn(response) {
-    if (response.credential) {
-        // Hide the login box so the dashboard stage (with the spinner) appears
-        document.getElementById('auth-stage').style.display = 'none';
-        document.getElementById('dashboard-stage').style.display = 'block';
-        fetchInstances();
+        if (response.credential) {
+            // Hide the login prompt and show the dashboard (the spinner)
+            document.getElementById('auth-stage').style.display = 'none';
+            document.getElementById('dashboard-stage').style.display = 'block';
+            fetchInstances();
+        }
     }
-}
 
-    /**
-     * 3. Fetch instances using JSONP to bypass CORS blocks.
-     */
     function fetchInstances() {
         const listContainer = document.getElementById('instance-list');
         const loader = document.getElementById('loading-indicator');
@@ -166,23 +155,20 @@
                     </div>
                 `).join('');
             } else {
-                listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No workspaces found for this email.</p>';
+                listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No active workspaces found for ' + (data.email || 'this account') + '.</p>';
             }
             delete window[callbackName];
         };
 
         const script = document.createElement('script');
-        script.src = `${ADMIN_API_URL}?action=getInstances&callback=${callbackName}`;
+        script.src = ADMIN_API_URL + '?action=getInstances&callback=' + callbackName;
         document.body.appendChild(script);
     }
 
-    /**
-     * 4. Launch the specific Spoke (Client Workbook).
-     */
     function launchApp(sheetId) {
         portal.style.display = 'none';
         frame.style.display = 'block';
-        frame.src = `https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=${sheetId}`;
+        frame.src = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=" + sheetId;
     }
 
     function signOut() {
