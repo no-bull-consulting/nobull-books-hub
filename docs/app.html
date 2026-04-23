@@ -6,14 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="referrer" content="strict-origin-when-cross-origin">
+	<meta name="referrer" content="no-referrer-when-downgrade">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
     
     <title>no~bull books | Client Portal</title>
     
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
     <style>
         :root {
             --navy: #14213D;
@@ -78,11 +77,21 @@
                 <h3>Welcome back</h3>
                 <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
                 <div id="g_id_onload"
-                     data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com" 
-                     data-callback="handleSignIn"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard" data-theme="filled_black" data-size="large" data-width="320"</div>
+                data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com" 
+                data-context="signin"
+                data-ux_mode="redirect"
+                data-login_uri="https://nobull.consulting/app.html"
+                data-auto_prompt="false">
+            </div>
+
+            <div class="g_id_signin" 
+                data-type="standard" 
+                data-shape="rectangular" 
+                data-theme="filled_black" 
+                data-text="signin_with" 
+                data-size="large" 
+                data-logo_alignment="left">
+            </div>
             </div>
 
             <div id="dashboard-stage" style="display: none;">
@@ -108,73 +117,85 @@
 
     <iframe id="appFrame"></iframe>
 
-    <script>
-        // REPLACE with your deployed Admin Console Web App URL 
-        const ADMIN_API_URL = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec"; 
-        const frame = document.getElementById('appFrame');
-        const portal = document.getElementById('portal-container');
 
-        /**
-         * Handle successful Google Sign-In 
-         */
-        function handleSignIn(response) {
-            document.getElementById('auth-stage').style.display = 'none';
-            document.getElementById('dashboard-stage').style.display = 'block';
-            
-            fetchInstances();
-        }
-
-        /**
-         * Call the Admin Console Discovery Engine
-         */
-        /**
- * Uses JSONP to bypass CORS/302 Redirect restrictions.
- */
-function fetchInstances() {
-    const listContainer = document.getElementById('instance-list');
-    const loader = document.getElementById('loading-indicator');
-
-    // Create a unique callback name
-    const callbackName = 'nb_callback_' + Math.floor(Math.random() * 100000);
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    // REPLACE with your deployed Admin Console Web App URL
+    const ADMIN_API_URL = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec"; 
+    const CLIENT_ID = "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com";
     
-    // Define the global function for the Hub to call
-    window[callbackName] = function(data) {
-        loader.style.display = 'none';
-        if (data.success && data.instances.length > 0) {
-            listContainer.innerHTML = data.instances.map(inst => `
-                <div class="company-card" onclick="launchApp('${inst.sheetId}')">
-                    <div class="name">${inst.companyName}</div>
-                    <div class="meta">${inst.status} · ${inst.plan}</div>
-                </div>
-            `).join('');
-        } else {
-            listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No active workspaces found.</p>';
-        }
-        // Cleanup script tag
-        document.body.removeChild(document.getElementById('jsonp-script'));
+    const frame = document.getElementById('appFrame');
+    const portal = document.getElementById('portal-container');
+
+    /**
+     * 1. Initialize the Google Identity library on page load.
+     * This replaces the old ID-based window.onload.
+     */
+    window.onload = function() {
+        google.accounts.id.initialize({
+            client_id: CLIENT_ID,
+            ux_mode: 'redirect', // Forces redirect to bypass the COOP popup error
+            login_uri: 'https://nobull.consulting/app.html', // Must match Cloud Console
+            callback: handleSignIn 
+        });
+
+        // If we didn't just come back from a redirect, render the button
+        google.accounts.id.renderButton(
+            document.querySelector(".g_id_signin"),
+            { theme: "filled_black", size: "large", width: 320 }
+        );
     };
 
-    // Inject the script tag to trigger the Hub call
-    const script = document.createElement('script');
-    script.id = 'jsonp-script';
-    script.src = `${ADMIN_API_URL}?action=getInstances&callback=${callbackName}`;
-    document.body.appendChild(script);
-}
+    /**
+     * 2. Handle the sign-in response (the "Handshake").
+     */
+    function handleSignIn(response) {
+        document.getElementById('auth-stage').style.display = 'none';
+        document.getElementById('dashboard-stage').style.display = 'block';
+        fetchInstances();
+    }
 
-        /**
-         * Launch a specific Spoke (Client Book)
-         */
-        function launchApp(sheetId) {
-            portal.style.display = 'none';
-            frame.style.display = 'block';
-            // Redirect inside the iframe to keep the Hub/Spoke structure
-            frame.src = `https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=${sheetId}`;
-        }
+    /**
+     * 3. Fetch instances using JSONP to bypass CORS blocks.
+     */
+    function fetchInstances() {
+        const listContainer = document.getElementById('instance-list');
+        const loader = document.getElementById('loading-indicator');
+        const callbackName = 'jsonp_cb_' + Math.round(Math.random() * 1000000);
 
-        function signOut() {
-            google.accounts.id.disableAutoSelect();
-            window.location.reload();
-        }
-    </script>
+        window[callbackName] = function(data) {
+            loader.style.display = 'none';
+            if (data.success && data.instances && data.instances.length > 0) {
+                listContainer.innerHTML = data.instances.map(inst => `
+                    <div class="company-card" onclick="launchApp('${inst.sheetId}')">
+                        <div class="name">${inst.companyName}</div>
+                        <div class="meta">${inst.status} · ${inst.plan}</div>
+                    </div>
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<p style="font-size:13px; color:var(--slate); margin: 20px 0;">No workspaces found for this email.</p>';
+            }
+            delete window[callbackName];
+        };
+
+        const script = document.createElement('script');
+        script.src = `${ADMIN_API_URL}?action=getInstances&callback=${callbackName}`;
+        document.body.appendChild(script);
+    }
+
+    /**
+     * 4. Launch the specific Spoke (Client Workbook).
+     */
+    function launchApp(sheetId) {
+        portal.style.display = 'none';
+        frame.style.display = 'block';
+        frame.src = `https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=${sheetId}`;
+    }
+
+    function signOut() {
+        google.accounts.id.disableAutoSelect();
+        window.location.reload();
+    }
+</script>
 </body>
 </html>
