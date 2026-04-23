@@ -104,7 +104,7 @@
     <iframe id="appFrame"></iframe>
 
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
     // 1. SET YOUR CONSTANTS HERE
     const ADMIN_API_URL = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec"; 
@@ -114,22 +114,22 @@
     const portal = document.getElementById('portal-container');
 
     window.onload = function() {
-        // Single Initialization
-        google.accounts.id.initialize({
-            client_id: ACTUAL_ID, 
-            callback: handleSignIn,
-            auto_select: false,
-            itp_support: true
-            use_fedcm_for_prompt: false			
-        });
+    // Standardizing the initialization
+    google.accounts.id.initialize({
+        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com",
+        callback: handleSignIn,
+        auto_select: false,
+        itp_support: true,
+        use_fedcm_for_prompt: false // Helps bypass the AbortError
+    });
 
-        // Render the Button
-        google.accounts.id.renderButton(
-            document.querySelector(".g_id_signin"),
-            { theme: "filled_black", size: "large", width: 320 }
-        );
-        
-        console.log("Portal initialized with ID: " + ACTUAL_ID);
+    // Render the button explicitly
+    google.accounts.id.renderButton(
+        document.querySelector(".g_id_signin"),
+        { theme: "filled_black", size: "large", width: 320 }
+    );
+    
+    console.log("no~bull books: Google Identity Initialized.");
     };
 
     function handleSignIn(response) {
