@@ -73,31 +73,28 @@
         <div class="dashboard-box">
             <div class="logo-text">no~bull <span>books</span></div>
             
-            <div id="auth-stage">
-                <h3>Welcome back</h3>
-                <p class="subtitle">Sign in with Google to access your automated business workspaces.</p>
-                <div id="g_id_onload"></div>
-                <div class="g_id_signin"></div>
-            </div>
+            <div id="auth-stage" style="text-align: center; padding: 40px;">
+    <h3>Welcome</h3>
+    <p>Sign in to access your business workspaces.</p>
+    
+    <div id="g_id_onload"
+         data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleSignIn"
+         data-auto_prompt="false">
+    </div>
 
-            <div id="dashboard-stage" style="display: none;">
-                <h3>Your Workspaces</h3>
-                <p class="subtitle">Select a business instance to open your books.</p>
-                
-                <div id="loading-indicator">
-                    <div class="spinner"></div>
-                    <p style="font-size: 12px; color: var(--slate);">Fetching instances...</p>
-                </div>
-
-                <div id="instance-list"></div>
-
-                <button class="btn-action" onclick="window.location.href='index.html#trial'">+ Add New Business</button>
-                
-                <div class="footer-links">
-                    <a href="#" onclick="signOut()">Sign Out</a>
-                    <a href="https://nobull.consulting">Support</a>
-                </div>
-            </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="filled_black"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+</div>
+			
         </div>
     </div>
 
@@ -113,31 +110,17 @@
     const frame = document.getElementById('appFrame');
     const portal = document.getElementById('portal-container');
 
-    window.onload = function() {
-    google.accounts.id.initialize({
-        client_id: "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com",
-        callback: handleSignIn,
-        auto_select: false,
-        itp_support: true, // <-- ENSURE THIS COMMA IS HERE
-        use_fedcm_for_prompt: false 
-    });
-
-    google.accounts.id.renderButton(
-        document.querySelector(".g_id_signin"),
-        { theme: "filled_black", size: "large", width: 320 }
-    );
-    
-    console.log("no~bull books: Google Identity Initialized.");
+window.onload = function() {
+    console.log("Portal ready. Awaiting Google Sign-In...");
 };
 
-    function handleSignIn(response) {
-        if (response.credential) {
-            // Hide the login prompt and show the dashboard (the spinner)
-            document.getElementById('auth-stage').style.display = 'none';
-            document.getElementById('dashboard-stage').style.display = 'block';
-            fetchInstances();
-        }
-    }
+// This function is called AUTOMATICALLY by the 'data-callback' above
+function handleSignIn(response) {
+    console.log("Sign-in successful, fetching workspaces...");
+    document.getElementById('auth-stage').style.display = 'none';
+    document.getElementById('dashboard-stage').style.display = 'block';
+    fetchInstances();
+}
 
     function fetchInstances() {
         const listContainer = document.getElementById('instance-list');
