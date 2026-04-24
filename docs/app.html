@@ -144,7 +144,6 @@
             loader.style.display = 'none';
             if (data.success && data.instances && data.instances.length > 0) {
                 listContainer.innerHTML = data.instances.map(inst => {
-                    // Smart URL selection
                     const target = inst.appUrl || inst.sheetId;
                     return `
                         <div class="company-card" onclick="launchApp('${target}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
@@ -156,12 +155,11 @@
                     `;
                 }).join('');
             } else {
-                // SaaS Onboarding UI
                 listContainer.innerHTML = `
                     <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px;">
                         <h3 style="font-size: 18px; color: #1e293b;">Welcome to no~bull books</h3>
                         <p style="font-size: 14px; color: #64748b; margin-top: 10px; margin-bottom: 25px;">
-                            No books found for ${data.email}. Ready to start a 14-day free trial?
+                            No books found for ${data.email || 'your account'}. Ready to start a 14-day free trial?
                         </p>
                         <button onclick="createNewWorkspace()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">
                             + Start My Trial
@@ -187,6 +185,7 @@
         if (!idOrUrl.toString().startsWith('http')) {
             finalUrl = 'https://docs.google.com/spreadsheets/d/' + idOrUrl + '/edit';
         }
+        console.log("Opening App URL:", finalUrl);
         window.open(finalUrl, '_blank');
     }
 
