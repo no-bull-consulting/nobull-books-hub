@@ -116,95 +116,61 @@
 
     <iframe id="appFrame"></iframe>
 
-
     <<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-    // 1. SET YOUR CONSTANTS HERE
-    const ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbzn0lviNLO7I-ket-X-wDIuGILA0pekIb9yppn9UWQ7NVUWyutLl4jnhIAC0W03c-Hs/exec"; 
-    const ACTUAL_ID = "490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"; // Paste your full ID here
+    const ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbzn0lviNLO7I-ket-X-wDIuGILA0pekIb9yppn9UWQ7NVUWyutLl4jnhIAC0W03c-Hs/exec";
 
-    const frame = document.getElementById('appFrame');
-    const portal = document.getElementById('portal-container');
+    function handleSignIn(response) {
+        console.log("Sign-in successful, fetching workspaces...");
+        const authStage = document.getElementById('auth-stage');
+        const dashStage = document.getElementById('dashboard-stage');
 
-window.onload = function() {
-    console.log("Portal ready. Awaiting Google Sign-In...");
-};
-
-// This function is called AUTOMATICALLY by the 'data-callback' above
-function handleSignIn(response) {
-    console.log("Sign-in successful, fetching workspaces...");
-    document.getElementById('auth-stage').style.display = 'none';
-    document.getElementById('dashboard-stage').style.display = 'block';
-    fetchInstances();
-}
+        if (authStage && dashStage) {
+            authStage.style.display = 'none';
+            dashStage.style.display = 'block';
+            fetchInstances();
+        }
+    }
 
     function fetchInstances() {
-    const listContainer = document.getElementById('instance-list');
-    const loader = document.getElementById('loading-indicator');
-    const callbackName = 'jsonp_cb_' + Math.round(Math.random() * 1000000);
+        const listContainer = document.getElementById('instance-list');
+        const loader = document.getElementById('loading-indicator');
+        const callbackName = 'jsonp_cb_' + Math.round(Math.random() * 1000000);
 
-    loader.style.display = 'block';
-    listContainer.innerHTML = '';
+        loader.style.display = 'block';
+        listContainer.innerHTML = '';
 
-    window[callbackName] = function(data) {
-        loader.style.display = 'none';
-        
-        if (data.success && data.instances && data.instances.length > 0) {
-            // RENDER CARDS DIRECTLY HERE
-            listContainer.innerHTML = data.instances.map(inst => `
-                <div class="company-card" onclick="launchApp('${inst.sheetId}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; transition: transform 0.2s;">
-                    <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-                    <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
-                        ${inst.status || 'Active'}
+        window[callbackName] = function(data) {
+            loader.style.display = 'none';
+            if (data.success && data.instances && data.instances.length > 0) {
+                listContainer.innerHTML = data.instances.map(inst => `
+                    <div class="company-card" onclick="launchApp('${inst.sheetId}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                        <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
+                        <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
+                            ${inst.status || 'Active'}
+                        </div>
                     </div>
-                </div>
-            `).join('');
-        } else {
-            listContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <p style="font-size: 14px; color: #64748b;">No workspaces found for ${data.email || 'your account'}.</p>
-                    <button onclick="window.location.reload()" style="margin-top: 10px; color: #3b82f6; background: none; border: none; cursor: pointer;">Try Again</button>
-                </div>
-            `;
-        }
-        
-        delete window[callbackName];
-    };
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<p>No workspaces found for ' + (data.email || 'this account') + '.</p>';
+            }
+            delete window[callbackName];
+        };
 
-    const script = document.createElement('script');
-    const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
-    script.src = `${ADMIN_API_URL}${sep}action=getInstances&callback=${callbackName}`;
-    document.body.appendChild(script);
-}
-        
-        // Cleanup the script tag and the callback
-        const scriptTags = document.querySelectorAll('script[src*="' + callbackName + '"]');
-        scriptTags.forEach(tag => tag.remove());
-        delete window[callbackName];
-    };
-
-    const script = document.createElement('script');
-    // Ensure the URL is properly formed
-    const separator = ADMIN_API_URL.includes('?') ? '&' : '?';
-    script.src = `${ADMIN_API_URL}${separator}action=getInstances&callback=${callbackName}`;
-    
-    script.onerror = function() {
-        loader.style.display = 'none';
-        listContainer.innerHTML = '<p style="color: #ef4444; font-size: 13px;">Connection error. Please check your Hub deployment.</p>';
-    };
-    
-    document.body.appendChild(script);
-}
+        const script = document.createElement('script');
+        const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
+        script.src = ADMIN_API_URL + sep + 'action=getInstances&callback=' + callbackName;
+        document.body.appendChild(script);
+    }
 
     function launchApp(sheetId) {
-        portal.style.display = 'none';
-        frame.style.display = 'block';
-        frame.src = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbxAr1fwnaEmr5Q3tD8_hOrj8zsQ8TtcAofQipYASdEDR4tKJG8liN-OEMIL1nnrka5j/exec?id=" + sheetId;
+        // This will eventually open the iFrame or redirect to the specific sheet
+        window.open('https://docs.google.com/spreadsheets/d/' + sheetId, '_blank');
     }
 
     function signOut() {
         google.accounts.id.disableAutoSelect();
-        window.location.reload();
+        location.reload();
     }
 </script>
 </body>
