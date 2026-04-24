@@ -174,24 +174,21 @@
 };
 
 // Update launchApp to handle the full URL
-function launchApp(url) {
-    if (url && url !== 'undefined') {
-        window.open(url, '_blank');
-    } else {
-        alert("Error: No valid URL found for this workspace.");
+function launchApp(idOrUrl) {
+    if (!idOrUrl || idOrUrl === 'undefined') {
+        alert("Error: No valid URL or ID found for this workspace.");
+        return;
     }
+
+    // Logic: If it starts with http, it's a full URL. Otherwise, it's an ID.
+    let finalUrl = idOrUrl;
+    if (!idOrUrl.toString().startsWith('http')) {
+        finalUrl = 'https://docs.google.com/spreadsheets/d/' + idOrUrl + '/edit';
+    }
+
+    console.log("Launching: " + finalUrl);
+    window.open(finalUrl, '_blank');
 }
-
-        const script = document.createElement('script');
-        const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
-        script.src = ADMIN_API_URL + sep + 'action=getInstances&callback=' + callbackName;
-        document.body.appendChild(script);
-    }
-
-    function launchApp(sheetId) {
-        // This will eventually open the iFrame or redirect to the specific sheet
-        window.open('https://docs.google.com/spreadsheets/d/' + sheetId, '_blank');
-    }
 
     function signOut() {
         google.accounts.id.disableAutoSelect();
