@@ -140,17 +140,22 @@
         loader.style.display = 'block';
         listContainer.innerHTML = '';
 
-window[callbackName] = function(data) {
+    window[callbackName] = function(data) {
     loader.style.display = 'none';
     if (data.success && data.instances && data.instances.length > 0) {
-        listContainer.innerHTML = data.instances.map(inst => `
-            <div class="company-card" onclick="launchApp('${inst.appUrl}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
-                <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-                <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
-                    ${inst.status || 'Active'}
-                </div>
+    listContainer.innerHTML = data.instances.map(inst => {
+    // Determine the best URL to use: appUrl first, then sheetId as fallback
+    const targetUrl = inst.appUrl || `https://docs.google.com/spreadsheets/d/${inst.sheetId}/edit`;
+    
+    return `
+        <div class="company-card" onclick="launchApp('${targetUrl}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+            <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
+            <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
+                ${inst.status || 'Active'}
             </div>
-        `).join('');
+        </div>
+    `;
+}).join('');
     } else {
         // SaaS Onboarding View
         listContainer.innerHTML = `
@@ -173,7 +178,7 @@ function launchApp(url) {
     if (url && url !== 'undefined') {
         window.open(url, '_blank');
     } else {
-        alert("App URL not found in Registry. Please check your Hub settings.");
+        alert("Error: No valid URL found for this workspace.");
     }
 }
 
