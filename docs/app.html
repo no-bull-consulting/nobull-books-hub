@@ -69,34 +69,50 @@
 </head>
 <body>
 
-    <div id="portal-container">
-        <div class="dashboard-box">
-            <div class="logo-text">no~bull <span>books</span></div>
+<div id="portal-container">
+    <div class="dashboard-box">
+        <div class="logo-text">no~bull <span>books</span></div>
+        
+        <div id="auth-stage" style="text-align: center; padding: 40px;">
+            <h3>Welcome</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                Sign in to access your business workspaces.
+            </p>
             
-            <div id="auth-stage" style="text-align: center; padding: 40px;">
-    <h3>Welcome</h3>
-    <p>Sign in to access your business workspaces.</p>
-    
-    <div id="g_id_onload"
-         data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleSignIn"
-         data-auto_prompt="false">
-    </div>
+            <div id="g_id_onload"
+                 data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleSignIn"
+                 data-auto_prompt="false">
+            </div>
 
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="filled_black"
-         data-text="signin_with"
-         data-size="large"
-         data-logo_alignment="left">
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="filled_black"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="left">
+            </div>
+        </div>
+
+        <div id="dashboard-stage" style="display: none; padding: 20px;">
+            <div id="loading-indicator" style="text-align: center; padding: 20px;">
+                <div class="spinner"></div> <p style="font-size: 13px; color: #64748b; margin-top: 10px;">Fetching instances...</p>
+            </div>
+            
+            <div id="instance-list"></div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
+                <button onclick="signOut()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px;">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+        
     </div>
 </div>
-			
-        </div>
-    </div>
 
     <iframe id="appFrame"></iframe>
 
