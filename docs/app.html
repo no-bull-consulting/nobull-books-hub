@@ -140,65 +140,64 @@
         loader.style.display = 'block';
         listContainer.innerHTML = '';
 
-    window[callbackName] = function(data) {
-    loader.style.display = 'none';
-    if (data.success && data.instances && data.instances.length > 0) {
-    listContainer.innerHTML = data.instances.map(inst => {
-    // Determine the best URL to use: appUrl first, then sheetId as fallback
-    const targetUrl = inst.appUrl || `https://docs.google.com/spreadsheets/d/${inst.sheetId}/edit`;
-    
-    return `
-        <div class="company-card" onclick="launchApp('${targetUrl}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
-            <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-            <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
-                ${inst.status || 'Active'}
-            </div>
-        </div>
-    `;
-}).join('');
-    } else {
-        // SaaS Onboarding View
-        listContainer.innerHTML = `
-            <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px;">
-                <h3 style="font-size: 18px; color: #1e293b;">Welcome to no~bull books</h3>
-                <p style="font-size: 14px; color: #64748b; margin-top: 10px; margin-bottom: 25px;">
-                    No books found for ${data.email}. Ready to start a 14-day free trial?
-                </p>
-                <button onclick="createNewWorkspace()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">
-                    + Start My Trial
-                </button>
-            </div>
-        `;
-    }
-    delete window[callbackName];
-};
+        window[callbackName] = function(data) {
+            loader.style.display = 'none';
+            if (data.success && data.instances && data.instances.length > 0) {
+                listContainer.innerHTML = data.instances.map(inst => {
+                    // Smart URL selection
+                    const target = inst.appUrl || inst.sheetId;
+                    return `
+                        <div class="company-card" onclick="launchApp('${target}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                            <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
+                            <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
+                                ${inst.status || 'Active'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // SaaS Onboarding UI
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px;">
+                        <h3 style="font-size: 18px; color: #1e293b;">Welcome to no~bull books</h3>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 10px; margin-bottom: 25px;">
+                            No books found for ${data.email}. Ready to start a 14-day free trial?
+                        </p>
+                        <button onclick="createNewWorkspace()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">
+                            + Start My Trial
+                        </button>
+                    </div>
+                `;
+            }
+            delete window[callbackName];
+        };
 
-// Update launchApp to handle the full URL
-function launchApp(idOrUrl) {
-    if (!idOrUrl || idOrUrl === 'undefined') {
-        alert("Error: No valid URL or ID found for this workspace.");
-        return;
+        const script = document.createElement('script');
+        const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
+        script.src = ADMIN_API_URL + sep + 'action=getInstances&callback=' + callbackName;
+        document.body.appendChild(script);
     }
 
-    // Logic: If it starts with http, it's a full URL. Otherwise, it's an ID.
-    let finalUrl = idOrUrl;
-    if (!idOrUrl.toString().startsWith('http')) {
-        finalUrl = 'https://docs.google.com/spreadsheets/d/' + idOrUrl + '/edit';
+    function launchApp(idOrUrl) {
+        if (!idOrUrl || idOrUrl === 'undefined') {
+            alert("Error: No valid URL or ID found.");
+            return;
+        }
+        let finalUrl = idOrUrl;
+        if (!idOrUrl.toString().startsWith('http')) {
+            finalUrl = 'https://docs.google.com/spreadsheets/d/' + idOrUrl + '/edit';
+        }
+        window.open(finalUrl, '_blank');
     }
 
-    console.log("Launching: " + finalUrl);
-    window.open(finalUrl, '_blank');
-}
+    function createNewWorkspace() {
+        window.location.href = ADMIN_API_URL.replace('/exec', '/exec?action=onboard');
+    }
 
     function signOut() {
         google.accounts.id.disableAutoSelect();
         location.reload();
     }
-	
-	function createNewWorkspace() {
-    // For now, this can just redirect to a Google Form or an internal URL
-    window.location.href = ADMIN_API_URL.replace('/exec', '/exec?action=onboard'); //
-}
 </script>
 </body>
 </html>
