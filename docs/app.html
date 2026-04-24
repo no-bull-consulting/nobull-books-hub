@@ -148,31 +148,22 @@ function handleSignIn(response) {
     listContainer.innerHTML = '';
 
     window[callbackName] = function(data) {
-        loader.style.display = 'none';
-        
-        if (data.success && data.instances && data.instances.length > 0) {
-            listContainer.innerHTML = data.instances.map(inst => {
-                // Determine display values to avoid 'undefined'
-                // We use 'status' for the meta line since that is what's working
-                const displayStatus = inst.status || 'Active'; 
-                
-                return `
-                    <div class="company-card" onclick="launchApp('${inst.sheetId}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; transition: transform 0.2s;">
-                        <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-                        <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.025em; margin-top: 4px;">
-                            ${displayStatus}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            listContainer.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <p style="font-size: 14px; color: #64748b;">No workspaces found for ${data.email || 'your account'}.</p>
-                    <button onclick="window.location.reload()" style="margin-top: 10px; font-size: 12px; color: #3b82f6; background: none; border: none; cursor: pointer; text-decoration: underline;">Refresh</button>
-                </div>
-            `;
-        }
+    loader.style.display = 'none';
+    if (data.success && data.instances.length > 0) {
+        // Show the cards for NobleProg, etc.
+        renderCards(data.instances);
+    } else {
+        // No instances found? Show the "Start Trial" button!
+        listContainer.innerHTML = `
+            <div style="text-align:center;">
+                <p>Welcome! We didn't find any books for ${data.email}.</p>
+                <button onclick="createNewWorkspace()" class="btn-primary">
+                    + Start 14-Day Free Trial
+                </button>
+            </div>
+        `;
+    }
+};
         
         // Cleanup the script tag and the callback
         const scriptTags = document.querySelectorAll('script[src*="' + callbackName + '"]');
