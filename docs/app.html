@@ -140,22 +140,42 @@
         loader.style.display = 'block';
         listContainer.innerHTML = '';
 
-        window[callbackName] = function(data) {
-            loader.style.display = 'none';
-            if (data.success && data.instances && data.instances.length > 0) {
-                listContainer.innerHTML = data.instances.map(inst => `
-                    <div class="company-card" onclick="launchApp('${inst.sheetId}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
-                        <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-                        <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
-                            ${inst.status || 'Active'}
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                listContainer.innerHTML = '<p>No workspaces found for ' + (data.email || 'this account') + '.</p>';
-            }
-            delete window[callbackName];
-        };
+window[callbackName] = function(data) {
+    loader.style.display = 'none';
+    if (data.success && data.instances && data.instances.length > 0) {
+        listContainer.innerHTML = data.instances.map(inst => `
+            <div class="company-card" onclick="launchApp('${inst.appUrl}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
+                <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
+                    ${inst.status || 'Active'}
+                </div>
+            </div>
+        `).join('');
+    } else {
+        // SaaS Onboarding View
+        listContainer.innerHTML = `
+            <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px;">
+                <h3 style="font-size: 18px; color: #1e293b;">Welcome to no~bull books</h3>
+                <p style="font-size: 14px; color: #64748b; margin-top: 10px; margin-bottom: 25px;">
+                    No books found for ${data.email}. Ready to start a 14-day free trial?
+                </p>
+                <button onclick="createNewWorkspace()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">
+                    + Start My Trial
+                </button>
+            </div>
+        `;
+    }
+    delete window[callbackName];
+};
+
+// Update launchApp to handle the full URL
+function launchApp(url) {
+    if (url && url !== 'undefined') {
+        window.open(url, '_blank');
+    } else {
+        alert("App URL not found in Registry. Please check your Hub settings.");
+    }
+}
 
         const script = document.createElement('script');
         const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
@@ -172,6 +192,11 @@
         google.accounts.id.disableAutoSelect();
         location.reload();
     }
+	
+	function createNewWorkspace() {
+    // For now, this can just redirect to a Google Form or an internal URL
+    window.location.href = ADMIN_API_URL.replace('/exec', '/exec?action=onboard'); //
+}
 </script>
 </body>
 </html>
