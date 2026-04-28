@@ -13,7 +13,7 @@
  *   Col F  contactPhone     — contact phone
  *   Col G  sheetId          — Google Spreadsheet ID for this client's data
  *   Col H  sheetUrl         — full URL to the spreadsheet
- *   Col I  deployUrl        — no~bull books GAS /exec URL for this client
+ *   Col I  appUrl        — no~bull books GAS /exec URL for this client
  *   Col J  plan             — e.g. "Solo", "Pro", "Accountant"
  *   Col K  status           — Active | Suspended | Cancelled | Trial
  *   Col L  createdDate      — ISO date
@@ -65,8 +65,8 @@ var REGISTRY_COLS = {
 };
 
 var REGISTRY_HEADERS = [
-  'RegistryId', 'ClientRef', 'CompanyName', 'ContactName', 'ContactEmail',
-  'ContactPhone', 'SheetId', 'SheetUrl', 'DeployUrl', 'Plan',
+  'Id', 'ClientRef', 'CompanyName', 'ContactName', 'ContactEmail',
+  'ContactPhone', 'SheetId', 'SheetUrl', 'AppUrl', 'Plan',
   'Status', 'CreatedDate', 'LastSeen', 'LastSeenBy',
   'InvoiceCount', 'ClientCount', 'BillCount', 'Version', 'Notes',
   'VATRegistered', 'VATNumber', 'FinancialYearEnd', 'Country',
@@ -125,7 +125,7 @@ function initRegistry() {
     sheet.setFrozenRows(1);
     sheet.setColumnWidth(3, 200);  // CompanyName
     sheet.setColumnWidth(8, 300);  // SheetUrl
-    sheet.setColumnWidth(9, 300);  // DeployUrl
+    sheet.setColumnWidth(9, 300);  // appUrl
   }
 
   // Add a Dashboard sheet if not present
@@ -170,21 +170,40 @@ function setRegistrySheetId(id) {
 function getAllRegistryClients(params) {
   try {
     var sheet = _getRegistrySheet();
-    if (sheet.getLastRow() < 2) return { success: true, clients: [] };
+    var lastRow = sheet.getLastRow();
+    
+    // If the sheet only has a header, return empty
+    if (lastRow < 2) return { success: true, clients: [], total: 0 };
 
-    var data    = sheet.getDataRange().getValues();
-    var clients = [];
-
-    for (var i = 1; i < data.length; i++) {
-      var row = data[i];
-      if (!row[0]) continue;
-      clients.push(_rowToClient(row));
-    }
+    // Fetch the entire range (A to Y / 25 columns)
+    var data = sheet.getRange(2, 1, lastRow - 1, 25).getValues();
+    
+    var clients = data.map(function(row) {
+      // Direct Index Mapping (0-based)
+      // A=0, B=1, C=2, D=3, E=4, G=6, I=8, J=9, K=10, L=11, M=12, R=17
+      return {
+        registryId:   row[0],  // Column A
+        clientRef:    row[1],  // Column B
+        companyName:  row[2],  // Column C
+        contactName:  row[3],  // Column D
+        contactEmail: row[4],  // Column E
+        sheetId:      row[6],  // Column G
+        appUrl:       row[8],  // Column I
+        plan:         row[9],  // Column J
+        status:       row[10], // Column K
+        createdDate:  row[11] ? row[11].toString() : "", // Column L
+        lastSeen:     row[12] ? row[12].toString() : "", // Column M
+        version:      row[17]  // Column R
+      };
+    }).filter(function(c) {
+      // Filter out rows that are completely empty or missing a company name
+      return c.companyName && c.companyName.toString().trim() !== "";
+    });
 
     return { success: true, clients: clients, total: clients.length };
   } catch(e) {
-    Logger.log('getAllRegistryClients error: ' + e);
-    return { success: false, message: e.toString(), clients: [] };
+    console.error("Registry Retrieval Error: " + e.toString());
+    return { success: false, message: "Registry Error: " + e.toString() };
   }
 }
 
@@ -211,7 +230,7 @@ function getRegistryClient(sheetId, params) {
  * registerClient(clientData, params)
  * Add a new client to the registry. Called from Admin Panel or onboarding.
  * clientData: { companyName, contactName, contactEmail, contactPhone,
- *               sheetId, deployUrl, plan, notes, vatRegistered, vatNumber,
+ *               sheetId, appUrl, plan, notes, vatRegistered, vatNumber,
  *               fyEnd, country, accountant, accountantEmail, clientRef }
  */
 function registerClient(clientData, params) {
@@ -245,7 +264,7 @@ function registerClient(clientData, params) {
       clientData.contactPhone     || '',
       clientData.sheetId          || '',
       sheetUrl,
-      clientData.deployUrl        || ScriptApp.getService().getUrl(),
+      clientData.appUrl           || ScriptApp.getService().getUrl(),
       clientData.plan             || 'Trial',
       clientData.status           || 'Trial',
       now,
@@ -296,7 +315,7 @@ function updateRegistryClient(registryId, updates, params) {
           contactPhone:    REGISTRY_COLS.CONTACT_PHONE,
           sheetId:         REGISTRY_COLS.SHEET_ID,
           sheetUrl:        REGISTRY_COLS.SHEET_URL,
-          deployUrl:       REGISTRY_COLS.DEPLOY_URL,
+          appUrl:       REGISTRY_COLS.DEPLOY_URL,
           plan:            REGISTRY_COLS.PLAN,
           status:          REGISTRY_COLS.STATUS,
           notes:           REGISTRY_COLS.NOTES,
@@ -371,7 +390,7 @@ function pingRegistry(sheetId, meta) {
         if (meta.companyName && !data[i][REGISTRY_COLS.COMPANY_NAME - 1]) {
           sheet.getRange(row, REGISTRY_COLS.COMPANY_NAME).setValue(meta.companyName);
         }
-        // Populate deployUrl if missing
+        // Populate appUrl if missing
         if (!data[i][REGISTRY_COLS.DEPLOY_URL - 1]) {
           sheet.getRange(row, REGISTRY_COLS.DEPLOY_URL).setValue(
             ScriptApp.getService().getUrl() + '?id=' + sheetId
@@ -392,7 +411,7 @@ function pingRegistry(sheetId, meta) {
         sheetId:      sheetId,
         companyName:  meta.companyName,
         contactEmail: meta.email || '',
-        deployUrl:    ScriptApp.getService().getUrl() + '?id=' + sheetId,
+        appUrl:    ScriptApp.getService().getUrl() + '?id=' + sheetId,
         status:       'Trial',
         plan:         'Trial'
       });
@@ -456,7 +475,7 @@ function _rowToClient(row) {
     contactPhone:   (row[5]  || '').toString(),
     sheetId:        (row[6]  || '').toString(),
     sheetUrl:       (row[7]  || '').toString(),
-    deployUrl:      (row[8]  || '').toString(),
+    appUrl:      (row[8]  || '').toString(),
     plan:           (row[9]  || 'Solo').toString(),
     status:         (row[10] || 'Active').toString(),
     createdDate:    safeSerializeDate(row[11]),
@@ -527,4 +546,10 @@ function debug_openRegistry() {
   } else {
     Logger.log('REGISTRY_SHEET_ID not set. Run initRegistry() first.');
   }
+}
+
+function forceSyncRegistryProperty() {
+  const ACTUAL_ID = "13os7wkggdTpk_9l4sh7kr4dhzlCPh9E7FfQoWE6_o74";
+  PropertiesService.getScriptProperties().setProperty('REGISTRY_SHEET_ID', ACTUAL_ID);
+  console.log("Registry Property Synced to: " + ACTUAL_ID);
 }

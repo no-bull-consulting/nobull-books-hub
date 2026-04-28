@@ -60,3 +60,23 @@ function safeSerializeDate(val) {
     return d.toISOString().substring(0, 10);
   } catch(e) { return ''; }
 }
+
+/**
+ * getSheetDataCached(sheetName)
+ * Reduces read-calls to the spreadsheet by caching results for 1 minute.
+ * 
+ */
+function getSheetDataCached(sheetName, params) {
+  var cache = CacheService.getScriptCache();
+  var cacheKey = params._sheetId + "_" + sheetName;
+  var cached = cache.get(cacheKey);
+
+  if (cached) return JSON.parse(cached);
+
+  var ss = getDb(params);
+  var data = ss.getSheetByName(sheetName).getDataRange().getValues();
+  
+  // Cache for 60 seconds to improve performance during multi-call sessions
+  cache.put(cacheKey, JSON.stringify(data), 60); 
+  return data;
+}

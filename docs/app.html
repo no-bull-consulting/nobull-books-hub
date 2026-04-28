@@ -1,202 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="referrer" content="strict-origin-when-cross-origin">
-	<meta name="referrer" content="no-referrer-when-downgrade">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
-    
-    <title>no~bull books | Client Portal</title>
-    
-    <style>
-        :root {
-            --navy: #14213D;
-            --teal: #14A8AE;
-            --slate: #94a3b8;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-        }
+/**
+ * NO~BULL BOOKS — JWT VERIFICATION
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Verifies Google Identity Services ID tokens (JWTs) issued by the Sign-In
+ * widget on app.html. This is the authentication boundary for cross-domain
+ * calls from nobull.consulting into the Apps Script web app.
+ *
+ * Why this exists:
+ *   Apps Script's Session.getActiveUser() does not return an email for
+ *   anonymous web app deployments called from another origin via JSONP.
+ *   The frontend instead sends the Google-issued JWT, and we verify it
+ *   here against Google's tokeninfo endpoint before trusting any claims.
+ *
+ * Required Script Properties:
+ *   GOOGLE_OAUTH_CLIENT_ID — the OAuth client ID used by app.html's
+ *                            Google Identity Services widget.
+ *
+ * Required OAuth scope (already in appsscript.json):
+ *   https://www.googleapis.com/auth/script.external_request
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
-        /* Iframe for the Spoke Architecture */
-        iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; }
-        
-        #portal-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; text-align: center; padding: 20px; box-sizing: border-box; }
-        .dashboard-box { background: var(--card-bg); padding: 32px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 100%; max-width: 440px; border: 1px solid #334155; }
-        
-        .logo-text { font-family: Georgia, serif; font-size: 24px; margin-bottom: 24px; font-weight: bold; }
-        .logo-text span { color: var(--teal); }
-        
-        h3 { margin: 0 0 8px 0; font-size: 18px; }
-        .subtitle { font-size: 13px; color: var(--slate); margin-bottom: 24px; line-height: 1.5; }
+var GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo?id_token=';
+var TOKEN_CACHE_SECONDS  = 300; // 5 minutes — must be < token lifetime
+var GOOGLE_VALID_ISSUERS = ['https://accounts.google.com', 'accounts.google.com'];
 
-        /* Instance List Styling */
-        #instance-list { display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
-        
-        .company-card { 
-            background: var(--bg); 
-            padding: 16px; 
-            border-radius: 10px; 
-            border: 1px solid #334155; 
-            cursor: pointer; 
-            text-align: left; 
-            transition: transform 0.2s, border-color 0.2s;
-            border-left: 4px solid var(--teal);
-        }
-        .company-card:hover { transform: translateY(-2px); border-color: var(--teal); }
-        .company-card .name { font-weight: 600; color: white; font-size: 15px; margin-bottom: 2px; }
-        .company-card .meta { font-size: 11px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; }
+/**
+ * verifyGoogleJwt(token)
+ * Returns the verified payload or throws on any verification failure.
+ *
+ * Performs:
+ *   - Sanity check on token shape
+ *   - Cache lookup (avoids re-validating the same token within 5 minutes)
+ *   - Round-trip to Google's tokeninfo endpoint, which validates signature,
+ *     issuer, expiry, and audience server-side
+ *   - Local audience check against GOOGLE_OAUTH_CLIENT_ID (defence in depth)
+ *   - email_verified check
+ *
+ * The returned payload is a plain object with at least:
+ *   { sub, email, email_verified, name, picture, aud, iss, exp, iat }
+ */
+function verifyGoogleJwt(token) {
+  if (!token || typeof token !== 'string') {
+    throw new Error('JWT_MISSING');
+  }
+  // A valid JWT has three base64url segments separated by dots.
+  var parts = token.split('.');
+  if (parts.length !== 3) throw new Error('JWT_MALFORMED');
 
-        button.btn-action { 
-            width: 100%; padding: 14px; background: var(--teal); color: white; border: none; 
-            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: opacity 0.2s; 
-        }
-        button.btn-action:hover { opacity: 0.9; }
+  var expectedAud = PropertiesService.getScriptProperties()
+    .getProperty('GOOGLE_OAUTH_CLIENT_ID');
+  if (!expectedAud) throw new Error('JWT_NO_CLIENT_ID_CONFIGURED');
 
-        .spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--teal); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .footer-links { margin-top: 25px; padding-top: 20px; border-top: 1px solid #334155; display: flex; justify-content: space-between; font-size: 11px; }
-        .footer-links a { color: var(--slate); text-decoration: none; }
-        .footer-links a:hover { color: var(--teal); }
-    </style>
-</head>
-<body>
-
-<div id="portal-container">
-    <div class="dashboard-box">
-        <div class="logo-text">no~bull <span>books</span></div>
-        
-        <div id="auth-stage" style="text-align: center; padding: 40px;">
-            <h3>Welcome</h3>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-                Sign in to access your business workspaces.
-            </p>
-            
-            <div id="g_id_onload"
-                 data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
-                 data-context="signin"
-                 data-ux_mode="popup"
-                 data-callback="handleSignIn"
-                 data-auto_prompt="false">
-            </div>
-
-            <div class="g_id_signin"
-                 data-type="standard"
-                 data-shape="rectangular"
-                 data-theme="filled_black"
-                 data-text="signin_with"
-                 data-size="large"
-                 data-logo_alignment="left">
-            </div>
-        </div>
-
-        <div id="dashboard-stage" style="display: none; padding: 20px;">
-            <div id="loading-indicator" style="text-align: center; padding: 20px;">
-                <div class="spinner"></div> <p style="font-size: 13px; color: #64748b; margin-top: 10px;">Fetching instances...</p>
-            </div>
-            
-            <div id="instance-list"></div>
-
-            <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
-                <button onclick="signOut()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px;">
-                    Sign Out
-                </button>
-            </div>
-        </div>
-        
-    </div>
-</div>
-
-    <iframe id="appFrame"></iframe>
-
-    <<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-    const ADMIN_API_URL = "https://script.google.com/macros/s/AKfycbzn0lviNLO7I-ket-X-wDIuGILA0pekIb9yppn9UWQ7NVUWyutLl4jnhIAC0W03c-Hs/exec";
-
-    function handleSignIn(response) {
-        console.log("Sign-in successful, fetching workspaces...");
-        const authStage = document.getElementById('auth-stage');
-        const dashStage = document.getElementById('dashboard-stage');
-
-        if (authStage && dashStage) {
-            authStage.style.display = 'none';
-            dashStage.style.display = 'block';
-            fetchInstances();
-        }
+  // Cache by the JWT signature segment (last part) — every distinct token
+  // has a distinct signature, and the segment is short enough for a cache key.
+  var cacheKey = 'jwt_' + parts[2].substring(0, 200);
+  var cache    = CacheService.getScriptCache();
+  var cached   = cache.get(cacheKey);
+  if (cached) {
+    var cachedPayload = JSON.parse(cached);
+    if (cachedPayload && cachedPayload.exp * 1000 > Date.now()) {
+      return cachedPayload;
     }
+  }
 
-    function fetchInstances() {
-        const listContainer = document.getElementById('instance-list');
-        const loader = document.getElementById('loading-indicator');
-        const callbackName = 'jsonp_cb_' + Math.round(Math.random() * 1000000);
+  var resp = UrlFetchApp.fetch(GOOGLE_TOKENINFO_URL + encodeURIComponent(token), {
+    muteHttpExceptions: true
+  });
+  var code = resp.getResponseCode();
+  if (code !== 200) {
+    // Google returns 400 with { error_description: "..." } for invalid tokens
+    var detail = '';
+    try {
+      var errBody = JSON.parse(resp.getContentText());
+      detail = errBody.error_description || errBody.error || '';
+    } catch(_) { /* ignore */ }
+    throw new Error('JWT_REJECTED_BY_GOOGLE' + (detail ? ': ' + detail : ''));
+  }
 
-        loader.style.display = 'block';
-        listContainer.innerHTML = '';
+  var payload;
+  try {
+    payload = JSON.parse(resp.getContentText());
+  } catch(e) {
+    throw new Error('JWT_BAD_RESPONSE');
+  }
 
-        window[callbackName] = function(data) {
-            loader.style.display = 'none';
-            if (data.success && data.instances && data.instances.length > 0) {
-                listContainer.innerHTML = data.instances.map(inst => {
-                    const target = inst.appUrl || inst.sheetId;
-                    return `
-                        <div class="company-card" onclick="launchApp('${target}')" style="cursor: pointer; margin-bottom: 12px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
-                            <div class="name" style="font-weight: 600; color: #1e293b; font-size: 16px;">${inst.companyName}</div>
-                            <div class="meta" style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px;">
-                                ${inst.status || 'Active'}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                listContainer.innerHTML = `
-                    <div style="text-align: center; padding: 30px; background: #fff; border-radius: 8px;">
-                        <h3 style="font-size: 18px; color: #1e293b;">Welcome to no~bull books</h3>
-                        <p style="font-size: 14px; color: #64748b; margin-top: 10px; margin-bottom: 25px;">
-                            No books found for ${data.email || 'your account'}. Ready to start a 14-day free trial?
-                        </p>
-                        <button onclick="createNewWorkspace()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%;">
-                            + Start My Trial
-                        </button>
-                    </div>
-                `;
-            }
-            delete window[callbackName];
-        };
+  // Defence in depth — Google should already check these, but verify locally.
+  if (GOOGLE_VALID_ISSUERS.indexOf(payload.iss) === -1) {
+    throw new Error('JWT_BAD_ISSUER: ' + payload.iss);
+  }
+  if (payload.aud !== expectedAud) {
+    throw new Error('JWT_BAD_AUDIENCE');
+  }
 
-        const script = document.createElement('script');
-        const sep = ADMIN_API_URL.includes('?') ? '&' : '?';
-        script.src = ADMIN_API_URL + sep + 'action=getInstances&callback=' + callbackName;
-        document.body.appendChild(script);
-    }
+  // tokeninfo returns exp as a string of seconds; coerce.
+  var expSec = parseInt(payload.exp, 10);
+  if (!expSec || expSec * 1000 < Date.now()) {
+    throw new Error('JWT_EXPIRED');
+  }
+  payload.exp = expSec;
 
-    function launchApp(idOrUrl) {
-        if (!idOrUrl || idOrUrl === 'undefined') {
-            alert("Error: No valid URL or ID found.");
-            return;
-        }
-        let finalUrl = idOrUrl;
-        if (!idOrUrl.toString().startsWith('http')) {
-            finalUrl = 'https://docs.google.com/spreadsheets/d/' + idOrUrl + '/edit';
-        }
-        console.log("Opening App URL:", finalUrl);
-        window.open(finalUrl, '_blank');
-    }
+  if (!payload.email) {
+    throw new Error('JWT_NO_EMAIL');
+  }
+  // tokeninfo returns email_verified as the string "true"/"false".
+  if (payload.email_verified === 'false' || payload.email_verified === false) {
+    throw new Error('JWT_EMAIL_NOT_VERIFIED');
+  }
 
-    function createNewWorkspace() {
-        window.location.href = ADMIN_API_URL.replace('/exec', '/exec?action=onboard');
-    }
+  // Cache for short window so repeat calls within a session are fast.
+  // Cap at the actual remaining lifetime so we never serve an expired token.
+  var ttl = Math.min(TOKEN_CACHE_SECONDS, expSec - Math.floor(Date.now() / 1000));
+  if (ttl > 0) {
+    cache.put(cacheKey, JSON.stringify(payload), ttl);
+  }
 
-    function signOut() {
-        google.accounts.id.disableAutoSelect();
-        location.reload();
-    }
-</script>
-</body>
-</html>
+  return payload;
+}
+
+/**
+ * verifyJwtFromRequest(e)
+ * Convenience for use from doGet/doPost. Pulls the credential from the
+ * `credential` parameter, verifies it, and returns the lowercased email.
+ * Throws if absent or invalid.
+ */
+function verifyJwtFromRequest(e) {
+  var credential = e && e.parameter && e.parameter.credential;
+  if (!credential && e && e.postData && e.postData.contents) {
+    try {
+      var body = JSON.parse(e.postData.contents);
+      credential = body.credential;
+    } catch(_) { /* ignore */ }
+  }
+  var payload = verifyGoogleJwt(credential);
+  return String(payload.email).toLowerCase().trim();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Editor helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Run from the editor to set the OAuth client ID. */
+function setGoogleOAuthClientId(clientId) {
+  PropertiesService.getScriptProperties().setProperty('GOOGLE_OAUTH_CLIENT_ID', clientId);
+  Logger.log('GOOGLE_OAUTH_CLIENT_ID set.');
+}
+
+/** Run from the editor with a real JWT pasted from the browser to test. */
+function debug_verifyJwt(token) {
+  try {
+    var p = verifyGoogleJwt(token);
+    Logger.log('OK — email: ' + p.email + ', sub: ' + p.sub);
+    return p;
+  } catch(e) {
+    Logger.log('FAIL: ' + e);
+    return { error: e.toString() };
+  }
+}

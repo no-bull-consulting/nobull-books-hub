@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: sans-serif; padding: 20px; text-align: center; color: #1e293b; }
+      .box { max-width: 400px; margin: 0 auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; }
+      input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 4px; }
+      button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h2>Start your 14-day trial</h2>
+      <p>Enter your business name to get started.</p>
+      <form id="onboardForm">
+       <input type="hidden" id="userEmail" value="<?= userEmail ?>">  
+       <div class="input-group">
+       <input type="text" name="bizName" id="bizName" placeholder="Your Business Name" required>
+       </div>
+       <button type="submit" id="submitBtn">Create My no~bull books →</button>
+      </form>
+    </div>
+  </body>
+<script>
+  document.getElementById('onboardForm').onsubmit = function(e) {
+    e.preventDefault();
+    const bizName = document.getElementById('bizName').value;
+    const userEmail = document.getElementById('userEmail').value; // Get the email from the hidden box
+    const btn = document.getElementById('submitBtn');
+
+    btn.disabled = true;
+    btn.innerText = "Creating...";
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.success) {
+           document.body.innerHTML = '<div style="text-align:center;padding:40px;font-family:sans-serif;">' +
+            '<h2 style="color:#059669;">Success!</h2>' +
+            '<p>Workspace ready for <strong>' + userEmail + '</strong></p>' +
+            '<br><a href="https://nobull.consulting/app.html" target="_top" style="...">Dashboard</a></div>';
+        } else {
+          alert("Error: " + response.error);
+          btn.disabled = false;
+        }
+      })
+      .createWorkspace(bizName, userEmail); // Send BOTH values!
+  };
+</script>
+</html>
