@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>no~bull visa</title>
+  <link rel="preconnect" href="https://accounts.google.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg:           #0f172a;
+      --surface:      #1e293b;
+      --surface-2:    #334155;
+      --border:       #334155;
+      --text:         #f1f5f9;
+      --text-muted:   #94a3b8;
+      --primary:      #3b82f6;
+      --primary-2:    #60a5fa;
+      --accent:       #14b8a6;
+      --success:      #22c55e;
+      --warning:      #f59e0b;
+      --danger:       #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+    .brand {
+      text-align: center;
+      font-family: Georgia, serif;
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      margin-bottom: 2rem;
+    }
+    .brand .accent { color: var(--accent); }
+    h2 {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin: 0 0 1.5rem;
+    }
+    .signin-box {
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .workspaces {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 380px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+    .workspace {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s, background .15s;
+      position: relative;
+    }
+    .workspace:hover {
+      transform: translateY(-1px);
+      border-color: var(--primary);
+      background: #2a3a52;
+    }
+    .workspace.add-new {
+      background: transparent;
+      border-style: dashed;
+      text-align: center;
+    }
+    .ws-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .ws-status {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .ws-status.Active        { color: var(--success); }
+    .ws-status.Trial         { color: var(--warning); }
+    .ws-status.TrialExpired  { color: var(--warning); }
+    .ws-status.Suspended     { color: var(--danger); }
+    .role-badge {
+      display: inline-block;
+      background: rgba(20, 184, 166, 0.2);
+      color: var(--accent);
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 0.4rem;
+    }
+    .role-badge.Superuser { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .role-badge.Owner     { background: rgba(59, 130, 246, 0.2); color: var(--primary-2); }
+    .add-new .ws-name { color: var(--primary-2); }
+    .add-new .ws-status { color: var(--text-muted); }
+    .signout {
+      text-align: center;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .signout a {
+      color: var(--danger);
+      text-decoration: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .signout a:hover { text-decoration: underline; }
+    .error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+    .empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid var(--surface-2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .center { text-align: center; padding: 1rem; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="signin-card">
+  <div class="brand">no<span class="accent">~</span>bull <span class="accent">visa</span></div>
+  <h2 id="signin-title">Welcome</h2>
+  <p class="subtitle" id="signin-subtitle">Sign in to access your case-management workspaces.</p>
+
+  <div id="g_id_onload"
+       data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
+       data-callback="handleSignIn"
+       data-auto_prompt="false"
+       data-ux_mode="popup">
+  </div>
+
+  <div class="signin-box">
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="filled_black"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+  </div>
+
+  <div id="signin-error" class="error" style="display:none"></div>
+</div>
+
+<div class="card" id="workspaces-card" style="display:none">
+  <div class="brand">no<span class="accent">~</span>bull <span class="accent">visa</span></div>
+
+  <div class="workspaces" id="workspaces-list">
+    <div class="center"><div class="spinner"></div><br><br>Loading your workspaces…</div>
+  </div>
+
+  <div class="signout">
+    <a onclick="signOut()">Sign out</a>
+  </div>
+</div>
+
+<script>
+  // VCM Hub URL (read from query parameter, fallback to hardcoded)
+  // Replace the fallback with your actual deployed Hub /exec URL
+  var HUB_URL = 'https://script.google.com/macros/s/AKfycbwwTJMpfpiSj-la03OfVHrHGibm9n8yEagyA0ti4cDRU9sMizCOHvd0eiBfSGKyGKPU/exec';
+
+  var currentCredential = null;
+  var currentEmail = null;
+
+  // JSONP helper — uses unique callback names per request to avoid clashes
+  function callHubViaJsonp(action, params, callback) {
+    var cbName = '__hub_' + Math.random().toString(36).slice(2, 10);
+    var script = document.createElement('script');
+    var timeoutId;
+    window[cbName] = function(data) {
+      clearTimeout(timeoutId);
+      try { delete window[cbName]; } catch(_) {}
+      if (script.parentNode) script.parentNode.removeChild(script);
+      callback(null, data);
+    };
+    var qs = 'action=' + encodeURIComponent(action) +
+             '&callback=' + cbName +
+             '&credential=' + encodeURIComponent(currentCredential || '');
+    Object.keys(params || {}).forEach(function(k) {
+      qs += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    });
+    script.src = HUB_URL + (HUB_URL.indexOf('?') >= 0 ? '&' : '?') + qs;
+    script.onerror = function() {
+      clearTimeout(timeoutId);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[cbName]; } catch(_) {}
+      callback(new Error('Could not reach the platform. Check your connection.'));
+    };
+    timeoutId = setTimeout(function() {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      try { delete window[cbName]; } catch(_) {}
+      callback(new Error('Timed out waiting for the platform.'));
+    }, 15000);
+    document.head.appendChild(script);
+  }
+
+  function handleSignIn(response) {
+    if (!response || !response.credential) {
+      showError('Sign-in failed: no credential received.');
+      return;
+    }
+    currentCredential = response.credential;
+    // Decode the JWT just to get the email for display (no verification on the client)
+    try {
+      var payloadB64 = response.credential.split('.')[1];
+      var payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+      currentEmail = payload.email;
+    } catch(e) {
+      currentEmail = '(signed in)';
+    }
+    showWorkspaces();
+  }
+
+  function showWorkspaces() {
+    document.getElementById('signin-card').style.display = 'none';
+    document.getElementById('workspaces-card').style.display = 'block';
+    var list = document.getElementById('workspaces-list');
+    list.innerHTML = '<div class="center"><div class="spinner"></div><br><br>Loading…</div>';
+
+    callHubViaJsonp('getInstances', {}, function(err, data) {
+      if (err) {
+        list.innerHTML = '<div class="error">' + escapeHtml(err.message) + '</div>';
+        return;
+      }
+      if (!data.success) {
+        list.innerHTML = '<div class="error">' + escapeHtml(data.error || 'Unknown error') + '</div>';
+        return;
+      }
+      renderWorkspaces(data.instances || []);
+    });
+  }
+
+  function renderWorkspaces(instances) {
+    var list = document.getElementById('workspaces-list');
+    list.innerHTML = '';
+
+    if (!instances.length) {
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = 'You don\'t have a workspace yet.<br>Click below to start your free trial.';
+      list.appendChild(empty);
+    } else {
+      instances.forEach(function(ws) {
+        var div = document.createElement('div');
+        div.className = 'workspace';
+        var roleBadge = ws.role && ws.role !== 'Staff'
+          ? '<span class="role-badge ' + escapeHtml(ws.role) + '">' + escapeHtml(ws.role) + '</span>'
+          : '';
+        div.innerHTML =
+          '<div class="ws-name">' + escapeHtml(ws.firmName) + roleBadge + '</div>' +
+          '<div class="ws-status ' + escapeHtml(ws.computedStatus || ws.status) + '">' +
+            escapeHtml(ws.computedStatus || ws.status || 'Active') +
+            (ws.label ? ' \u2014 ' + escapeHtml(ws.label) : '') +
+          '</div>';
+        div.onclick = function() { openWorkspace(ws); };
+        list.appendChild(div);
+      });
+    }
+
+    // Always show "Start a new trial" card
+    var addNew = document.createElement('div');
+    addNew.className = 'workspace add-new';
+    addNew.innerHTML =
+      '<div class="ws-name">' + (instances.length ? '+ Add another workspace' : '+ Start your free trial') + '</div>' +
+      '<div class="ws-status">' + (instances.length ? 'Start a new 14-day trial' : '30-day free trial \u2014 no credit card') + '</div>';
+    addNew.onclick = function() { startNewTrial(); };
+    list.appendChild(addNew);
+  }
+
+  function openWorkspace(ws) {
+    var list = document.getElementById('workspaces-list');
+    list.innerHTML = '<div class="center"><div class="spinner"></div><br><br>Opening ' + escapeHtml(ws.firmName) + '…</div>';
+
+    callHubViaJsonp('createLaunchToken', { sheetId: ws.sheetId }, function(err, data) {
+      if (err) {
+        showWorkspaces();
+        showError(err.message);
+        return;
+      }
+      if (!data.success) {
+        showWorkspaces();
+        showError(data.error || 'Could not open workspace.');
+        return;
+      }
+      // Redirect to the Spoke with the launch token
+      var sep = ws.appUrl.indexOf('?') >= 0 ? '&' : '?';
+      window.location.href = ws.appUrl + sep + 'launch=' + encodeURIComponent(data.token);
+    });
+  }
+
+  function startNewTrial() {
+    // Redirect to Hub's onboarding page, with credential embedded so it can
+    // verify identity and pre-fill the email.
+    window.location.href = HUB_URL +
+      (HUB_URL.indexOf('?') >= 0 ? '&' : '?') +
+      'action=onboard&credential=' + encodeURIComponent(currentCredential || '');
+  }
+
+  function signOut() {
+    currentCredential = null;
+    currentEmail = null;
+    document.getElementById('workspaces-card').style.display = 'none';
+    document.getElementById('signin-card').style.display = 'block';
+    document.getElementById('signin-error').style.display = 'none';
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      window.google.accounts.id.disableAutoSelect();
+    }
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('signin-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+</script>
+</body>
+</html>
