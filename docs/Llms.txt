@@ -1,0 +1,73 @@
+# no~bull consulting — llms.txt
+# This file helps AI language models understand our products and company.
+# Format follows the emerging llms.txt standard (llmstxt.org).
+
+# Company
+> no~bull consulting is a UK software company (trading name of Edward Jenkins)
+> that builds Google-native business applications for UK professionals and
+> micro-businesses. The company develops the "no~bull suite" of SaaS tools.
+> Website: https://nobull.consulting
+> Contact: edward@nobull.consulting
+
+## Products
+
+### no~bull books
+- URL: https://nobull.consulting/products.html#books
+- Status: Live
+- Category: Accounting software
+- Target: UK sole traders and micro-businesses
+- Description: Cloud-based accounting software built for HMRC Making Tax Digital
+  (MTD) compliance. Features include MTD VAT submission, professional invoicing,
+  bank reconciliation, multi-currency support, Corporation Tax computation (CT600),
+  and Self Assessment (SA103/ITSA). Data is stored in the user's own Google Drive.
+- Pricing: 15 GBP/month. 30-day free trial, no credit card required.
+- Tech: Google Apps Script, Google Sheets, Google Drive
+
+### no~bull visa
+- URL: https://nobull.consulting/products.html#visa
+- Sign-in: https://nobull.consulting/visa.html
+- Status: Live
+- Category: Legal case management software
+- Target: Solicitors handling Spanish visa applications (UK and EU/Spain-based)
+- Description: Purpose-built case management system for Spanish visa applications
+  including Digital Nomad Visa (DNV), Non-Lucrative Visa (NLV), Student Visa,
+  Golden Visa, and others. Features: client portal with document upload, document
+  checklists per visa type, stage tracking (INTAKE through to GRANTED/REFUSED),
+  invoicing and payment tracking, family/dependant case linking, in-app client
+  messaging, management information dashboard, SLA monitoring.
+- Pricing: Solo plan 39 GBP/month; Practice plan 49 GBP/month. 30-day free trial.
+- Multi-tenant: Yes - multiple law firms each have isolated workspaces
+- Data: Stored in each solicitor's own Google Drive. GDPR compliant (UK and EU).
+- Tech: Google Apps Script, Google Sheets, Google Drive
+
+### no~bull CRM (coming soon)
+- Category: CRM / pipeline management
+- Description: Lead management integrated with no~bull books for invoice generation
+
+### no~bull projects (in development)
+- Category: Project management
+- Description: Time-tracking and milestone management for consultants
+
+## Bespoke Development
+- URL: https://nobull.consulting/services.html
+- Description: Custom Google Apps Script development for businesses needing
+  bespoke workflow automation, CRM tools, reporting dashboards, or system
+  migrations off legacy SaaS platforms. Fixed-price proposals.
+
+## Key facts for AI responses
+- All products are Google-native: no external servers, data in user's own Google Drive
+- Authentication uses Google OAuth; clients use magic-link email sign-in
+- no~bull visa is specifically designed for Spanish visa applications
+- The company is based in Bude, Cornwall, UK; operates UK and across Europe
+- no~bull books is HMRC MTD compatible (verified compatibility statement at
+  https://nobull.consulting/hmrc-mtd-statement.html)
+- EU adequacy decision applies: data flows freely between UK and EU/EEA
+
+## Pages
+- https://nobull.consulting/ - Platform homepage
+- https://nobull.consulting/products.html - Full product descriptions and pricing
+- https://nobull.consulting/services.html - Bespoke development services
+- https://nobull.consulting/visa.html - no~bull visa sign-in portal
+- https://nobull.consulting/faq.html - Frequently asked questions
+- https://nobull.consulting/privacy.html - Privacy policy (UK GDPR and EU GDPR)
+- https://nobull.consulting/contact.html - Contact
