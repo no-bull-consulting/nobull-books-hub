@@ -157,7 +157,7 @@
       <div class="signin-area">
         <p><strong>Sign in to set up your account</strong></p>
         <div id="g_id_onload"
-             data-client_id=""
+             data-client_id="490062327176-b9q29mjh1dtd4cave1ct4c03ri90dkvc.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
              data-auto_prompt="false"></div>
         <div class="g_id_signin"
@@ -254,17 +254,7 @@
           document.getElementById('firstName').textContent       = data.applicantFirstName || 'there';
           document.getElementById('companyName').textContent     = data.companyName || '';
           document.getElementById('applicantEmail').textContent  = data.applicantEmail || '';
-          // Now initialise Google Sign-In with the OAuth client ID
-          document.getElementById('g_id_onload').setAttribute('data-client_id', OAUTH_CLIENT_ID);
           show('welcomeView');
-          // Re-trigger GSI rendering since we just set the client ID
-          if (window.google && google.accounts && google.accounts.id) {
-            google.accounts.id.initialize({
-              client_id: OAUTH_CLIENT_ID,
-              callback: handleCredentialResponse
-            });
-            // GSI buttons render automatically from the HTML attributes
-          }
         } else {
           showFatal(data && data.error ? data.error : 'Invitation lookup failed.');
         }
