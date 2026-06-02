@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Founding Members &mdash; no~bull books</title>
+  <meta name="description" content="Be one of 20 UK businesses shaping the future of no~bull books. Free for 6 months, half-price forever.">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Lato:wght@300&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    .founders-hero {
+      background: var(--oxford-blue);
+      color: white;
+      padding: 80px 0 60px;
+    }
+    .founders-hero .section-label {
+      color: rgba(255,255,255,0.6);
+    }
+    .founders-hero h1 {
+      color: white;
+      font-size: 48px;
+      line-height: 1.1;
+      margin: 16px 0 24px;
+      max-width: 760px;
+    }
+    .founders-hero .lead {
+      font-size: 19px;
+      line-height: 1.6;
+      max-width: 680px;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 32px;
+    }
+    .places-pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .offer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin: 40px 0 0;
+    }
+    @media (max-width: 800px) {
+      .offer-grid { grid-template-columns: 1fr; }
+      .founders-hero h1 { font-size: 36px; }
+    }
+    .offer-card {
+      background: white;
+      padding: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--grey-light);
+    }
+    .offer-card .label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--racing-green);
+      margin-bottom: 12px;
+    }
+    .offer-card h3 {
+      font-size: 24px;
+      color: var(--oxford-blue);
+      margin: 0 0 8px;
+    }
+    .offer-card p {
+      font-size: 14px;
+      color: var(--slate);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .exchange-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+    .exchange-list li {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--grey-light);
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .exchange-list li:last-child { border-bottom: none; }
+    .exchange-list .num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--racing-green);
+      font-family: 'Courier Prime', monospace;
+    }
+    .exchange-list strong {
+      display: block;
+      color: var(--oxford-blue);
+      margin-bottom: 4px;
+    }
+    .exchange-list .desc {
+      font-size: 14px;
+      color: var(--slate);
+      line-height: 1.6;
+    }
+
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 32px;
+      margin: 24px 0;
+    }
+    @media (max-width: 700px) {
+      .criteria-grid { grid-template-columns: 1fr; }
+    }
+    .criteria-grid li {
+      list-style: none;
+      padding-left: 28px;
+      position: relative;
+      font-size: 15px;
+      color: var(--slate);
+      line-height: 1.5;
+    }
+    .criteria-grid li::before {
+      content: "\2713";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--racing-green);
+      font-weight: 700;
+    }
+
+    .apply-section {
+      background: var(--stone);
+      padding: 80px 0;
+    }
+    .apply-card {
+      background: white;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .apply-card h2 {
+      margin: 0 0 8px;
+      color: var(--oxford-blue);
+    }
+    .apply-card .sub {
+      color: var(--slate);
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--oxford-blue);
+      margin-bottom: 6px;
+    }
+    .form-group .hint {
+      font-size: 12px;
+      color: var(--slate);
+      font-weight: 400;
+      margin-top: 4px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--grey-light);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--racing-green);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-checkbox {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--slate);
+      line-height: 1.5;
+    }
+    .form-checkbox input { width: auto; margin-top: 2px; }
+    .form-actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .form-status {
+      font-size: 14px;
+      color: var(--slate);
+    }
+    .form-status.error { color: #b8001f; }
+    .form-status.success { color: var(--racing-green); font-weight: 700; }
+    .success-message {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .success-message h2 {
+      color: var(--racing-green);
+      margin-bottom: 12px;
+    }
+    .success-message p { color: var(--slate); line-height: 1.6; }
+
+    .section-narrative h2 {
+      font-size: 32px;
+      color: var(--oxford-blue);
+      margin-bottom: 16px;
+    }
+    .section-narrative p {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--slate);
+      max-width: 720px;
+      margin-bottom: 20px;
+    }
+    .pricing-detail {
+      background: var(--stone);
+      padding: 24px;
+      border-radius: 8px;
+      margin: 24px 0;
+      border-left: 4px solid var(--racing-green);
+    }
+    .pricing-detail .big {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--oxford-blue);
+      font-family: 'Courier Prime', monospace;
+    }
+    .pricing-detail .small {
+      font-size: 14px;
+      color: var(--slate);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================== -->
+<!-- NAVIGATION                                                     -->
+<!-- ============================================================== -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">no~bull consulting</a>
+    <div class="nav-links">
+      <a href="products.html" class="nav-cta-secondary">Software</a>
+      <a href="services.html" class="nav-cta-secondary">Bespoke</a>
+      <a href="contact.html" class="nav-cta-secondary">Contact</a>
+      <a href="products.html" class="nav-cta" style="background:var(--oxford-blue);color:white;">Our Products &rarr;</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================== -->
+<!-- HERO                                                           -->
+<!-- ============================================================== -->
+<section class="founders-hero">
+  <div class="container">
+    <div class="section-label">no~bull books</div>
+    <h1>Help us build the accounting software UK small business actually needs.</h1>
+    <p class="lead">We're looking for 20 sole traders and micro-businesses to be Founding Members of no~bull books. Six months free, half-price for life, and a direct hand in shaping what comes next.</p>
+    <div class="places-pill">20 places available</div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- THE OFFER                                                      -->
+<!-- ============================================================== -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">The offer</div>
+    <h2 style="margin-top:8px;">What Founding Members get</h2>
+
+    <div class="offer-grid">
+      <div class="offer-card">
+        <div class="label">Six months</div>
+        <h3>Free</h3>
+        <p>Full access to no~bull books with no charge for the first six months from your first login. No card required to sign up.</p>
+      </div>
+
+      <div class="offer-card">
+        <div class="label">After that</div>
+        <h3>Half price, forever</h3>
+        <p>Once your six months are up, you pay half the standard rate for as long as your account is active. Grandfathered for life &mdash; the discount can't be lost.</p>
+      </div>
+
+      <div class="offer-card">
+        <div class="label">Founding member benefits</div>
+        <h3>Direct line</h3>
+        <p>A "Founding Member" badge in the app, first access to new features, and a direct line to Edward for questions, feedback or escalations.</p>
+      </div>
+    </div>
+
+    <div class="pricing-detail">
+      <div class="big">&pound;0 &rarr; &pound;7.50 / month</div>
+      <div class="small">Free for six months, then &pound;7.50 / month (half the standard &pound;15) &mdash; locked in for the life of your account.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- THE EXCHANGE                                                   -->
+<!-- ============================================================== -->
+<section class="section" style="background:var(--stone);">
+  <div class="container section-narrative">
+    <div class="section-label">The exchange</div>
+    <h2>What we ask in return</h2>
+    <p>This isn't a free-for-all. We're looking for businesses willing to engage with us properly &mdash; not just take six months free and disappear. In exchange for the founding member terms, we ask three things:</p>
+
+    <ul class="exchange-list">
+      <li>
+        <div class="num">01</div>
+        <div>
+          <strong>One scheduled feedback call per quarter</strong>
+          <div class="desc">A 30-minute conversation with Edward, four times a year. Honest feedback on what's working, what's frustrating, and what should come next. This is the part that matters most to us.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">02</div>
+        <div>
+          <strong>A public case study or testimonial by month 6</strong>
+          <div class="desc">Your choice of format &mdash; a written case study, a short video, or a LinkedIn post. We'll make it easy and we'll send you a draft to approve.</div>
+        </div>
+      </li>
+      <li>
+        <div class="num">03</div>
+        <div>
+          <strong>One warm referral introduction</strong>
+          <div class="desc">An introduction to one other business who might also be a fit. No pressure, no quotas, no commission &mdash; just one person you'd genuinely recommend us to.</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- WHO QUALIFIES                                                  -->
+<!-- ============================================================== -->
+<section class="section">
+  <div class="container section-narrative">
+    <div class="section-label">Who we're looking for</div>
+    <h2>Who qualifies</h2>
+    <p>We're not opening this to everyone. We want a small, deliberately mixed cohort who'll give us useful signal across different industries and stages of growth. We'll be reading every application.</p>
+
+    <ul class="criteria-grid">
+      <li>You're a UK sole trader or small business (limited or otherwise) actively trading</li>
+      <li>You're VAT registered or about to be &mdash; Making Tax Digital matters to you</li>
+      <li>You're currently using Xero, QuickBooks, FreeAgent, or spreadsheets</li>
+      <li>You're willing to give honest feedback, not just nice feedback</li>
+      <li>You can spare 30 minutes a quarter for a conversation</li>
+      <li>You're happy for your business to be cited in a case study</li>
+    </ul>
+
+    <p style="margin-top:24px;font-size:14px;color:var(--slate);"><strong>Not sure if you qualify?</strong> Apply anyway. We'll tell you straight if it's not a fit, and we may suggest the standard 30-day trial instead.</p>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- APPLICATION FORM                                               -->
+<!-- ============================================================== -->
+<section class="apply-section" id="apply">
+  <div class="container">
+    <div class="apply-card" id="applyCard">
+
+      <h2>Apply to be a Founding Member</h2>
+      <p class="sub">We'll review every application personally and come back to you within 48 hours.</p>
+
+      <form id="founderForm" novalidate>
+        <div class="form-group">
+          <label for="f-name">Your name</label>
+          <input type="text" id="f-name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="f-email">Email address</label>
+          <input type="email" id="f-email" name="email" required>
+          <div class="hint">We'll only use this for application-related correspondence.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-company">Business name</label>
+          <input type="text" id="f-company" name="company" required>
+        </div>
+
+        <div class="form-group">
+          <label for="f-industry">Industry / sector</label>
+          <input type="text" id="f-industry" name="industry" placeholder="e.g. Consultancy, Construction, Retail, Trades&hellip;" required>
+        </div>
+
+        <div class="form-group">
+          <label for="f-turnover">Approximate annual turnover</label>
+          <select id="f-turnover" name="turnover" required>
+            <option value="">Select&hellip;</option>
+            <option value="under-85k">Under &pound;85,000 (below VAT threshold)</option>
+            <option value="85k-250k">&pound;85,000 &mdash; &pound;250,000</option>
+            <option value="250k-1m">&pound;250,000 &mdash; &pound;1,000,000</option>
+            <option value="over-1m">Over &pound;1,000,000</option>
+            <option value="not-trading-yet">Not yet trading</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f-vat">VAT status</label>
+          <select id="f-vat" name="vatStatus" required>
+            <option value="">Select&hellip;</option>
+            <option value="registered">VAT registered</option>
+            <option value="about-to">Not yet, but about to register</option>
+            <option value="not-required">Not VAT registered &mdash; below threshold</option>
+            <option value="exempt">VAT exempt</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f-current">What are you currently using for accounts?</label>
+          <select id="f-current" name="currentSoftware" required>
+            <option value="">Select&hellip;</option>
+            <option value="xero">Xero</option>
+            <option value="quickbooks">QuickBooks</option>
+            <option value="freeagent">FreeAgent</option>
+            <option value="sage">Sage</option>
+            <option value="other-software">Other accounting software</option>
+            <option value="spreadsheets">Spreadsheets</option>
+            <option value="paper">Paper / nothing yet</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="f-motivation">Why are you interested in no~bull books?</label>
+          <textarea id="f-motivation" name="motivation" rows="3" placeholder="A sentence or two is fine. We're more interested in honest than long." required></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top:32px;padding-top:24px;border-top:1px solid var(--grey-light);">
+          <label class="form-checkbox">
+            <input type="checkbox" id="f-commit" name="commit" required>
+            <span>I'm willing to take part in quarterly feedback calls, contribute a case study or testimonial by month 6, and provide one warm introduction.</span>
+          </label>
+
+          <label class="form-checkbox">
+            <input type="checkbox" id="f-contact" name="consent" required>
+            <span>I'm happy for no~bull consulting to contact me about my application.</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">Submit application</button>
+          <span class="form-status" id="formStatus"></span>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== -->
+<!-- FOOTER                                                         -->
+<!-- ============================================================== -->
+<footer style="background:var(--oxford-blue);color:white;padding:48px 0;">
+  <div class="container">
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;">&copy; no~bull consulting. Bristol, UK.</p>
+  </div>
+</footer>
+
+<!-- ============================================================== -->
+<!-- SUBMIT LOGIC                                                   -->
+<!-- ============================================================== -->
+<script>
+  // Hub Admin API URL (same one app.html uses)
+  const ADMIN_API_URL = "https://script.google.com/a/macros/nobull.consulting/s/AKfycbzUpQV-B6F39o3t-nvIv2p_JrWiKiNRlyeS5wuB-QH7T36xEe1W3PIULw9QQBXmfKSp/exec";
+
+  const form       = document.getElementById('founderForm');
+  const submitBtn  = document.getElementById('submitBtn');
+  const statusEl   = document.getElementById('formStatus');
+  const applyCard  = document.getElementById('applyCard');
+
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg;
+    statusEl.className = 'form-status' + (kind ? ' ' + kind : '');
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    setStatus('Submitting&hellip;', '');
+    submitBtn.disabled = true;
+
+    const data = {
+      action: 'submitEAPApplication',
+      payload: {
+        name:            document.getElementById('f-name').value.trim(),
+        email:           document.getElementById('f-email').value.trim(),
+        company:         document.getElementById('f-company').value.trim(),
+        industry:        document.getElementById('f-industry').value.trim(),
+        turnover:        document.getElementById('f-turnover').value,
+        vatStatus:       document.getElementById('f-vat').value,
+        currentSoftware: document.getElementById('f-current').value,
+        motivation:      document.getElementById('f-motivation').value.trim(),
+        commit:          document.getElementById('f-commit').checked,
+        consent:         document.getElementById('f-contact').checked,
+        submittedAt:     new Date().toISOString()
+      }
+    };
+
+    try {
+      const res = await fetch(ADMIN_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },  // GAS Web Apps need text/plain to avoid preflight
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (json && json.success) {
+        // Replace card content with success message
+        applyCard.innerHTML =
+          '<div class="success-message">' +
+            '<h2>Thanks &mdash; we\'ve got your application.</h2>' +
+            '<p>We\'ll review it personally and come back to you within 48 hours.</p>' +
+            '<p style="margin-top:24px;font-size:14px;">In the meantime, feel free to ' +
+              '<a href="products.html#books" style="color:var(--racing-green);font-weight:700;">explore the live demo</a>.</p>' +
+          '</div>';
+        // Scroll to top of card so they see the confirmation
+        applyCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        setStatus(json && json.message ? json.message : 'Submission failed. Please try again or email hello@nobull.consulting.', 'error');
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      setStatus('Submission failed. Please try again or email hello@nobull.consulting.', 'error');
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
