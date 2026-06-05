@@ -4,8 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service | no~bull consulting</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Lato:wght@300&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="_shared.css">
+    <style>
+      .nav-links { display: flex; align-items: center; gap: 24px; }
+      .nav-links a { font-family: 'Roboto', sans-serif; text-decoration: none; }
+      .nav-cta-secondary { color: var(--slate); font-size: 13px; font-weight: 500; letter-spacing: 0.03em; transition: color 0.2s; text-transform: uppercase; }
+      .nav-cta-secondary:hover { color: var(--oxford-blue); }
+
+      .legal {
+        max-width: 740px;
+        margin: 0 auto;
+        padding: 80px 24px 120px;
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--slate);
+      }
+      .legal h1 {
+        font-family: var(--font-header);
+        font-size: 36px;
+        color: var(--oxford-blue);
+        margin-bottom: 8px;
+        line-height: 1.2;
+      }
+      .legal .meta {
+        font-size: 13px;
+        color: var(--slate);
+        margin-bottom: 48px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--grey-light);
+      }
+      .legal h2 {
+        font-size: 19px;
+        color: var(--oxford-blue);
+        margin: 40px 0 12px;
+        font-family: var(--font-header);
+      }
+      .legal h3 {
+        font-size: 15px;
+        color: var(--oxford-blue);
+        margin: 24px 0 8px;
+        font-weight: 700;
+      }
+      .legal p { margin-bottom: 16px; }
+      .legal ul { margin: 12px 0 16px; padding-left: 20px; }
+      .legal li { margin-bottom: 6px; }
+      .legal .callout {
+        background: var(--stone);
+        border-left: 3px solid var(--racing-green);
+        padding: 16px 20px;
+        border-radius: 0 var(--r) var(--r) 0;
+        margin: 20px 0;
+        font-size: 14px;
+      }
+      @media (max-width: 768px) {
+        .nav-links a:not(.nav-cta) { display: none; }
+        .legal { padding: 48px 16px 80px; }
+        .legal h1 { font-size: 26px; }
+      }
+    </style>
 </head>
 <body>
 
@@ -13,52 +70,181 @@
   <div class="nav-inner">
     <a href="index.html" class="nav-logo">no~bull consulting</a>
     <div class="nav-links">
-      <a href="products.html">Software</a>
-      <a href="services.html">Bespoke</a>
-      <a href="about.html">Philosophy</a>
-      <a href="contact.html" class="nav-cta">Get in Touch</a>
+      <a href="products.html" class="nav-cta-secondary">Software</a>
+      <a href="services.html" class="nav-cta-secondary">Bespoke</a>
+      <a href="contact.html"  class="nav-cta-secondary">Contact</a>
+      <a href="products.html" class="nav-cta" style="background:var(--oxford-blue);color:white;">Our Products &rarr;</a>
     </div>
   </div>
 </nav>
 
-<main class="legal-content">
+<div class="legal">
+
   <h1>Terms of Service</h1>
-  <p class="meta">Version 1.0 · Effective date: 6 April 2026 · Governing law: England and Wales</p>
+  <p class="meta">
+    Version 2.0 &nbsp;&middot;&nbsp; Effective date: 5 June 2026<br>
+    Provider: Edward Jenkins t/a no~bull consulting &nbsp;&middot;&nbsp;
+    <a href="mailto:edward@nobull.consulting" style="color:var(--oxford-blue);">edward@nobull.consulting</a>
+  </p>
 
-  <h2>1. Agreement</h2>
-  <p>By accessing or using no~bull books ("the Service") you agree to be bound by these Terms of Service. These Terms form a legally binding agreement between you and Edward Jenkins, trading as no~bull consulting.</p>
+  <h2>1. Who we are and what these Terms cover</h2>
+  <p>These Terms of Service (&ldquo;Terms&rdquo;) govern your use of <strong>no~bull books</strong> and <strong>no~bull visa</strong> (each a &ldquo;Service&rdquo;), provided by Edward Jenkins, trading as no~bull consulting (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;). By creating an account or using a Service, you agree to be bound by these Terms.</p>
+  <p>These Terms apply alongside our <a href="privacy.html" style="color:var(--oxford-blue);">Privacy Policy</a>, which forms part of your agreement with us.</p>
+  <p>If you do not agree to these Terms, do not use the Service.</p>
 
-  <h2>2. Your Data</h2>
-  <p>Your financial data is stored in your own Google Sheets spreadsheet within your Google account. We do not claim ownership of your data. You retain full ownership and can export or delete your data at any time.</p>
+  <h2>2. The Service</h2>
+  <p><strong>no~bull books</strong> is a cloud-based accounting application for UK sole traders and micro-businesses. Core features include invoicing, bill management, bank reconciliation, VAT calculation and MTD submission to HMRC, and tax estimation including SA103 and CT600 preparation aids.</p>
+  <p><strong>no~bull visa</strong> is a case management application for solicitors handling Spanish visa applications. It includes a client portal, document management, case stage tracking, invoicing, and management reporting.</p>
+  <p>Each Service is delivered as software-as-a-service. No installation is required. Customer financial and case data is stored in the customer's own Google Drive within a Google Sheets workspace; we do not hold a copy on separate infrastructure.</p>
+  <p>We may update, modify, or improve the Service from time to time. We will provide reasonable notice of material changes that adversely affect your use.</p>
 
-  <h2>3. Disclaimers</h2>
-  <p>no~bull books is accounting software, not professional accountancy advice. You should consult a qualified accountant or tax adviser for advice specific to your circumstances.</p>
+  <h2>3. Account registration</h2>
+  <p>To use the Service you must create an account. You agree to:</p>
+  <ul>
+    <li>Provide accurate, current, and complete information at registration</li>
+    <li>Keep your account credentials secure and not share them</li>
+    <li>Notify us promptly of any unauthorised access to your account</li>
+    <li>Be at least 18 years old and legally able to enter contracts</li>
+  </ul>
+  <p>You are responsible for all activity that occurs under your account.</p>
 
-  <h2>4. Governing Law</h2>
-  <p>These Terms are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
-</main>
+  <h2>4. Subscriptions, billing and renewal</h2>
 
-<footer class="section" style="padding: 80px 24px 40px; border-top: 1px solid var(--grey-light); background: var(--white);">
+  <h3>Pricing</h3>
+  <p>Pricing for each Service is published on our website at <a href="products.html" style="color:var(--oxford-blue);">nobull.consulting/products.html</a>. Prices are quoted exclusive of VAT where applicable.</p>
+
+  <h3>Founding Member terms (no~bull books)</h3>
+  <p>Customers admitted to our Founding Member programme receive six (6) months of free access from the date of workspace provisioning. At the end of the six-month period, the subscription transitions to a paid rate of <strong>&pound;7.50 per month</strong>, which is approximately half of the standard rate. This rate is grandfathered for the lifetime of the customer's account, provided the account remains in continuous good standing. Founding Member status is non-transferable.</p>
+  <p>In exchange, Founding Members commit to providing quarterly feedback, participating in a brief case study by month six, and offering one warm referral. These commitments are best-efforts and not strict contractual obligations.</p>
+
+  <h3>Trial accounts (no~bull books)</h3>
+  <p>New customers may receive a free trial period (currently 14 days, subject to change). At the end of the trial, continued use of the Service requires an active paid subscription.</p>
+
+  <h3>Billing cycle</h3>
+  <p>Subscriptions are billed monthly in advance unless otherwise agreed. Subscriptions renew automatically each month until cancelled.</p>
+
+  <h3>Cancellation</h3>
+  <p>You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period; no refunds are issued for partial months unless required by law.</p>
+
+  <h3>Failed payments</h3>
+  <p>If a payment fails, we will attempt to contact you and may suspend access until payment is brought up to date. Continued non-payment may result in the account being closed, although your underlying data (held in your own Google Drive) remains accessible to you.</p>
+
+  <h3>Price changes</h3>
+  <p>We may revise pricing for new subscriptions or for existing customers at the end of their current billing cycle, with at least 30 days' written notice. Founding Member rates are explicitly exempt from upward revision.</p>
+
+  <h2>5. Your data</h2>
+  <p>The financial and case data you create through the Service is stored in your own Google Drive within a Google Sheets workspace. You retain ownership of this data at all times.</p>
+  <p>You can export your data at any time using Google's standard export options (XLSX, CSV, PDF, ODS, etc.). Cancellation or termination of your subscription does not delete this underlying file; it remains in your Drive under your control.</p>
+  <p>For full detail of how personal data is handled, including data subject rights, retention periods, and sub-processors, please refer to our <a href="privacy.html" style="color:var(--oxford-blue);">Privacy Policy</a>.</p>
+
+  <h2>6. Acceptable use</h2>
+  <p>You agree not to:</p>
+  <ul>
+    <li>Use the Service for any unlawful purpose or in any way that breaches applicable law</li>
+    <li>Use the Service to store or transmit material that is unlawful, infringing, defamatory, obscene, threatening, or otherwise objectionable</li>
+    <li>Attempt to gain unauthorised access to other customers' workspaces or to our systems</li>
+    <li>Reverse engineer, decompile, or attempt to derive source code from the Service except as permitted by law</li>
+    <li>Use the Service in a way that imposes unreasonable load, interferes with the Service for other users, or disrupts third-party services we rely on (including Google and HMRC)</li>
+    <li>Resell, sublicense, or commercially redistribute the Service without our prior written agreement</li>
+    <li>Use the Service to generate fraudulent submissions to HMRC or any other body</li>
+  </ul>
+  <p>We may suspend or terminate accounts that breach these provisions.</p>
+
+  <h2>7. HMRC submissions (no~bull books)</h2>
+  <p>no~bull books interacts with HMRC's Making Tax Digital APIs on your behalf. You are responsible for:</p>
+  <ul>
+    <li>The accuracy and completeness of the data you enter</li>
+    <li>The accuracy of any return you submit through the Service</li>
+    <li>Authorising us (via HMRC's OAuth flow) to make submissions on your behalf</li>
+  </ul>
+  <p>We provide the software interface; you remain responsible for your tax position and any submissions made through your account. We do not provide tax advice. We are not your accountant.</p>
+
+  <h2>8. Availability and disclaimers</h2>
+  <p>The Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;. While we work to keep the Service running smoothly, we do not warrant or guarantee that:</p>
+  <ul>
+    <li>The Service will be uninterrupted, timely, secure, or error-free</li>
+    <li>The Service will meet your specific requirements</li>
+    <li>The results obtained from using the Service will be accurate or reliable</li>
+  </ul>
+  <p>The Service depends on third-party platforms (Google Workspace, HMRC APIs). We are not responsible for outages, errors, or changes in those platforms.</p>
+  <p>The Service is accounting software, not professional accountancy or tax advice. You should consult a qualified accountant or tax adviser for advice on your specific circumstances.</p>
+
+  <h2>9. Limitation of liability</h2>
+  <p>To the maximum extent permitted by law:</p>
+  <ul>
+    <li>We are not liable for any indirect, incidental, consequential, or special damages arising from your use of the Service</li>
+    <li>Our total liability to you, in aggregate, for any claim arising from or related to the Service shall not exceed the total fees paid by you in the twelve (12) months immediately preceding the event giving rise to the claim</li>
+  </ul>
+  <p>Nothing in these Terms excludes or limits liability for: death or personal injury caused by negligence; fraud or fraudulent misrepresentation; or any other liability that cannot be excluded or limited under English law.</p>
+
+  <h2>10. Indemnification</h2>
+  <p>You agree to indemnify and hold us harmless from any claims, losses, damages, or expenses (including reasonable legal fees) arising from your breach of these Terms, your misuse of the Service, or your violation of any third-party right.</p>
+
+  <h2>11. Termination</h2>
+  <p>Either party may terminate this agreement at any time. We may terminate or suspend your account immediately if:</p>
+  <ul>
+    <li>You breach these Terms materially and (where remediable) fail to remedy within a reasonable time of notice</li>
+    <li>You fail to pay fees due when they become due</li>
+    <li>We are required to do so by law or by a regulator</li>
+    <li>We cease operating the Service (in which case we will give reasonable notice)</li>
+  </ul>
+  <p>On termination, your right to use the Service ends. Your data, which lives in your Google Drive, remains accessible to you.</p>
+
+  <h2>12. Changes to these Terms</h2>
+  <p>We may update these Terms from time to time. The version number and effective date at the top of this page will reflect any changes. For material changes affecting your rights, we will give at least 30 days' notice via email. Continued use of the Service after the effective date constitutes acceptance.</p>
+
+  <h2>13. Intellectual property</h2>
+  <p>The Service, including the software code, design, and brand, is owned by us or our licensors. These Terms do not transfer any ownership rights to you. You receive only a limited, non-exclusive, non-transferable licence to use the Service for the duration of your subscription.</p>
+  <p>You retain ownership of all data and content you create through the Service.</p>
+
+  <h2>14. Confidentiality</h2>
+  <p>Each party agrees to keep confidential any information designated as confidential by the other, and to use such information only for the purposes of these Terms. This obligation continues for three years after termination.</p>
+
+  <h2>15. Force majeure</h2>
+  <p>Neither party is liable for delays or failures in performance caused by events beyond their reasonable control, including but not limited to acts of God, natural disasters, war, terrorism, civil disturbance, industrial action, internet outages, third-party service failures, or governmental action.</p>
+
+  <h2>16. Notices</h2>
+  <p>Legal notices to us should be sent to <a href="mailto:edward@nobull.consulting" style="color:var(--oxford-blue);">edward@nobull.consulting</a>. Notices to you will be sent to the email address associated with your account.</p>
+
+  <h2>17. Governing law and jurisdiction</h2>
+  <p>These Terms are governed by the laws of England and Wales. Any disputes arising from or connected with these Terms or the Service are subject to the exclusive jurisdiction of the courts of England and Wales.</p>
+
+  <h2>18. Severability and entire agreement</h2>
+  <p>If any provision of these Terms is held to be unenforceable, the remaining provisions shall continue in full force and effect. These Terms, together with the Privacy Policy and any subscription-specific terms agreed in writing, constitute the entire agreement between you and us regarding the Service.</p>
+
+  <h2>19. Contact</h2>
+  <p>
+    Edward Jenkins t/a no~bull consulting<br>
+    <a href="mailto:edward@nobull.consulting" style="color:var(--oxford-blue);">edward@nobull.consulting</a><br>
+    Trading name registered in England and Wales
+  </p>
+
+</div>
+
+<footer class="section" style="padding:60px 24px 40px;border-top:1px solid var(--grey-light);background:var(--white);">
   <div class="container">
-    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: start;">
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:start;">
       <div>
-        <div style="font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--oxford-blue); margin-bottom: 16px;">no~bull consulting</div>
-        <p style="font-size: 14px; color: var(--slate); max-width: 320px; margin-bottom: 24px;">Practical business tools for UK sole traders and micro-businesses.</p>
-        <div style="font-size: 13px; color: var(--slate); line-height: 1.6;">&copy; 2026 no~bull consulting.<br>Trading name of Edward Jenkins.<br>Registered in England and Wales.</div>
+        <div style="font-family:'Courier Prime','Courier New',monospace;font-size:18px;font-weight:700;color:var(--oxford-blue);margin-bottom:12px;">no~bull consulting</div>
+        <p style="font-size:14px;color:var(--slate);max-width:320px;margin-bottom:24px;line-height:1.6;">Practical, Google-native business applications for UK professionals and micro-businesses.</p>
+        <div style="font-size:13px;color:var(--slate);line-height:1.6;">&copy; 2026 no~bull consulting.<br>Trading name of Edward Jenkins.<br>Registered in England and Wales.</div>
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div>
-          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px;">Legal</h4>
-          <ul style="list-style: none; font-size: 14px; line-height: 2;">
-            <li><a href="terms.html" style="color: var(--slate);">Terms of Service</a></li>
-            <li><a href="privacy.html" style="color: var(--slate);">Privacy Policy</a></li>
+          <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--racing-green);margin-bottom:16px;">Products</h4>
+          <ul style="list-style:none;font-size:14px;line-height:2;padding:0;">
+            <li><a href="products.html#books" style="color:var(--slate);text-decoration:none;">no~bull books</a></li>
+            <li><a href="products.html#visa"  style="color:var(--slate);text-decoration:none;">no~bull visa</a></li>
+            <li><a href="services.html"        style="color:var(--slate);text-decoration:none;">Bespoke</a></li>
           </ul>
         </div>
         <div>
-          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px;">Compliance</h4>
-          <ul style="list-style: none; font-size: 14px; line-height: 2;">
-            <li><a href="hmrc-mtd-statement.html" style="color: var(--slate);">HMRC Compatibility</a></li>
-            <li><a href="contact.html" style="color: var(--slate);">Support</a></li>
+          <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--racing-green);margin-bottom:16px;">Company</h4>
+          <ul style="list-style:none;font-size:14px;line-height:2;padding:0;">
+            <li><a href="contact.html" style="color:var(--slate);text-decoration:none;">Contact</a></li>
+            <li><a href="terms.html"   style="color:var(--slate);text-decoration:none;">Terms</a></li>
+            <li><a href="security.html" style="color:var(--slate);text-decoration:none;">Security</a></li>
+            <li><a href="privacy.html" style="color:var(--slate);text-decoration:none;">Privacy</a></li>
           </ul>
         </div>
       </div>
