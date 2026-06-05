@@ -1,0 +1,9 @@
+# no~bull consulting - security contact information
+# Following RFC 9116 (https://securitytxt.org)
+
+Contact: mailto:security@nobull.consulting
+Contact: https://nobull.consulting/security.html
+Expires: 2027-06-05T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://nobull.consulting/.well-known/security.txt
+Policy: https://nobull.consulting/security.html

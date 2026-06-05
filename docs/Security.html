@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security · no~bull consulting</title>
+  <meta name="description" content="How to report a security vulnerability or incident relating to no~bull consulting software." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .security-section {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 140px 24px 80px;
+    }
+    .security-section h1 {
+      font-family: 'Special Elite', Georgia, serif;
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #1f2937;
+    }
+    .security-section .lede {
+      font-size: 16px;
+      color: #4b5563;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    .security-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 32px 0 12px;
+    }
+    .security-section p {
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+    .security-section ul {
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.7;
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    .security-section a.contact {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .security-section a.contact:hover {
+      text-decoration: underline;
+    }
+    .contact-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+    .contact-box strong {
+      display: block;
+      color: #1f2937;
+      font-size: 14px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .contact-box a {
+      font-size: 17px;
+      font-weight: 500;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .contact-box a:hover {
+      text-decoration: underline;
+    }
+    .meta {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Standard nav include, matches other pages -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-text">no~bull <span>consulting</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="products.html">Products</a>
+        <a href="founders.html">Founders</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="security-section">
+    <h1>Reporting a security issue</h1>
+    <p class="lede">
+      We take the security of our software and our customers' data seriously. If you've found a vulnerability or suspect a security incident, we want to hear from you.
+    </p>
+
+    <h2>How to report</h2>
+    <p>The fastest way to reach us is by email. Please include as much detail as you can — the issue itself, how to reproduce it, the affected software (no~bull books, no~bull visa, the website), and the potential impact as you see it.</p>
+
+    <div class="contact-box">
+      <strong>Security contact</strong>
+      <a href="mailto:security@nobull.consulting">security@nobull.consulting</a>
+    </div>
+
+    <h2>What to expect</h2>
+    <ul>
+      <li>We aim to acknowledge your report within 48 hours.</li>
+      <li>We'll keep you updated as we investigate and triage.</li>
+      <li>For confirmed issues, we'll let you know when a fix is being deployed and when it's live.</li>
+      <li>With your permission, we'll credit you publicly once the fix is in place. If you prefer to stay anonymous, that's fine too.</li>
+    </ul>
+
+    <h2>Responsible disclosure</h2>
+    <p>We ask that you:</p>
+    <ul>
+      <li>Give us reasonable time to investigate and address the issue before disclosing publicly.</li>
+      <li>Avoid accessing, modifying, or deleting customer data beyond what's necessary to demonstrate the issue.</li>
+      <li>Don't disrupt service or perform tests that could degrade availability for other customers.</li>
+      <li>Don't attempt social engineering against staff or customers.</li>
+    </ul>
+
+    <p>We don't currently operate a paid bug bounty programme, but we genuinely appreciate the work that researchers do. If you've made a meaningful contribution to making no~bull more secure, we'll be glad to acknowledge it.</p>
+
+    <h2>What's in scope</h2>
+    <ul>
+      <li>The no~bull books application and its supporting infrastructure</li>
+      <li>The no~bull visa application and its supporting infrastructure</li>
+      <li>The nobull.consulting website</li>
+    </ul>
+
+    <h2>What's out of scope</h2>
+    <ul>
+      <li>Vulnerabilities in third-party services we depend on (Google Workspace, HMRC APIs, etc.) — please report these directly to the vendor.</li>
+      <li>Issues that require physical access to a user's device.</li>
+      <li>Social engineering, phishing, and physical security.</li>
+      <li>Denial-of-service attacks and brute force attempts.</li>
+    </ul>
+
+    <p class="meta">
+      For non-security enquiries, please use the <a href="contact.html" class="contact">general contact page</a>.<br/>
+      Last reviewed: 5 June 2026
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>&copy; 2026 no~bull consulting. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="security.html">Security</a></p>
+    </div>
+  </footer>
+</body>
+</html>
