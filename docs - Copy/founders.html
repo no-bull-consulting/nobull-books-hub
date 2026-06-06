@@ -8,8 +8,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="stylesheet" href="_shared.css">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Lato:wght@300&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_shared.css">
   <style>
     .founders-hero {
       background: var(--stone);
@@ -258,14 +258,14 @@
 <!-- ============================================================== -->
 <!-- NAVIGATION                                                     -->
 <!-- ============================================================== -->
-<nav>
-  <div class="nav-inner">
+<nav class="nav">
+  <div class="container nav-inner">
     <a href="index.html" class="nav-logo">no~bull consulting</a>
     <div class="nav-links">
       <a href="products.html" class="nav-cta-secondary">Software</a>
       <a href="services.html" class="nav-cta-secondary">Bespoke</a>
-      <a href="contact.html"  class="nav-cta-secondary">Contact</a>
-      <a href="app.html" class="nav-cta">Launch App &rarr;</a>
+      <a href="contact.html" class="nav-cta-secondary">Contact</a>
+      <a href="products.html" class="nav-cta" style="background:var(--oxford-blue);color:white;">Our Products &rarr;</a>
     </div>
   </div>
 </nav>
@@ -473,35 +473,9 @@
 <!-- ============================================================== -->
 <!-- FOOTER                                                         -->
 <!-- ============================================================== -->
-<footer style="padding:60px 24px 40px;border-top:1px solid var(--grey-light);background:var(--white);">
+<footer style="background:var(--oxford-blue);color:white;padding:48px 0;">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:start;">
-      <div>
-        <div class="footer-logo">no~bull consulting</div>
-        <p class="footer-tagline">Practical, Google-native business applications for UK professionals and micro-businesses.</p>
-        <div class="footer-legal">&copy; 2026 no~bull consulting.<br>Trading name of Edward Jenkins.<br>Registered in England and Wales.</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div>
-          <h4 class="footer-col-head">Products</h4>
-          <ul class="footer-links">
-            <li><a href="products.html#books">no~bull books</a></li>
-            <li><a href="products.html#visa">no~bull visa</a></li>
-            <li><a href="services.html">Bespoke</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="footer-col-head">Company</h4>
-          <ul class="footer-links">
-            <li><a href="contact.html">Contact</a></li>
-            <li><a href="faq.html">FAQ</a></li>
-            <li><a href="terms.html">Terms</a></li>
-            <li><a href="security.html">Security</a></li>
-            <li><a href="privacy.html">Privacy</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;">&copy; no~bull consulting. Bristol, UK.</p>
   </div>
 </footer>
 
