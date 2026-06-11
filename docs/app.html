@@ -251,7 +251,7 @@
                 '<div style="text-align:center;padding:30px;background:#0f172a;border-radius:8px;">' +
                 '<h3 style="font-size:18px;color:white;">Welcome to no~bull books</h3>' +
                 '<p style="font-size:14px;color:#94a3b8;margin-top:10px;margin-bottom:25px;">' +
-                'No workspaces found for ' + escapeHtml(email || 'your account') + '. Ready to start a 14-day free trial?' +
+                'No workspaces found for ' + escapeHtml(email || 'your account') + '. Ready to start a 30-day free trial?' +
                 '</p>' +
                 '<button class="btn-action" onclick="createNewWorkspace()">+ Start My Trial</button>' +
                 '</div>';
@@ -273,7 +273,7 @@
         }).join('');
         cards += '<div class="company-card" style="border-left-color:#94a3b8;text-align:center;" onclick="createNewWorkspace()">' +
                  '<div class="name">+ Add another workspace</div>' +
-                 '<div class="meta">Start a new 14-day trial</div>' +
+                 '<div class="meta">Start a new 30-day trial</div>' +
                  '</div>';
         listContainer.innerHTML = cards;
     }
