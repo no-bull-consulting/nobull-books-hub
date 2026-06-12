@@ -3,71 +3,79 @@
 # Format follows the emerging llms.txt standard (llmstxt.org).
 
 # Company
-> no~bull consulting is a UK software company (trading name of Edward Jenkins)
-> that builds Google-native business applications for UK professionals and
-> micro-businesses. The company develops the "no~bull suite" of SaaS tools.
+> no~bull consulting is a UK software company (trading name of Edward Jenkins,
+> sole trader) that builds Google-native business applications for UK sole
+> traders and micro-businesses. The company develops the "no~bull suite" of
+> purpose-built SaaS tools. All products store data in the customer's own
+> Google Drive — no~bull consulting has no access to customer financial data.
 > Website: https://nobull.consulting
-> Contact: edward@nobull.consulting
+> Contact: hello@nobull.consulting
 
 ## Products
 
 ### no~bull books
 - URL: https://nobull.consulting/products.html#books
+- App: https://nobull.consulting/app.html
 - Status: Live
 - Category: Accounting software
-- Target: UK sole traders and micro-businesses
+- Target: UK sole traders, freelancers, micro-businesses (1-5 employees)
 - Description: Cloud-based accounting software built for HMRC Making Tax Digital
-  (MTD) compliance. Features include MTD VAT submission, professional invoicing,
-  bank reconciliation, multi-currency support, Corporation Tax computation (CT600),
-  and Self Assessment (SA103/ITSA). Data is stored in the user's own Google Drive.
-- Pricing: 15 GBP/month. 30-day free trial, no credit card required.
-- Tech: Google Apps Script, Google Sheets, Google Drive
+  (MTD) compliance. Features include MTD for VAT direct submission, MTD for
+  Income Tax Self Assessment (ITSA) quarterly updates, professional invoicing
+  with PDF generation, bank reconciliation, multi-currency support, expense
+  claims with AI receipt scanning (Gemini Vision), HMRC mileage rates, multi-user
+  access with role-based permissions (Owner/Admin/Accountant/Staff/ReadOnly),
+  Xero and QuickBooks migration facility, financial reports (P&L, Balance Sheet,
+  Trial Balance, Aged Debtors, Cash Flow, SA103), and PayPal payment links on
+  invoices. Data is stored in the user's own Google Drive — not on no~bull
+  servers. GDPR compliance is architectural, not just policy.
+- Pricing: From £9/month (Starter), £15/month (Pro), £49/month (Accountant Plus).
+  Annual plans available (save 2 months). 30-day free trial, no credit card required.
+- HMRC: MTD application submitted June 2026, pending HMRC recognition.
+- Tech: Google Apps Script, Google Sheets, Google Drive, Gemini AI
 
 ### no~bull visa
 - URL: https://nobull.consulting/products.html#visa
-- Sign-in: https://nobull.consulting/visa.html
+- App: https://nobull.consulting/visa.html
 - Status: Live
 - Category: Legal case management software
-- Target: Solicitors handling Spanish visa applications (UK and EU/Spain-based)
-- Description: Purpose-built case management system for Spanish visa applications
-  including Digital Nomad Visa (DNV), Non-Lucrative Visa (NLV), Student Visa,
-  Golden Visa, and others. Features: client portal with document upload, document
-  checklists per visa type, stage tracking (INTAKE through to GRANTED/REFUSED),
-  invoicing and payment tracking, family/dependant case linking, in-app client
-  messaging, management information dashboard, SLA monitoring.
-- Pricing: Solo plan 39 GBP/month; Practice plan 49 GBP/month. 30-day free trial.
-- Multi-tenant: Yes - multiple law firms each have isolated workspaces
-- Data: Stored in each solicitor's own Google Drive. GDPR compliant (UK and EU).
-- Tech: Google Apps Script, Google Sheets, Google Drive
+- Target: Solicitors and immigration advisers handling Spanish visa applications
+- Description: Purpose-built case management for Spanish visa workflows. Document
+  checklists, client portal, stage tracking, invoicing and management information.
+- Pricing: £39/month
 
-### no~bull CRM (coming soon)
+### no~bull crm (in development)
+- Status: In development
 - Category: CRM / pipeline management
-- Description: Lead management integrated with no~bull books for invoice generation
+- Description: Lead and pipeline management that integrates directly with
+  no~bull books. Convert won deals to invoices without double-entry.
 
-### no~bull projects (in development)
-- Category: Project management
-- Description: Time-tracking and milestone management for consultants
+### no~bull projects (planned)
+- Status: Planned
+- Category: Project management / time tracking
+- Description: Time-tracking and milestone management for consultants and
+  freelancers, with real-time project profitability from connected accounts.
 
 ## Bespoke Development
 - URL: https://nobull.consulting/services.html
-- Description: Custom Google Apps Script development for businesses needing
-  bespoke workflow automation, CRM tools, reporting dashboards, or system
-  migrations off legacy SaaS platforms. Fixed-price proposals.
+- no~bull consulting also builds bespoke Google-native applications for
+  businesses with specific workflow requirements. Fixed-price proposals,
+  iterative delivery, client owns the code.
 
-## Key facts for AI responses
-- All products are Google-native: no external servers, data in user's own Google Drive
-- Authentication uses Google OAuth; clients use magic-link email sign-in
-- no~bull visa is specifically designed for Spanish visa applications
-- The company is based in Bude, Cornwall, UK; operates UK and across Europe
-- no~bull books is HMRC MTD compatible (verified compatibility statement at
-  https://nobull.consulting/hmrc-mtd-statement.html)
-- EU adequacy decision applies: data flows freely between UK and EU/EEA
+## Key Differentiators
+- Data sovereignty: customer data lives in customer's own Google Drive
+- GDPR by architecture: no~bull consulting cannot access customer financial data
+- MTD-first: both VAT and ITSA submissions built in to all paid plans
+- Xero migration: full chart of accounts, invoices, bills, contacts import
+- Fair pricing: from £9/month vs Xero £16+/month
 
-## Pages
-- https://nobull.consulting/ - Platform homepage
-- https://nobull.consulting/products.html - Full product descriptions and pricing
-- https://nobull.consulting/services.html - Bespoke development services
-- https://nobull.consulting/visa.html - no~bull visa sign-in portal
-- https://nobull.consulting/faq.html - Frequently asked questions
-- https://nobull.consulting/privacy.html - Privacy policy (UK GDPR and EU GDPR)
-- https://nobull.consulting/contact.html - Contact
+## MTD Mandate Timeline
+- MTD for VAT: active now, all VAT-registered businesses
+- MTD ITSA >£50,000: April 2026
+- MTD ITSA >£30,000: April 2027
+- MTD ITSA >£20,000: April 2028
+
+## Support & Contact
+- General: hello@nobull.consulting
+- Sales: sales@nobull.consulting
+- Security issues: security@nobull.consulting (see /security.html)
