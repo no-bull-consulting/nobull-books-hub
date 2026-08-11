@@ -1,7 +1,7 @@
 {
   "name": "no~bull consulting",
   "short_name": "no~bull",
-  "description": "Google-native business software suite — no~bull books and no~bull visa.",
+  "description": "Open-source, UK-hosted business software suite — nSuite, starting with nBooks.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

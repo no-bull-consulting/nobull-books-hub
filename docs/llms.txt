@@ -4,18 +4,19 @@
 
 # Company
 > no~bull consulting is a UK software company (trading name of Edward Jenkins,
-> sole trader) that builds Google-native business applications for UK sole
-> traders and micro-businesses. The company develops the "no~bull suite" of
-> purpose-built SaaS tools. All products store data in the customer's own
-> Google Drive — no~bull consulting has no access to customer financial data.
+> sole trader) that builds open-source, UK-hosted business applications for UK
+> sole traders and micro-businesses. The company develops nSuite, a growing
+> family of purpose-built SaaS tools. Products are built on open-source
+> foundations, hosted on UK servers, with full data export always available —
+> no proprietary lock-in.
 > Website: https://nobull.consulting
 > Contact: hello@nobull.consulting
 
 ## Products
 
-### no~bull books
+### nBooks
 - URL: https://nobull.consulting/products.html#books
-- App: https://nobull.consulting/app.html
+- App: https://books.nobull.consulting
 - Status: Live
 - Category: Accounting software
 - Target: UK sole traders, freelancers, micro-businesses (1-5 employees)
@@ -23,48 +24,63 @@
   (MTD) compliance. Features include MTD for VAT direct submission, MTD for
   Income Tax Self Assessment (ITSA) quarterly updates, professional invoicing
   with PDF generation, bank reconciliation, multi-currency support, expense
-  claims with AI receipt scanning (Gemini Vision), HMRC mileage rates, multi-user
+  claims with AI receipt scanning, HMRC mileage rates, multi-user
   access with role-based permissions (Owner/Admin/Accountant/Staff/ReadOnly),
   Xero and QuickBooks migration facility, financial reports (P&L, Balance Sheet,
   Trial Balance, Aged Debtors, Cash Flow, SA103), and PayPal payment links on
-  invoices. Data is stored in the user's own Google Drive — not on no~bull
-  servers. GDPR compliance is architectural, not just policy.
+  invoices. Data is stored on UK-based servers, built on open-source software.
+  Full data export available at any time — no proprietary lock-in.
 - Pricing: From £9/month (Starter), £15/month (Pro), £49/month (Accountant Plus).
   Annual plans available (save 2 months). 30-day free trial, no credit card required.
 - HMRC: MTD application submitted June 2026, pending HMRC recognition.
-- Tech: Google Apps Script, Google Sheets, Google Drive, Gemini AI
+- Tech: Open source, self-hosted, UK-based infrastructure
 
-### no~bull visa
-- URL: https://nobull.consulting/products.html#visa
-- App: https://nobull.consulting/visa.html
-- Status: Live
-- Category: Legal case management software
-- Target: Solicitors and immigration advisers handling Spanish visa applications
-- Description: Purpose-built case management for Spanish visa workflows. Document
-  checklists, client portal, stage tracking, invoicing and management information.
-- Pricing: £39/month
-
-### no~bull crm (in development)
+### nLearn (in development)
 - Status: In development
+- Category: Training management
+- Description: Training management for small teams — course tracking,
+  certifications, and compliance records, plugged into the same shared
+  contacts as the rest of nSuite.
+
+### nSales (planned)
+- Status: Planned
 - Category: CRM / pipeline management
 - Description: Lead and pipeline management that integrates directly with
-  no~bull books. Convert won deals to invoices without double-entry.
+  nBooks. Convert won deals to invoices without double-entry.
 
-### no~bull projects (planned)
+### nWork (planned)
 - Status: Planned
 - Category: Project management / time tracking
 - Description: Time-tracking and milestone management for consultants and
   freelancers, with real-time project profitability from connected accounts.
 
+### nDocs (planned)
+- Status: Planned
+- Category: Document management
+- Description: Document management for small businesses — store, share, and
+  version the paperwork behind your books.
+
+### nSpark (planned)
+- Status: Planned
+- Category: AI / LLM tools
+- Description: AI and LLM tools woven through the rest of nSuite, extending
+  the same intelligence already behind nBooks' receipt scanning.
+
+## Pluggable Architecture
+Each nSuite product works standalone, or plugs into the others as a
+business grows. Products share common data (starting with contacts) so
+customers and suppliers stay consistent across every tool used.
+
 ## Bespoke Development
 - URL: https://nobull.consulting/services.html
-- no~bull consulting also builds bespoke Google-native applications for
+- no~bull consulting also builds bespoke applications for
   businesses with specific workflow requirements. Fixed-price proposals,
   iterative delivery, client owns the code.
 
 ## Key Differentiators
-- Data sovereignty: customer data lives in customer's own Google Drive
-- GDPR by architecture: no~bull consulting cannot access customer financial data
+- Open source: nBooks is built on open, auditable software — no proprietary black box
+- UK-hosted: financial data is stored on UK-based servers, under UK data protection law
+- No lock-in: full data export, anytime, at no charge, in open formats
 - MTD-first: both VAT and ITSA submissions built in to all paid plans
 - Xero migration: full chart of accounts, invoices, bills, contacts import
 - Fair pricing: from £9/month vs Xero £16+/month
