@@ -103,7 +103,7 @@
   <h2>2. The Service</h2>
   <p><strong>no~bull books</strong> is a cloud-based accounting application for UK sole traders and micro-businesses. Core features include invoicing, bill management, bank reconciliation, VAT calculation and MTD submission to HMRC, and tax estimation including SA103 and CT600 preparation aids.</p>
   <p><strong>no~bull visa</strong> is a case management application for solicitors handling Spanish visa applications. It includes a client portal, document management, case stage tracking, invoicing, and management reporting.</p>
-  <p>Each Service is delivered as software-as-a-service. No installation is required. Customer financial and case data is stored in the customer's own Google Drive within a Google Sheets workspace; we do not hold a copy on separate infrastructure.</p>
+  <p>Each Service is delivered as software-as-a-service. No installation is required. no~bull books workspace data is stored in a PostgreSQL database on our own UK-based infrastructure; we do not use Google Drive or Google Sheets for no~bull books. no~bull visa workspace data is stored in the customer's own Google Drive within a Google Sheets workspace; we do not hold a copy of visa case data on separate infrastructure.</p>
   <p>We may update, modify, or improve the Service from time to time. We will provide reasonable notice of material changes that adversely affect your use.</p>
 
   <h2>3. Account registration</h2>
@@ -135,14 +135,14 @@
   <p>You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period; no refunds are issued for partial months unless required by law.</p>
 
   <h3>Failed payments</h3>
-  <p>If a payment fails, we will attempt to contact you and may suspend access until payment is brought up to date. Continued non-payment may result in the account being closed, although your underlying data (held in your own Google Drive) remains accessible to you.</p>
+  <p>If a payment fails, we will attempt to contact you and may suspend access until payment is brought up to date. Continued non-payment may result in the account being closed. For no~bull visa, your underlying data (held in your own Google Drive) remains accessible to you regardless. For no~bull books, you may request a full export of your data at any point before closure.</p>
 
   <h3>Price changes</h3>
   <p>We may revise pricing for new subscriptions or for existing customers at the end of their current billing cycle, with at least 30 days' written notice. Founding Member rates are explicitly exempt from upward revision.</p>
 
   <h2>5. Your data</h2>
-  <p>The financial and case data you create through the Service is stored in your own Google Drive within a Google Sheets workspace. You retain ownership of this data at all times.</p>
-  <p>You can export your data at any time using Google's standard export options (XLSX, CSV, PDF, ODS, etc.). Cancellation or termination of your subscription does not delete this underlying file; it remains in your Drive under your control.</p>
+  <p><strong>no~bull visa:</strong> the case data you create through the Service is stored in your own Google Drive within a Google Sheets workspace. You retain ownership of this data at all times, and can export it anytime using Google's standard export options (XLSX, CSV, PDF, ODS, etc.). Cancellation or termination of your subscription does not delete this underlying file; it remains in your Drive under your control.</p>
+  <p><strong>no~bull books:</strong> your financial data is stored on our own UK-based infrastructure. You can export your complete financial data at any time, in full, at no charge, in open formats. We do not use your data for any purpose beyond delivering and supporting the Service to you.</p>
   <p>For full detail of how personal data is handled, including data subject rights, retention periods, and sub-processors, please refer to our <a href="privacy.html" style="color:var(--oxford-blue);">Privacy Policy</a>.</p>
 
   <h2>6. Acceptable use</h2>
@@ -196,7 +196,7 @@
     <li>We are required to do so by law or by a regulator</li>
     <li>We cease operating the Service (in which case we will give reasonable notice)</li>
   </ul>
-  <p>On termination, your right to use the Service ends. Your data, which lives in your Google Drive, remains accessible to you.</p>
+  <p>On termination, your right to use the Service ends. For no~bull visa, your data, which lives in your Google Drive, remains accessible to you. For no~bull books, you may request a full export of your data before termination takes effect.</p>
 
   <h2>12. Changes to these Terms</h2>
   <p>We may update these Terms from time to time. The version number and effective date at the top of this page will reflect any changes. For material changes affecting your rights, we will give at least 30 days' notice via email. Continued use of the Service after the effective date constitutes acceptance.</p>
@@ -239,7 +239,7 @@
     <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;align-items:start;margin-bottom:40px;">
       <div>
         <div class="footer-logo">no~bull consulting</div>
-        <p class="footer-tagline">Google-native business software for UK sole traders and micro-businesses. Honest pricing, your data, no bull.</p>
+        <p class="footer-tagline">Open-source, UK-hosted business software for UK sole traders and micro-businesses. Honest pricing, your data, no bull.</p>
         <div class="footer-legal">&copy; 2026 no~bull consulting.<br>Trading name of Edward Jenkins.<br>Sole Trader.</div>
       </div>
       <div>

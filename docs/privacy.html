@@ -124,7 +124,7 @@
   <p>Our position under UK GDPR differs depending on the product and the person involved.</p>
 
   <h3>no~bull books &mdash; sole trader / micro-business users</h3>
-  <p>We are the <strong>data controller</strong> for account and subscription data (name, email, billing). The financial records you create and store in no~bull books live in your own Google Drive; we have no access to them and are not a controller for that data.</p>
+  <p>We are the <strong>data controller</strong> for account and subscription data (name, email, billing). For the financial records you create and store in no~bull books, we act as your <strong>data processor</strong> &mdash; the software runs on our own UK-based infrastructure, and access is restricted to what is required to operate and support the service.</p>
 
   <h3>no~bull visa &mdash; solicitor workspaces</h3>
   <p>The solicitor or firm that subscribes to no~bull visa is the <strong>data controller</strong> for their clients&rsquo; personal data. We act as a <strong>data processor</strong> on their behalf for that data. We are the data controller only for the solicitor&rsquo;s own account and subscription information.</p>
@@ -160,9 +160,9 @@
   <p>Criminal record certificates are <strong>special category data</strong> under UK GDPR Article 9. The solicitor (as data controller) is responsible for identifying and documenting the appropriate legal basis for processing this data. We process it solely on their instruction.</p>
 
   <h2>4. Data storage and security</h2>
-  <p>All workspace data &mdash; for both no~bull books and no~bull visa &mdash; is stored in a Google Sheets spreadsheet within the <strong>subscribing user&rsquo;s own Google Drive</strong>. We do not copy or replicate this data to our own servers.</p>
-  <p>Our application code runs on Google Apps Script infrastructure within Google Cloud (data centres in the EU/EEA and US). Access to workspace data requires authentication via Google OAuth and our session token system.</p>
-  <p>We maintain audit logs of significant actions within each workspace. These logs are stored in the same Google Drive spreadsheet as the workspace data.</p>
+  <p><strong>no~bull books</strong> workspace data (invoices, transactions, financial records) is stored in a PostgreSQL database on UK-based servers operated by no~bull consulting, isolated per tenant. no~bull books is built on open-source software; access requires authentication via our own login system.</p>
+  <p><strong>no~bull visa</strong> workspace data is stored in a Google Sheets spreadsheet within the subscribing user&rsquo;s own Google Drive. We do not copy or replicate this data to our own servers for that product. no~bull visa&rsquo;s application code runs on Google Apps Script infrastructure within Google Cloud (data centres in the EU/EEA and US); access requires authentication via Google OAuth and our session token system.</p>
+  <p>We maintain audit logs of significant actions within each workspace. For no~bull books, these are stored within our own database alongside workspace data. For no~bull visa, these are stored in the same Google Drive spreadsheet as the workspace data.</p>
   <p>We implement appropriate technical measures including: single-use magic-link authentication, session expiry, rate limiting, and per-tenant data isolation.</p>
 
   <h2>5. Data retention</h2>
@@ -175,10 +175,11 @@
     <tr><td>HMRC fraud prevention data</td><td>As required by HMRC &mdash; currently 7 years</td></tr>
     <tr><td>Audit logs</td><td>Retained within the workspace for as long as the workspace exists</td></tr>
   </table>
-  <p>Because workspace data lives in the user&rsquo;s own Google Drive, it persists there until the user deletes it. Cancelling a subscription does not delete the underlying spreadsheet.</p>
+  <p>For no~bull visa, because workspace data lives in the user&rsquo;s own Google Drive, it persists there until the user deletes it &mdash; cancelling a subscription does not delete the underlying spreadsheet. For no~bull books, workspace data on our own infrastructure is retained according to the periods above and removed in line with our data retention and deletion procedures upon request or after the stated grace period.</p>
 
   <h2>6. Third parties and international transfers</h2>
-  <p><strong>Google LLC</strong> is our primary sub-processor. Google Apps Script, Google Drive, Google Sheets, and Gmail are all Google services. Data processed by these services is subject to Google&rsquo;s own terms and data processing agreements. Google&rsquo;s infrastructure may transfer data to servers outside the UK; Google relies on Standard Contractual Clauses and the UK International Data Transfer Agreement for those transfers.</p>
+  <p><strong>Google LLC</strong> is our sub-processor for <strong>no~bull visa only</strong> &mdash; Google Apps Script, Google Drive, Google Sheets, and Gmail. Data processed by these services for visa workspaces is subject to Google&rsquo;s own terms and data processing agreements. Google&rsquo;s infrastructure may transfer data to servers outside the UK; Google relies on Standard Contractual Clauses and the UK International Data Transfer Agreement for those transfers.</p>
+  <p>For <strong>no~bull books</strong>, workspace data is hosted on our own UK-based infrastructure. We use a small number of sub-processors for supporting services: Cloudflare (network routing and security), and Postmark (transactional email delivery). These providers process only what is strictly necessary for their function and are bound by their own data processing agreements.</p>
   <p>We do not sell personal data. We do not share it with any other third party except where required by law.</p>
 
   <h2>7. Cross-border processing and international clients</h2>
@@ -239,7 +240,7 @@
     <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;align-items:start;margin-bottom:40px;">
       <div>
         <div class="footer-logo">no~bull consulting</div>
-        <p class="footer-tagline">Google-native business software for UK sole traders and micro-businesses. Honest pricing, your data, no bull.</p>
+        <p class="footer-tagline">Open-source, UK-hosted business software for UK sole traders and micro-businesses. Honest pricing, your data, no bull.</p>
         <div class="footer-legal">&copy; 2026 no~bull consulting.<br>Trading name of Edward Jenkins.<br>Sole Trader.</div>
       </div>
       <div>
