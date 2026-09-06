@@ -280,3 +280,69 @@ footer a:hover { color: var(--oxford-blue); }
 .footer-legal { font-size: 10px; color: var(--slate); line-height: 1.6; }
 .footer-col-head { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--racing-green); margin-bottom: 16px; font-family: var(--font-body); font-weight: 500; }
 .footer-links { list-style: none; font-size: 10px; line-height: 2.2; padding: 0; }
+
+
+/* ── HERO ──────────────────────────────────────────────────────────────
+   Moved out of index.html on 6 September 2026. The nav is fixed and, with
+   the stacked logo and wordmark, is around 150px tall - so any page opening
+   with a hero needs to clear it. When these lived in one page's <style>
+   block, a second page using the same class got no background and no top
+   padding, and its heading sat underneath the navigation.                */
+.hero {
+  background: var(--oxford-blue);
+  padding: 180px 24px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--racing-green), #14A8AE);
+}
+.hero .section-label { color: #14A8AE; border-color: #14A8AE; }
+.hero h1 {
+  color: var(--white) !important;
+  font-size: clamp(28px, 5vw, 48px) !important;
+  max-width: 680px;
+  margin-bottom: 20px;
+}
+.hero-sub {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  max-width: 620px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.hero-sub strong { color: rgba(255,255,255,0.95); }
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+.btn-hero-primary {
+  background: #14A8AE;
+  color: var(--white) !important;
+  padding: 12px 28px;
+  border-radius: var(--r);
+  font-size: 13px; font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-primary:hover { background: #0f8a8f; }
+.btn-hero-outline {
+  background: transparent;
+  color: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 12px 28px;
+  border-radius: var(--r);
+  font-size: 13px; font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.2s;
+  display: inline-block;
+}
+.btn-hero-outline:hover { border-color: rgba(255,255,255,0.6); }
+
+/* Two and three column layouts used across the product pages. */
+@media (max-width: 720px) {
+  .two-col, .three-col { grid-template-columns: 1fr !important; }
+  .hero { padding: 160px 24px 60px; }
+}

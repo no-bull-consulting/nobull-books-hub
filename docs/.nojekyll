@@ -1,0 +1,4 @@
+touch docs/.nojekyll
+git add -f docs/.nojekyll
+git commit -m "Restore .nojekyll so _shared.css is published"
+git push
