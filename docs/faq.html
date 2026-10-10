@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ | no~bull consulting</title>
-    <meta name="description" content="Answers to common questions about nBooks UK accounting software — MTD VAT &amp; ITSA compliance, data ownership, Xero migration, pricing and free trial.">
+    <meta name="description" content="Answers to common questions about nBooks UK accounting software: MTD VAT submission, data ownership, pricing and availability.">
     <meta name="author" content="Edward Jenkins, no~bull consulting">
     <link rel="canonical" href="https://nobull.consulting/faq.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -31,7 +31,7 @@
         {
           "@type": "Question",
           "name": "What is nBooks?",
-          "acceptedAnswer": { "@type": "Answer", "text": "nBooks is cloud-based accounting software for UK sole traders and micro-businesses. It is built for HMRC Making Tax Digital (MTD) compliance from the ground up. Features include direct MTD VAT submission, professional invoicing and PDF generation, bank reconciliation, multi-currency support, Corporation Tax computation (CT600), and Self Assessment (SA103/ITSA). Built on open-source foundations and hosted on UK servers, with full data export always available. Pricing is £15 per month with a 30-day free trial." }
+          "acceptedAnswer": { "@type": "Answer", "text": "nBooks is cloud-based accounting software for UK sole traders and micro-businesses, built around HMRC's Making Tax Digital API for VAT. Features include direct MTD VAT submission, professional invoicing and PDF generation, bank reconciliation and multi-currency support. Corporation Tax (CT600) and Self Assessment (SA103/ITSA) are planned and not yet built. Built on open-source foundations and hosted on UK servers, with full data export always available. nBooks is not currently available while it is being rebuilt; pricing will be £15 per month with a 30-day free trial when it returns." }
         },
         {
           "@type": "Question",
@@ -40,18 +40,18 @@
         },
         {
           "@type": "Question",
-          "name": "Is nBooks HMRC MTD compatible?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. nBooks is built for HMRC Making Tax Digital compliance and supports direct MTD VAT submission via the HMRC API. A full compatibility statement is available at https://nobull.consulting/hmrc-mtd-statement.html." }
+          "name": "Does nBooks submit VAT returns to HMRC?",
+          "acceptedAnswer": { "@type": "Answer", "text": "nBooks submits VAT returns through HMRC's Making Tax Digital API. It is not HMRC recognised. A compatibility statement setting out which endpoints are implemented is available at https://nobull.consulting/hmrc-mtd-statement.html." }
         },
         {
           "@type": "Question",
-          "name": "Does no~bull consulting offer bespoke development?",
+          "name": "Does no~bull consulting build custom software?",
           "acceptedAnswer": { "@type": "Answer", "text": "Yes. no~bull consulting builds custom applications for businesses needing bespoke workflow automation, CRM tools, reporting dashboards, or system migrations off legacy SaaS platforms. Projects are delivered at a fixed price with a clear milestone plan. Contact edward@nobull.consulting to discuss a project." }
         },
         {
           "@type": "Question",
           "name": "How much does nBooks cost?",
-          "acceptedAnswer": { "@type": "Answer", "text": "nBooks costs £15 per month on the Standard plan, which includes all features: HMRC MTD filing, invoicing, bank reconciliation, and tax computations. A 30-day free trial is available with no credit card required." }
+          "acceptedAnswer": { "@type": "Answer", "text": "nBooks will cost £15 per month on the Standard plan, covering MTD VAT submission, invoicing and bank reconciliation, with a 30-day free trial and no credit card required. It is not currently available for purchase while it is being rebuilt." }
         }
       ]
     }
@@ -72,39 +72,6 @@
         .faq-wrap h1 { font-size: 26px; }
       }
     </style>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Is nBooks MTD compliant?",
-        "acceptedAnswer": { "@type": "Answer", "text": "nBooks has applied for HMRC recognition for MTD for VAT and MTD for Income Tax Self Assessment (ITSA). The software submits VAT returns and quarterly ITSA updates directly to HMRC via the official API." }
-      },
-      {
-        "@type": "Question",
-        "name": "Where is my financial data stored?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Your data is stored securely on UK-based servers, under UK data protection law. nBooks is built on open-source foundations, and you can export your complete financial data at any time." }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I import data from Xero or QuickBooks?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. nBooks includes a full migration facility for Xero, QuickBooks and FreeAgent — chart of accounts, trial balance, invoices, bills and contacts, typically in under an hour." }
-      },
-      {
-        "@type": "Question",
-        "name": "How much does nBooks cost?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Plans start from £9/month (Starter) or £15/month (Pro). Annual plans save 2 months. There is a 30-day free trial with no credit card required." }
-      },
-      {
-        "@type": "Question",
-        "name": "What happens to my data if I cancel?",
-        "acceptedAnswer": { "@type": "Answer", "text": "You can export your complete financial data at any time, in full - no fees, no barriers, whether you are staying or leaving. No proprietary lock-in." }
-      }
-    ]
-  }
-  </script>
 </head>
 <body>
 
@@ -125,6 +92,12 @@
   <h1>Frequently asked questions</h1>
   <p class="intro">Questions about nBooks, or bespoke development. Can&rsquo;t find what you&rsquo;re looking for? <a href="contact.html" style="color:var(--oxford-blue);">Get in touch</a>.</p>
 
+  <div style="background:#FFF8E6;border-left:3px solid var(--oxford-blue);padding:16px 20px;margin:0 0 28px;font-size:13px;line-height:1.6;color:#4A4E52;">
+    <strong>nBooks is not currently available.</strong>
+    It is being rebuilt on open-source foundations. The answers below describe the product
+    and are kept as a matter of record; pricing and the free trial apply when it returns.
+  </div>
+
   <div class="faq-section-head">About no~bull consulting</div>
 
   <details>
@@ -141,12 +114,12 @@
 
   <details>
     <summary>What is nBooks?</summary>
-    <p>nBooks is cloud-based accounting software for UK sole traders and micro-businesses, built for HMRC Making Tax Digital compliance. Features include direct MTD VAT submission, professional invoicing with PDF generation and email delivery, bank reconciliation, multi-currency support, Corporation Tax computation (CT600), and Self Assessment (SA103/ITSA). Priced at &pound;15/month with a 30-day free trial.</p>
+    <p>nBooks is cloud-based accounting software for UK sole traders and micro-businesses, built around HMRC&rsquo;s Making Tax Digital API for VAT. Features include direct MTD VAT submission, professional invoicing with PDF generation and email delivery, bank reconciliation and multi-currency support. Corporation Tax (CT600) and Self Assessment (SA103/ITSA) are planned and not yet built. Priced at &pound;15/month with a 30-day free trial when nBooks returns.</p>
   </details>
 
   <details>
-    <summary>Is nBooks HMRC MTD compatible?</summary>
-    <p>Yes. nBooks supports direct MTD VAT submission via the HMRC API and is built for MTD compliance from the ground up. Our full <a href="hmrc-mtd-statement.html" style="color:var(--oxford-blue);">HMRC MTD compatibility statement</a> is available on the site.</p>
+    <summary>Does nBooks submit VAT returns to HMRC?</summary>
+    <p>Yes &mdash; nBooks submits VAT returns through HMRC&rsquo;s Making Tax Digital API. It is <strong>not HMRC recognised</strong> and does not appear on HMRC&rsquo;s list of compatible software. Our <a href="hmrc-mtd-statement.html" style="color:var(--oxford-blue);">compatibility statement</a> sets out exactly which endpoints are implemented.</p>
   </details>
 
   <details>
